@@ -5,6 +5,7 @@
 #      - CDS nuc sequences too
 # v002 - Use BLAST friendly names
 # v003 - multiple sets of viruses
+# v004 - fixed missing | in fna names
 import os
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -134,7 +135,7 @@ for group in ["dsDnaViruses",
                     print f
                     assert False
                 #Bit of a hack, we are using the protein's ID here!
-                record = SeqRecord(nuc, id="gi|%sref|%s" % (gi, protein_id),
+                record = SeqRecord(nuc, id="gi|%s|ref|%s" % (gi, protein_id),
                                    description="; ".join(f.qualifiers.get("note",[])))
                 SeqIO.write([record], handle, "fasta")
                 count +=1
