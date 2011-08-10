@@ -13,8 +13,6 @@ Return codes:
 2 - Locked, aborted
 3 - Failed
 
-TODO - Wait and retry if lock exists (consider multiple jobs running
-       on the same cluster node at once)
 TODO - Try single call to rsync with wild card (exclude tar balls)
 TODO - Different return code when already up to date
 TODO - Automatically expand pal and nal alias files...
@@ -65,6 +63,18 @@ for db in names:
     lock = os.path.join(local, db + ".lock")
     if not os.path.isdir(os.path.split(lock)[0]):
         os.makedirs(os.path.split(lock)[0], 0777)
+    #Wait a little, enough for other copies of the script
+    #to finish the sync check if the files are current
+    if os.path.isfile(lock):
+        time.sleep(5)
+    if os.path.isfile(lock):
+        time.sleep(10)
+    if os.path.isfile(lock):
+        time.sleep(15)
+    if os.path.isfile(lock):
+        time.sleep(30)
+    if os.path.isfile(lock):
+        time.sleep(60)
     if os.path.isfile(lock):
         sys.stderr.write("BLAST Database already locked:\n")
         try:
