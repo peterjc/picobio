@@ -98,7 +98,7 @@ for db in names:
         print "%s -> %s" % (old, new)
         err = os.system(cmd % (old, new))
         if err:
-            sys.stderr("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
+            sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
             os.remove(lock)
             sys.exit(3)
     taken = time.time() - start
