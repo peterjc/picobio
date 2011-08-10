@@ -62,8 +62,11 @@ if master in cmd:
     start = time.time()
     err = os.system("blast_sync.py %s %s %s > /dev/null" % (master, local, db))
     taken = time.time() - start
-    if err:
+    if 0 < err < 128:
         sys.stderr.write("Syncing %s failed (error code %i)\n" % (db, err))
+        sys.exit(err)
+    elif err:
+        sys.stderr.write("Syncing %s failed (error code %i --> 1)\n" % (db, err))
         sys.exit(1)
     #Update the command
     cmd = cmd.replace(master + "/"+ db,local +"/" + db)
@@ -73,4 +76,9 @@ if master in cmd:
         print "%s done in %is" % (db, int(taken))
         
 #Run the command
-sys.exit(os.system(cmd))
+err = os.system(cmd)
+if 0 < err < 128:
+    sys.exit(err)
+elif err:
+    #Returning 512 gives 0 (odd)
+    sys.exit(1)
