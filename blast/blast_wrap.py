@@ -40,6 +40,7 @@ local = "/tmp/galaxy-blastdb"
 
 import sys
 import os
+import time
 
 #argv[0] is this python script
 #Turn the argv list into a string, escaping as needed
@@ -56,15 +57,20 @@ if master in cmd:
     db = cmd[i+len(master)+1:].split(None,1)[0]
     if db.endswith('"'):
         db = db.rstrip('"')
-    print "Synchronising %s ..." % db
+    print "Synchronising database,"
     assert master + "/" + db in cmd
+    start = time.time()
     err = os.system("blast_sync.py %s %s %s > /dev/null" % (master, local, db))
+    taken = time.time() - start
     if err:
         sys.stderr.write("Syncing %s failed (error code %i)\n" % (db, err))
-        sys.exit(err)
+        sys.exit(1)
     #Update the command
     cmd = cmd.replace(master + "/"+ db,local +"/" + db)
-    print "Synchronised %s" % db
+    if taken > 100:
+        print "%s done in %0.1fm" % (db, taken/60.0)
+    else:
+        print "%s done in %is" % (db, int(taken))
         
 #Run the command
 sys.exit(os.system(cmd))
