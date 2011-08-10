@@ -93,6 +93,7 @@ for db in names:
         sys.stderr.write("Could not create BLAST DB lock\n")
         sys.exit(2)
 
+    start = time.time()
     for old, new in file_list(master, local, db):
         print "%s -> %s" % (old, new)
         err = os.system(cmd % (old, new))
@@ -100,6 +101,10 @@ for db in names:
             sys.stderr("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
             os.remove(lock)
             sys.exit(3)
+    taken = time.time() - start
     os.remove(lock)
-    print "%s done" % db
+    if taken > 100:
+        print "%s done in %0.1fm" % (db, taken/60.0)
+    else:
+        print "%s done in %is" % (db, int(taken))
 print "Done"
