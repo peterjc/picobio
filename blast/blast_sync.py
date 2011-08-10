@@ -40,7 +40,16 @@ if not os.path.isdir(master):
 if not os.path.isdir(local):
     os.makedirs(local, 0777)
 
-cmd = "rsync -v -rtz --exclude=*.tar.gz --exclude=*.md5 %s %s"
+def sync_blast_db(master, local, db):
+    cmd = "rsync -v -rtz --exclude=*.tar.gz --exclude=*.md5 %s %s"
+    old = os.path.join(master, db + ".*")
+    new = os.path.join(local, os.path.split(db)[0]) #Folder namer!
+    #print "%s -> %s" % (old, new)
+    #print cmd % (old, new)
+    err = os.system(cmd % (old, new))
+    if err:
+        sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
+    return err
 
 for db in names:
     print db
@@ -78,13 +87,8 @@ for db in names:
         sys.exit(2)
 
     start = time.time()
-    old = os.path.join(master, db + ".*")
-    new = os.path.join(local, os.path.split(db)[0]) #Folder namer!
-    print "%s -> %s" % (old, new)
-    print cmd % (old, new)
-    err = os.system(cmd % (old, new))
+    err = sync_blast_db(master, local, db)
     if err:
-        sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
         os.remove(lock)
         sys.exit(3)
     taken = time.time() - start
