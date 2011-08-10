@@ -13,7 +13,6 @@ Return codes:
 2 - Locked, aborted
 3 - Failed
 
-TODO - Try single call to rsync with wild card (exclude tar balls)
 TODO - Different return code when already up to date
 TODO - Automatically expand pal and nal alias files...
 """
@@ -41,22 +40,7 @@ if not os.path.isdir(master):
 if not os.path.isdir(local):
     os.makedirs(local, 0777)
 
-n_ext = [".nal", ".nhd", ".nhi", ".nhr", ".nin", ".nnd", ".nni",
-         ".nog", ".nsd", ".nsi", ".nsq"]
-p_ext = [".pal", ".phd", ".phi", ".phr", ".pin", ".pnd", ".pni",
-         ".pog", ".ppd", ".ppi", ".psd", ".psi", ".psq"]
-
-cmd = "rsync -v -rtz %s %s"
-
-def file_list(master, local, db):
-    d = os.path.split(db)[0]
-    directory, name = os.path.split(os.path.join(master, db))
-    for f in os.listdir(directory):
-        if f.startswith(name + "."):
-            ext = os.path.splitext(f)[-1]
-            if ext in n_ext or ext in p_ext:
-                yield os.path.join(master, d, f), os.path.join(local, d, f)
-
+cmd = "rsync -v -rtz --exclude=*.tar.gz --exclude=*.md5 %s %s"
 
 for db in names:
     print db
@@ -66,6 +50,7 @@ for db in names:
     #Wait a little, enough for other copies of the script
     #to finish the sync check if the files are current
     if os.path.isfile(lock):
+        sys.stderr.write("BLAST Database already locked,\n")
         time.sleep(5)
     if os.path.isfile(lock):
         time.sleep(10)
@@ -76,7 +61,6 @@ for db in names:
     if os.path.isfile(lock):
         time.sleep(60)
     if os.path.isfile(lock):
-        sys.stderr.write("BLAST Database already locked:\n")
         try:
             handle = open(lock)
             sys.stderr.write(handle.read())
@@ -94,13 +78,15 @@ for db in names:
         sys.exit(2)
 
     start = time.time()
-    for old, new in file_list(master, local, db):
-        print "%s -> %s" % (old, new)
-        err = os.system(cmd % (old, new))
-        if err:
-            sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
-            os.remove(lock)
-            sys.exit(3)
+    old = os.path.join(master, db + ".*")
+    new = os.path.join(local, os.path.split(db)[0]) #Folder namer!
+    print "%s -> %s" % (old, new)
+    print cmd % (old, new)
+    err = os.system(cmd % (old, new))
+    if err:
+        sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
+        os.remove(lock)
+        sys.exit(3)
     taken = time.time() - start
     os.remove(lock)
     if taken > 100:
