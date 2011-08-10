@@ -58,8 +58,8 @@ for db in names:
         time.sleep(15)
     if os.path.isfile(lock):
         time.sleep(30)
-    if os.path.isfile(lock):
-        time.sleep(60)
+    #if os.path.isfile(lock):
+    #    time.sleep(60)
     if os.path.isfile(lock):
         try:
             handle = open(lock)
@@ -67,7 +67,7 @@ for db in names:
             handle.close()
         except:
             pass
-        sys.stderr.write("\nAborting sync\n")
+        sys.stderr.write("Aborting sync\n")
         sys.exit(2)
     try:
         handle = open(lock, 'w')
