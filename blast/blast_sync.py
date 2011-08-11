@@ -9,11 +9,18 @@ Arguments:
 
 Return codes:
 
-0 - Worked, up to date
+0 - Worked, database(s) are now up to date
+1 - Failed
 2 - Locked, aborted
-3 - Failed
 
-TODO - Different return code when already up to date?
+Because we use rsync internally, we cannot easily separate already
+up to date vs successful update.
+
+TODO - Some locking/flag mechanism to mark a database as in use?
+Consider a cluster node running multiple BLAST jobs, job 1 starts
+and the database is up to date, then the master copy of the db is
+updated, then job 2 starts and will try to update the local copy
+(which will probably fail and/or mess up job 1). Corner case?
 """
 #master = "/data/blastdb"
 #local = "/tmp/galaxy-blastdb"
@@ -55,7 +62,7 @@ names = sys.argv[3:]
 
 if not os.path.isdir(master):
     sys.stderr.write("Master directory %s not found\n" % master)
-    sys.exit(3)
+    sys.exit(1)
 
 if not os.path.isdir(local):
     os.makedirs(local, 0777)
@@ -126,13 +133,18 @@ for db in names:
         handle.close()
     except:
         sys.stderr.write("Could not create BLAST DB lock\n")
-        sys.exit(2)
+        sys.exit(1)
 
     start = time.time()
-    err = sync_blast_db(master, local, db)
+    try:
+        err = sync_blast_db(master, local, db)
+    except Exception, e:
+        #Want to catch this and remove the lock file
+        sys.stderr.write("Unexpected failure: %s" % e)
+        err = True
     if err:
         os.remove(lock)
-        sys.exit(3)
+        sys.exit(1)
     taken = time.time() - start
     os.remove(lock)
     if taken > 100:
