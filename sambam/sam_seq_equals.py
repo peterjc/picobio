@@ -163,9 +163,12 @@ sys.stderr.write("Sequences for %i reference available\n" % len(reference))
 
 ref_name = ""
 ref_seq = ""
+count = 0
+mod = 0
 for line in sys.stdin:
     if line[0]!="@":
         #Should be a read
+        count += 1
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
         if rname != "*" and not int(flag) & 0x4:
             #Mapped read
@@ -183,5 +186,7 @@ for line in sys.stdin:
             except:
                 sys.stderr.write(line)
                 raise
+            mod += 1
             line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest])
     sys.stdout.write(line)
+sys.stderr.write("Modified %i out of %i reads\n" % (mod, count))
