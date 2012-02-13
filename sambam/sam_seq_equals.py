@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Python script to demonstrate reference based compression in SAM/BAM.
+usage = """Python script to demonstrate reference based compression in SAM/BAM.
 
 This script is designed to be used as part of a Unix pipeline. It
 takes a single command line argument of a FASTA reference genome
@@ -12,13 +12,14 @@ signs. This makes the files much easier to compress, which can be
 demonstrated by comparing a gzipped version of the SAM files with
 and without the equals, or their BAM equivalents.
 
-Simple usage with SAM files:
+Simple usage with SAM files, optional argument [mode] can be "add"
+(default, insert equals signs) or "remove" (remove equals signs):
 
-$ ./sam_seq_equals reference.fasta < original.sam > equals.sam
+$ ./sam_seq_equals reference.fasta [mode] < original.sam > equals.sam
 
 Simple usage with BAM files with conversion to/from SAM via samtools:
 
-$ samtools view -h original.bam | ./sam_seq_equals reference.fasta | samtools view -S -b - > equals.bam
+$ samtools view -h original.bam | ./sam_seq_equals reference.fasta [mode] | samtools view -S -b - > equals.bam
 
 If your SAM/BAM files lack @SQ headers, you may need to give
 samtools the reference FASTA file as well.
@@ -26,8 +27,21 @@ samtools the reference FASTA file as well.
 
 import sys
 
-if len(sys.argv) != 2:
-    sys.stderr.write("Require the FASTA reference filename as the sole command line argument\n")
+if len(sys.argv) == 2:
+    reference_filename = sys.argv[1]
+    add_equals = True
+elif len(sys.argv) ==3:
+    reference_filename = sys.argv[1]
+    if sys.argv[2].lower() == "add":
+        add_equals = True
+    elif sys.argv[2].lower() == "remove":
+        add_equals = False
+    else:
+        sys.stderr.write("ERROR: Second (optional) argument must be 'add' (default) or 'remove' (no quotes)\n\n")
+        sys.stderr.write(usage)
+        sys.exit(1)
+else:
+    sys.stderr.write("ERROR: Bad arguments\n\n")
     sys.exit(1)
 
 try:
@@ -135,7 +149,6 @@ assert "========C======T==T======C=============T" == temp, temp
 del temp_mt, temp
 
 
-reference_filename = sys.argv[1]
 sys.stderr.write("Loading reference sequences from %s\n" % reference_filename)
 try:
     import sqlite3
@@ -148,7 +161,6 @@ if not reference:
 sys.stderr.write("Sequences for %i reference available\n" % len(reference))
                                 
 
-add_equals = True
 ref_name = ""
 ref_seq = ""
 for line in sys.stdin:
