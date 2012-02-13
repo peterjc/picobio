@@ -165,11 +165,15 @@ ref_name = ""
 ref_seq = ""
 count = 0
 mod = 0
+bases = 0
 for line in sys.stdin:
     if line[0]!="@":
         #Should be a read
         count += 1
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
+        if seq != "*":
+            bases += len(seq)
+            #TODO - Look at CIGAR or qual if SEQ is missing?
         if rname != "*" and not int(flag) & 0x4:
             #Mapped read
             if rname != ref_name:
@@ -190,3 +194,4 @@ for line in sys.stdin:
             line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest])
     sys.stdout.write(line)
 sys.stderr.write("Modified %i out of %i reads\n" % (mod, count))
+sys.stderr.write("In total %i bases in all %i reads\n" % (bases, count))
