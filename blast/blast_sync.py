@@ -21,9 +21,11 @@ Consider a cluster node running multiple BLAST jobs, job 1 starts
 and the database is up to date, then the master copy of the db is
 updated, then job 2 starts and will try to update the local copy
 (which will probably fail and/or mess up job 1). Corner case?
+We avoid this by running BLAST jobs which take a whole node at once.
 """
-#master = "/data/blastdb"
-#local = "/tmp/galaxy-blastdb"
+#example values:
+#master = "/mnt/gfs/blast/galaxy"
+#local = "/var/blast/galaxy"
 #db = "ncbi/nr"
 
 import os

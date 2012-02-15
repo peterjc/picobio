@@ -1,41 +1,42 @@
 #!/usr/bin/env python
 """Simple Python wrapper for BLAST to locally cache databases.
 
-This is intended for use withing a computer cluster where there
-is a central copy of the BLAST databases which is updated regularly,
+This is intended for use within a computer cluster where there is
+a central copy of the BLAST databases which is updated regularly,
 but which is slow to access over the network. Therefore for speed,
 and assuming sufficient disk space on each node, we want to copy
 the BLAST databases to a local cache.
 
 This can be setup as a scheduled task (e.g. with cron) for key
-databases, and/or uses via a wrapper script to sync on demand
-(see blast_wrap.py).
+databases (see blast_sync.py), and/or uses via a wrapper script
+to sync on demand (see blast_wrap.py).
 
 Currently uses two hard coded settings for the network mounted
 master copy of the databases (e.g. NFS, SAMBA), and the local
 fast hard drive to use as the cache.
 
-We're using /data/blastdb as the master, and /tmp/galaxy-blastdb
-as the local cache.
+We're using /mnt/gfs/blast/galaxy as the master, and /var/blast/galaxy
+as the local cache - see variables 'master' and 'local' below.
 
 Intention is rather than this:
 
-$ blastx -query=example.fasta -db=/data/blastdb/ncbi/nr ...
+$ blastx -query=example.fasta -db=/mnt/gfs/blast/galaxy/nr ...
 
 You do this:
 
-$ blast_wrap.py blastx -query=example.fasta -db=/data/blastdb/ncbi/nr ...                         
-This will cache the /data/blastdb/nr.* files as /tmp/galaxy-blastdb/ncbi/nr.*
-and run this command for you:
+$ blast_wrap.py blastx -query=example.fasta -db=/mnt/gfs/blast/galaxy/nr ...                         
 
-$ blastx -query=example.fasta -db=/tmp/galaxy-blastdb/ncbi/nr ...
+This will cache the /mnt/gfs/blast/galaxy/nr.* files from the server
+as /var/blast/galaxy/ncbi/nr.* and run this command for you:
+
+$ blastx -query=example.fasta -db=/var/blast/galaxy/ncbi/nr ...
 
 TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
 
-master = "/data/blastdb"
-local = "/tmp/galaxy-blastdb"
+master = "/mnt/gfs/blast/galaxy"
+local = "/var/blast/galaxy"
 #db = "ncbi/nr"
 
 import sys
