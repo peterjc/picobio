@@ -61,7 +61,11 @@ if master in cmd:
     print "Synchronising database,"
     assert master + "/" + db in cmd
     start = time.time()
-    err = os.system("blast_sync.py %s %s %s > /dev/null" % (master, local, db))
+    sync = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blast_sync.py")
+    if not os.path.isfile(sync):
+        sys.stderr.write("Syncing %s failed (missing %s script)\n" % (master, sync))
+        sys.exit(1)
+    err = os.system("%s %s %s %s > /dev/null" % (sync, master, local, db))
     taken = time.time() - start
     if 0 < err < 128:
         sys.stderr.write("Syncing %s failed (error code %i)\n" % (db, err))
