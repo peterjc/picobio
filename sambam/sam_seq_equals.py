@@ -71,6 +71,9 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True):
 
     Assumes both ref_seq and read_seq are using the same case.
     """
+    if pos >= len(ref_seq):
+        raise ValueError("Bad POS %i for a reference of length %i" \
+                         % (pos, len(ref_seq)))
     offset = pos
     pending = read_seq
     answer = ""
@@ -87,6 +90,7 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True):
             if op_len > len(pending):
                 raise RuntimeError("Only %i bases left for %i%s" % (len(pending), op_len, op))
             if pos + op_len - 1 >= len(ref_seq):
+                #TODO - Treat this as an error and terminate?
                 sys.stderr.write("Warning, ran off end of %i bp reference by %i bp, pos %i, CIGAR %s\n" \
                                  % (len(ref_seq), pos + op_len - len(ref_seq), pos, cigar))
                 #e.g. NA12878.chromMT.SLX.maq.SRP000032.2009_07.bam read SRR010937.2897481
