@@ -158,7 +158,7 @@ except ImportError:
 if not reference:
     sys.stderr.write("No sequences found in FASTA reference file %s\n" % reference_filename)
     sys.exit(1)
-sys.stderr.write("Sequences for %i reference available\n" % len(reference))
+sys.stderr.write("Sequences for %i reference(s) available\n" % len(reference))
                                 
 
 ref_name = ""
