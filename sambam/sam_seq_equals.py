@@ -26,6 +26,7 @@ samtools the reference FASTA file as well.
 
 Copyright Peter Cock 2012. All rights reserved. See:
 https://github.com/peterjc/picobio
+http://blastedbio.blogspot.co.uk/2012/02/reference-based-sambam-compression.html
 """
 
 import sys
