@@ -32,6 +32,9 @@ $ ./sam_strip_tags.py -v OQ < original.sam > no_OQ.sam
 Likewise with BAM files via samtools,
 
 $ samtools view -h original.bam | ./sam_strip_tags.py -v OQ | samtools view -S -b - > no_OQ.bam
+
+Copyright Peter Cock 2012. All rights reserved. See:
+https://github.com/peterjc/picobio
 """
 
 import sys

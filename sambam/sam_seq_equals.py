@@ -23,6 +23,9 @@ $ samtools view -h original.bam | ./sam_seq_equals reference.fasta [mode] | samt
 
 If your SAM/BAM files lack @SQ headers, you may need to give
 samtools the reference FASTA file as well.
+
+Copyright Peter Cock 2012. All rights reserved. See:
+https://github.com/peterjc/picobio
 """
 
 import sys
