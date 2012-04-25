@@ -23,6 +23,10 @@ Usage with one or more BAM or BGZF files:
 $ ./bam_add_eof.py example1.bam example2.bam ... exampleN.bam
 
 See also: http://samtools.sourceforge.net/
+
+v0.0.0 - Original script
+v0.0.1 - Use append mode to add EOF block
+
 """
 
 import os
