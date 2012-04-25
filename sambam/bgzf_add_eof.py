@@ -54,8 +54,7 @@ def fix_bam(filename):
         sys.stderr.write("EOF already present in %s\n" % filename)
     else:
         sys.stderr.write("Adding EOF block to %s\n" % filename)
-        h = open(filename, "wb")
-        h.seek(size)
+        h = open(filename, "ab")
         h.write(eof)
         h.close()
 
