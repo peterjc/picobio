@@ -67,7 +67,12 @@ if not os.path.isdir(master):
     sys.exit(1)
 
 if not os.path.isdir(local):
-    os.makedirs(local, 0777)
+    try:
+        os.makedirs(local, 0777)
+    except OSError, e:
+        sys.stderr.write("Local directory %s not found and couldn't create it\n" % local)
+        sys.stderr.write(str(e) + "\n")
+        sys.exit(1)
 
 def sync_blast_alias_db(master, local, db, index):
     print "Syncing %s" % index
