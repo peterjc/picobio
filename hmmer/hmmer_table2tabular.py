@@ -2,7 +2,7 @@
 """Python script to convert HMMER3 table output into tab separated tables.
 
 This handles both the per-sequence table and the per-domain table. The
-script just takes two arguments, the input filename (or - for stdin),
+script just takes two arguments, the input filename (or '-' for stdin),
 and the output filename (or '-' for stdout).
 
 This is v0.0.2 of the script.
@@ -102,8 +102,8 @@ def convert(input_handle, output_handle):
     assert len(names) == columns
     output_handle.write("#%s\n" % "\t".join(names))
 
-    #Now the easy bit, tabify the data (using spaces as instructed in the
-    #HMMER3 manual, which says not to use the columnation).
+    #Now the easy bit, tabify the data (using white space as instructed
+    #in the HMMER3 manual, which says not to use the columnation).
     count = 0
     for line in input_handle:
         assert line[0] != "#"
