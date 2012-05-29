@@ -56,40 +56,52 @@ def convert(input_handle, output_handle):
     #Notice in the example above that the dashes in line two are
     #messed up on 'query name' (possibly a minor HMMER3 bug),
     #but otherwise give you the columns numbers for each field.
+    #We could do that automatically but it seems fragile.
 
-    ends = []
-    prev = "#"
-    for i, letter in enumerate(h3):
-        if letter == "#":
-            assert i==0, i
-        elif letter == prev:
-            pass
-        elif letter == "-":
-            #Should be start of data field but see note on 'query name'
-            pass
-        elif letter == " " or letter == "\n":
-            ends.append(i)
-        prev = letter
-    del prev
-    assert len(ends) == columns, "%i vs %i" % (len(ends), columns)
-    starts = [2] + [e+1 for e in ends[:-1]]
-    for e in ends[:-1]:
-        #Should be a space between column names:
-        assert h2[e] == h3[e] == " ", "Failed to get column names"
-    names = [h2[s:e].strip() for s, e in zip(starts, ends)]
+    #We will cheat, on the assumption that the only spaces in the
+    #data values are in the final column (description of target).
 
+    #Hard code our expected header names (but allow for differences
+    #in the spacing):
     if columns == 19:
-        assert names == ["target name", "accession", "query name", "accession",
-                         "E-value", "score", "bias", "E-value", "score", "bias",
-                         "exp", "reg", "clu", "ov", "env", "dom", "rep", "inc",
-                         "description of target"], names
+        names = ["target name", "accession", "query name", "accession",
+                 "E-value", "score", "bias", "E-value", "score", "bias",
+                 "exp", "reg", "clu", "ov", "env", "dom", "rep", "inc",
+                 "description of target"]
+        assert " ".join(h2[2:-1].split()) == " ".join(names)
+        #Now switch to longer names (including line one information):
+        names = ["target name", "accession", "query name", "accession",
+                 "full sequence E-value", "full sequence score",
+                 "full sequence bias", "best 1 domain E-value",
+                 "best 1 domain score", "best 1 domain bias",
+                 "domain number estimation exp",
+                 "domain number estimation reg",
+                 "domain number estimation clu",
+                 "domain number estimation ov",
+                 "domain number estimation env",
+                 "domain number estimation dom",
+                 "domain number estimation rep",
+                 "domain number estimation inc",
+                 "description of target"]
     else:
-        assert names == ["target name", "accession", "tlen", "query name",
-                         "accession", "qlen", "E-value", "score", "bias",
-                         "#", "of", "c-Evalue", "i-Evalue", "score", "bias",
-                         "from", "to", "from", "to", "from", "to",
-                         "acc", " description of target"]
-
+        names = ["target name", "accession", "tlen", "query name",
+                 "accession", "qlen", "E-value", "score", "bias",
+                 "#", "of", "c-Evalue", "i-Evalue", "score", "bias",
+                 "from", "to", "from", "to", "from", "to",
+                 "acc", "description of target"]
+        assert " ".join(h2[2:-1].split()) == " ".join(names)
+        #Now switch to longer names (including line one information):
+        names = ["target name", "accession", "tlen", "query name",
+                 "accession", "qlen", "full sequence E-value",
+                 "full sequence score", "full sequence bias",
+                 #The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
+                 "this domain #", "this domain count",
+                 "c-Evalue", "i-Evalue", "score", "bias",
+                 "hmm coord from", "hmm coord to",
+                 "ali coord from", "ali coord to",
+                 "env coord from", "env coord to",
+                 "acc", "description of target"]
+    assert len(names) == columns
     output_handle.write("#%s\n" % "\t".join(names))
 
     #Now the easy bit, tabify the data (using spaces but could
