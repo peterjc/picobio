@@ -95,7 +95,7 @@ def convert(input_handle, output_handle):
                  "accession", "qlen", "full sequence E-value",
                  "full sequence score", "full sequence bias",
                  #The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
-                 "this domain #", "this domain count",
+                 "dom#", "ndom",
                  "c-Evalue", "i-Evalue", "score", "bias",
                  "hmm coord from", "hmm coord to",
                  "ali coord from", "ali coord to",
