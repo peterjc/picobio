@@ -42,6 +42,13 @@ def convert(input_handle, output_handle):
     #------------------- ---------- -----         -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
     Amidinotransf        PF02274.12   281 Gpa_EST_02_04___C05_022|ORF2 -             77   3.3e-06   26.2   0.1   1   1   2.4e-10   3.3e-06   26.2   0.0   213   280    10    77     1    77 0.90 Amidinotransferase
 
+
+    In both these examples, the columnation is clearly disturbed by the
+    long query names. 
+
+    For these tables the HMMER3 manual states: "... is columnated neatly
+    for human readability, but you should not write parsers that rely on
+    this columnation; parse based on space-delimited fields instead."
     """
     h1 = input_handle.readline()
     assert h1.startswith("# ")
@@ -51,15 +58,6 @@ def convert(input_handle, output_handle):
     assert h3.startswith("#---")
     columns = len(h3.split())
     assert columns == 19 or columns == 23, columns
-
-    #The hard part is to turn the headers into tabular headers.
-    #Notice in the example above that the dashes in line two are
-    #messed up on 'query name' (possibly a minor HMMER3 bug),
-    #but otherwise give you the columns numbers for each field.
-    #We could do that automatically but it seems fragile.
-
-    #We will cheat, on the assumption that the only spaces in the
-    #data values are in the final column (description of target).
 
     #Hard code our expected header names (but allow for differences
     #in the spacing):
@@ -104,8 +102,8 @@ def convert(input_handle, output_handle):
     assert len(names) == columns
     output_handle.write("#%s\n" % "\t".join(names))
 
-    #Now the easy bit, tabify the data (using spaces but could
-    #use the column numbers in principle).
+    #Now the easy bit, tabify the data (using spaces as instructed in the
+    #HMMER3 manual, which says not to use the columnation).
     count = 0
     for line in input_handle:
         assert line[0] != "#"
