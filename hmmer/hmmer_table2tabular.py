@@ -5,9 +5,7 @@ This handles both the per-sequence table and the per-domain table. The
 script just takes two arguments, the input filename (or - for stdin),
 and the output filename (or '-' for stdout).
 
-TODO - Preserve the column headings
-
-This is v0.0.1 of the script.
+This is v0.0.2 of the script.
 
 Copyright 2012, Peter Cock, all rights reserved.
 
@@ -54,6 +52,48 @@ def convert(input_handle, output_handle):
     columns = len(h3.split())
     assert columns == 19 or columns == 23, columns
 
+    #The hard part is to turn the headers into tabular headers.
+    #Notice in the example above that the dashes in line two are
+    #messed up on 'query name' (possibly a minor HMMER3 bug),
+    #but otherwise give you the columns numbers for each field.
+
+    ends = []
+    prev = "#"
+    for i, letter in enumerate(h3):
+        if letter == "#":
+            assert i==0, i
+        elif letter == prev:
+            pass
+        elif letter == "-":
+            #Should be start of data field but see note on 'query name'
+            pass
+        elif letter == " " or letter == "\n":
+            ends.append(i)
+        prev = letter
+    del prev
+    assert len(ends) == columns, "%i vs %i" % (len(ends), columns)
+    starts = [2] + [e+1 for e in ends[:-1]]
+    for e in ends[:-1]:
+        #Should be a space between column names:
+        assert h2[e] == h3[e] == " ", "Failed to get column names"
+    names = [h2[s:e].strip() for s, e in zip(starts, ends)]
+
+    if columns == 19:
+        assert names == ["target name", "accession", "query name", "accession",
+                         "E-value", "score", "bias", "E-value", "score", "bias",
+                         "exp", "reg", "clu", "ov", "env", "dom", "rep", "inc",
+                         "description of target"], names
+    else:
+        assert names == ["target name", "accession", "tlen", "query name",
+                         "accession", "qlen", "E-value", "score", "bias",
+                         "#", "of", "c-Evalue", "i-Evalue", "score", "bias",
+                         "from", "to", "from", "to", "from", "to",
+                         "acc", " description of target"]
+
+    output_handle.write("#%s\n" % "\t".join(names))
+
+    #Now the easy bit, tabify the data (using spaces but could
+    #use the column numbers in principle).
     count = 0
     for line in input_handle:
         assert line[0] != "#"
