@@ -23,6 +23,8 @@ but also we're only going to search for k-mers within each read,
 not perform a full alignment).
 """
 import sys
+import os
+import tempfile
 from optparse import OptionParser
 
 def stop_err(msg, error_level=1):
@@ -37,6 +39,80 @@ except ImportError:
              "https://github.com/bitly/dablooms")
 
 VERSION = "0.0.1"
+
+def fasta_iterator(filename, max_len=None, truncate=None):
+    """Simple FASTA parser yielding tuples of (title, sequence) strings."""
+    handle = open(filename)
+    title, seq = "", ""
+    for line in handle:
+        if line.startswith(">"):
+            if title:
+                if truncate:
+                    seq = seq[:truncate]
+                if max_len and len(seq) > max_len:
+                    raise ValueError("Sequence %s is length %i, max length %i" \
+                                     % (title.split()[0], len(seq), max_len))
+                yield title, seq
+            title = line[1:].rstrip()
+            seq = ""
+        elif title:
+            seq += line.strip()
+        elif not line.strip() or line.startswith("#"):
+            #Ignore blank lines, and any comment lines
+            #between records (starting with hash).
+            pass
+        else:
+            raise ValueError("Bad FASTA line %r" % line)
+    handle.close()
+    if title:
+        if truncate:
+            seq = seq[:truncate]
+        if max_len and len(seq) > max_len:
+            raise ValueError("Sequence %s is length %i, max length %i" \
+                             % (title.split()[0], len(seq), max_len))
+        yield title, seq
+    raise StopIteration
+
+def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
+                 capacity=100000, error_rate=0.05):
+    bloom = pydablooms.Dablooms(capacity=capacity, error_rate=error_rate,
+                                filepath=bloom_filename)
+    count = 0
+    if linear_refs:
+        for fasta in linear_refs:
+            sys.stderr.write("Hashing linear references in %s\n" % fasta)
+            for title, seq in fasta_iterator(fasta):
+                seq = seq.upper()
+                for i in range(0, len(seq) - kmer):
+                    bloom.add(seq[i:i+kmer], kmer)
+                    count += 1 #Can do this in one go from len(seq)
+
+    if circular_refs:
+        for fasta in circular_refs:
+            sys.stderr.write("Hashing circular references in %s\n" % fasta)
+            for title, seq in fasta_iterator(fasta):
+                #Want to consider wrapping round the origin, add k-mer length:
+                seq = (seq + seq[:kmer]).upper()
+                for i in range(0, len(seq) - kmer):
+                    bloom.add(seq[i:i+kmer], kmer)
+                    count += 1 #Can do this in one go from len(seq)
+
+    bloom.flush()
+    sys.stderr.write("Bloom filter of %i-mers created (%i k-mers considered)\n" % (kmer, count))
+    return bloom
+
+def go(input, output, linear_refs, circular_refs, kmer):
+    #Create new bloom file,
+    handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
+    print bloom_filename
+    bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
+
+    #Now loop over the input, write the output
+
+    #Remove the bloom file
+    del bloom
+    os.remove(bloom_filename)
+
 
 def main():
     parser = OptionParser(usage="usage: %prog [options]",
@@ -75,9 +151,11 @@ def main():
         parser.error("No arguments expected")
 
     print "Will attempt to filter %s --> %s" % (options.input_reads, options.output_reads)
-    print "Linear references: %r" % options.linear_references
-    print "Circular references: %r" % options.circular_references
-    print "Using k-mer size %i" % options.kmer
+    #print "Linear references: %r" % options.linear_references
+    #print "Circular references: %r" % options.circular_references
+    #print "Using k-mer size %i" % options.kmer
+    go(options.input_reads, options.output_reads,
+       options.linear_references, options.circular_references, options.kmer)
 
 if __name__ == "__main__":
     main()
