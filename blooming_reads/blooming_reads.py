@@ -23,6 +23,7 @@ but also we're only going to search for k-mers within each read,
 not perform a full alignment).
 """
 import sys
+from optparse import OptionParser
 
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -35,4 +36,48 @@ except ImportError:
     sys_exit("Missing 'dablooms' Python bindings, available from "
              "https://github.com/bitly/dablooms")
 
-print "Nothing to see here yet"
+VERSION = "0.0.1"
+
+def main():
+    parser = OptionParser(usage="usage: %prog [options]",
+                          version="%prog "+VERSION)
+    parser.add_option("-l", "--lref", dest="linear_references",
+                      type="string", metavar="FILE", action="append",
+                      help="""FASTA file of linear reference sequence(s)
+                           Several files can be given if required.""")
+    parser.add_option("-c", "--cref", dest="circular_references",
+                      type="string", metavar="FILE", action="append",
+                      help="""FASTA file of circular reference sequence(s)
+                           Several files can be given if required.""")
+    parser.add_option("-k", "--kmer", dest="kmer",
+                      type="int", metavar="KMER", default=35,
+                      help="k-mer size for filtering (def. 35)")
+    parser.add_option("-i", "--input", dest="input_reads",
+                      type="string", metavar="FILE",
+                      help="Input file of unmapped reads to be filtered (def. stdin)")
+    parser.add_option("-o","--output", dest="output_reads",
+                      type="string", metavar="FILE",
+                      help="Output file to write filtered reads to (def. stdout)")
+    
+    (options, args) = parser.parse_args()
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    if not (10 <= options.kmer <= 100):
+        parser.error("Using a k-mer value of %i is not sensible" % options.kmer)
+
+    if (not options.linear_references) and (not options.circular_references):
+        parser.error("You must supply some linear and/or circular references")
+
+    if args:
+        parser.error("No arguments expected")
+
+    print "Will attempt to filter %s --> %s" % (options.input_reads, options.output_reads)
+    print "Linear references: %r" % options.linear_references
+    print "Circular references: %r" % options.circular_references
+    print "Using k-mer size %i" % options.kmer
+
+if __name__ == "__main__":
+    main()
