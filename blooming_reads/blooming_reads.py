@@ -79,8 +79,7 @@ def fasta_iterator(filename, max_len=None, truncate=None):
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  capacity=100000, error_rate=0.05):
-    bloom = pydablooms.Dablooms(capacity=capacity, error_rate=error_rate,
-                                filepath=bloom_filename)
+    bloom = set()
     count = 0
     if linear_refs:
         for fasta in linear_refs:
@@ -88,7 +87,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             for title, seq in fasta_iterator(fasta):
                 seq = seq.upper()
                 for i in range(0, len(seq) - kmer):
-                    bloom.add(seq[i:i+kmer], kmer)
+                    bloom.add(seq[i:i+kmer])
                     count += 1 #Can do this in one go from len(seq)
 
     if circular_refs:
@@ -98,11 +97,10 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 #Want to consider wrapping round the origin, add k-mer length:
                 seq = (seq + seq[:kmer]).upper()
                 for i in range(0, len(seq) - kmer):
-                    bloom.add(seq[i:i+kmer], kmer)
+                    bloom.add(seq[i:i+kmer])
                     count += 1 #Can do this in one go from len(seq)
 
-    bloom.flush()
-    sys.stderr.write("Bloom filter of %i-mers created (%i k-mers considered)\n" % (kmer, count))
+    sys.stderr.write("Bloom filter of %i-mers created (%i k-mers considered), %i unique\n" % (kmer, count, len(bloom)))
     return bloom
 
 def go(input, output, linear_refs, circular_refs, kmer):
@@ -126,7 +124,7 @@ def go(input, output, linear_refs, circular_refs, kmer):
         upper_seq = seq.upper()
         wanted = False
         for i in range(0, len(seq) - kmer):
-            if bloom.check(upper_seq[i:i+kmer]):
+            if upper_seq[i:i+kmer] in bloom:
                 wanted = True
                 #Don't need to check rest of read
                 break
