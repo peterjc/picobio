@@ -42,7 +42,10 @@ VERSION = "0.0.1"
 
 def fasta_iterator(filename, max_len=None, truncate=None):
     """Simple FASTA parser yielding tuples of (title, sequence) strings."""
-    handle = open(filename)
+    if isinstance(filename, basestring):
+        handle = open(filename)
+    else:
+        handle = filename
     title, seq = "", ""
     for line in handle:
         if line.startswith(">"):
@@ -63,7 +66,8 @@ def fasta_iterator(filename, max_len=None, truncate=None):
             pass
         else:
             raise ValueError("Bad FASTA line %r" % line)
-    handle.close()
+    if isinstance(filename, basestring):
+        handle.close()
     if title:
         if truncate:
             seq = seq[:truncate]
@@ -108,11 +112,34 @@ def go(input, output, linear_refs, circular_refs, kmer):
     bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
 
     #Now loop over the input, write the output
+    if output:
+        out_handle = open(output, "w")
+    else:
+        out_handle = sys.stdout
+    if not input:
+        input = sys.stdin
+
+    in_count = 0
+    out_count = 0
+    for (title, seq) in fasta_iterator(input):
+        in_count += 1
+        upper_seq = seq.upper()
+        wanted = False
+        for i in range(0, len(seq) - kmer):
+            if bloom.check(upper_seq[i:i+kmer]):
+                wanted = True
+                #Don't need to check rest of read
+                break
+        if wanted:
+            out_handle.write(">%s\n%s\n" % (title, seq))
+            out_count += 1
+    if output:
+        out_handle.close()
 
     #Remove the bloom file
     del bloom
     os.remove(bloom_filename)
-
+    sys.stderr.write("Kept %i out of %i reads\n" % (out_count, in_count))
 
 def main():
     parser = OptionParser(usage="usage: %prog [options]",
