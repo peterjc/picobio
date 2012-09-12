@@ -79,7 +79,10 @@ def fasta_iterator(filename, max_len=None, truncate=None):
     raise StopIteration
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 error_rate=0.05):
+                 error_rate=0.0005):
+    #Using 5e-06 is close to a set for my example, both in run time
+    #(a fraction more) and the number of reads kept (9528 vs 8058
+    #with sets).
     simple = set()
     count = 0
     t0 = time.time()
@@ -106,12 +109,13 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     #bloom.add(fragment, kmer)
                     count += 1 #Can do this in one go from len(seq)
 
-    bloom = pydablooms.Dablooms(capacity=len(simple), error_rate=error_rate,
-                                filepath=bloom_filename)
+    capacity = len(simple)
+    bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
     for fragment in simple:
         bloom.add(fragment)
     bloom.flush()
     sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" % (kmer, count, len(simple)))
+    sys.stderr.write("Using Bloom filter with capacity %i and error rate %r\n" % (capacity, error_rate))
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
@@ -143,7 +147,7 @@ def go(input, output, linear_refs, circular_refs, kmer):
             #Can modify code to allow this syntax, see:
             #https://github.com/bitly/dablooms/pull/50
             #if bloom.check(fragment) and fragment in simple:
-            if fragment in bloom and fragment in simple:
+            if fragment in bloom: # and fragment in simple:
                 wanted = True
                 #Don't need to check rest of read
                 break
