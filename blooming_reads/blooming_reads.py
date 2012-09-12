@@ -79,10 +79,8 @@ def fasta_iterator(filename, max_len=None, truncate=None):
     raise StopIteration
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 capacity=100000, error_rate=0.05):
+                 error_rate=0.05):
     simple = set()
-    bloom = pydablooms.Dablooms(capacity=capacity, error_rate=error_rate,
-                                filepath=bloom_filename)
     count = 0
     t0 = time.time()
     if linear_refs:
@@ -93,7 +91,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 for i in range(0, len(seq) - kmer):
                     fragment = seq[i:i+kmer]
                     simple.add(fragment)
-                    bloom.add(fragment, kmer)
+                    #bloom.add(fragment, kmer)
                     count += 1 #Can do this in one go from len(seq)
 
     if circular_refs:
@@ -105,9 +103,13 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 for i in range(0, len(seq) - kmer):
                     fragment = seq[i:i+kmer]
                     simple.add(fragment)
-                    bloom.add(fragment, kmer)
+                    #bloom.add(fragment, kmer)
                     count += 1 #Can do this in one go from len(seq)
 
+    bloom = pydablooms.Dablooms(capacity=len(simple), error_rate=error_rate,
+                                filepath=bloom_filename)
+    for fragment in simple:
+        bloom.add(fragment)
     bloom.flush()
     sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" % (kmer, count, len(simple)))
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
