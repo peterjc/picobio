@@ -80,6 +80,7 @@ def fasta_iterator(filename, max_len=None, truncate=None):
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  capacity=100000, error_rate=0.05):
+    simple = set()
     bloom = pydablooms.Dablooms(capacity=capacity, error_rate=error_rate,
                                 filepath=bloom_filename)
     count = 0
@@ -90,7 +91,9 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             for title, seq in fasta_iterator(fasta):
                 seq = seq.upper()
                 for i in range(0, len(seq) - kmer):
-                    bloom.add(seq[i:i+kmer], kmer)
+                    fragment = seq[i:i+kmer]
+                    simple.add(fragment)
+                    bloom.add(fragment, kmer)
                     count += 1 #Can do this in one go from len(seq)
 
     if circular_refs:
@@ -100,19 +103,21 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 #Want to consider wrapping round the origin, add k-mer length:
                 seq = (seq + seq[:kmer]).upper()
                 for i in range(0, len(seq) - kmer):
-                    bloom.add(seq[i:i+kmer], kmer)
+                    fragment = seq[i:i+kmer]
+                    simple.add(fragment)
+                    bloom.add(fragment, kmer)
                     count += 1 #Can do this in one go from len(seq)
 
     bloom.flush()
-    sys.stderr.write("Bloom filter of %i-mers created (%i k-mers considered)\n" % (kmer, count))
-    sys.stderr.write("Building filter took %0.1fs\n" % (time.time() - t0))
-    return bloom
+    sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" % (kmer, count, len(simple)))
+    sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
+    return simple, bloom
 
 def go(input, output, linear_refs, circular_refs, kmer):
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
     print bloom_filename
-    bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
+    simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
 
     #Now loop over the input, write the output
     if output:
@@ -132,10 +137,11 @@ def go(input, output, linear_refs, circular_refs, kmer):
         wanted = False
         filter_t0 = time.time()
         for i in range(0, len(seq) - kmer):
-            #if bloom.check(upper_seq[i:i+kmer]):
+            fragment = upper_seq[i:i+kmer]
             #Can modify code to allow this syntax, see:
             #https://github.com/bitly/dablooms/pull/50
-            if upper_seq[i:i+kmer] in bloom:
+            #if bloom.check(fragment) and fragment in simple:
+            if fragment in bloom and fragment in simple:
                 wanted = True
                 #Don't need to check rest of read
                 break
