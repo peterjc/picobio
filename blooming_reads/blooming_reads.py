@@ -25,6 +25,7 @@ not perform a full alignment).
 import sys
 import os
 import tempfile
+import time
 from optparse import OptionParser
 
 def stop_err(msg, error_level=1):
@@ -81,6 +82,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  capacity=100000, error_rate=0.05):
     bloom = set()
     count = 0
+    t0 = time.time()
     if linear_refs:
         for fasta in linear_refs:
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
@@ -101,6 +103,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     count += 1 #Can do this in one go from len(seq)
 
     sys.stderr.write("Bloom filter of %i-mers created (%i k-mers considered), %i unique\n" % (kmer, count, len(bloom)))
+    sys.stderr.write("Building filter took %0.1fs\n" % (time.time() - t0))
     return bloom
 
 def go(input, output, linear_refs, circular_refs, kmer):
@@ -119,20 +122,26 @@ def go(input, output, linear_refs, circular_refs, kmer):
 
     in_count = 0
     out_count = 0
+    t0 = time.time()
+    filter_time = 0
     for (title, seq) in fasta_iterator(input):
         in_count += 1
         upper_seq = seq.upper()
         wanted = False
+        filter_t0 = time.time()
         for i in range(0, len(seq) - kmer):
             if upper_seq[i:i+kmer] in bloom:
                 wanted = True
                 #Don't need to check rest of read
                 break
+        filter_time += time.time() - filter_t0
         if wanted:
             out_handle.write(">%s\n%s\n" % (title, seq))
             out_count += 1
     if output:
         out_handle.close()
+    sys.stderr.write("Running filter took %0.1fs, filtering file %0.1fs\n" \
+                         % (filter_time, time.time() - t0))
 
     #Remove the bloom file
     del bloom
