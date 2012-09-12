@@ -132,7 +132,10 @@ def go(input, output, linear_refs, circular_refs, kmer):
         wanted = False
         filter_t0 = time.time()
         for i in range(0, len(seq) - kmer):
-            if bloom.check(upper_seq[i:i+kmer]):
+            #if bloom.check(upper_seq[i:i+kmer]):
+            #Can modify code to allow this syntax, see:
+            #https://github.com/bitly/dablooms/pull/50
+            if upper_seq[i:i+kmer] in bloom:
                 wanted = True
                 #Don't need to check rest of read
                 break
@@ -142,8 +145,9 @@ def go(input, output, linear_refs, circular_refs, kmer):
             out_count += 1
     if output:
         out_handle.close()
-    sys.stderr.write("Running filter took %0.1fs, filtering file %0.1fs\n" \
-                         % (filter_time, time.time() - t0))
+    total_time = time.time() - t0
+    sys.stderr.write("Running filter took %0.1fs, overhead %0.1fs, total %0.1fs\n" \
+                         % (filter_time, total_time - filter_time, total_time))
 
     #Remove the bloom file
     del bloom
