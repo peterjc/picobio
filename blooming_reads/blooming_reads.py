@@ -34,12 +34,12 @@ def stop_err(msg, error_level=1):
     sys.exit(error_level)
 
 try:
-    import pybloomfilter
+    import pydablooms
 except ImportError:
-    sys_exit("Missing 'pybloomfilter', available from "
-             "https://github.com/axiak/pybloomfiltermmap")
+    sys_exit("Missing 'dablooms' Python bindings, available from "
+             "https://github.com/bitly/dablooms")
 
-VERSION = "0.0.3"
+VERSION = "0.0.2"
 
 def fasta_iterator(handle):
     """FASTA parser yielding (upper case sequence, raw record) string tuples."""
@@ -136,6 +136,9 @@ def sam_batched_iterator(handle):
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  error_rate=0.01):
+    #Using 5e-06 is close to a set for my example, both in run time
+    #(a fraction more) and the number of reads kept (9528 vs 8058
+    #with sets).
     simple = set()
     count = 0
     t0 = time.time()
@@ -166,11 +169,10 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             handle.close()
 
     capacity = len(simple)
-    bloom = pybloomfilter.BloomFilter(capacity, error_rate, bloom_filename)
+    bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
     for fragment in simple:
         bloom.add(fragment)
-    #bloom.extend(simple)
-    #bloom.flush()
+    bloom.flush()
     sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" % (kmer, count, len(simple)))
     sys.stderr.write("Using Bloom filter with capacity %i and error rate %r\n" % (capacity, error_rate))
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
