@@ -83,6 +83,22 @@ def fastq_iterator(handle):
             raise ValueError("Different FASTQ seq/qual lengths for %r" % title)
         yield seq.strip().upper(), title+seq+"+\n"+qual
 
+def sam_iterator(handle):
+    """SAM parser yielding (upper case sequence, raw record) string tuples.
+
+    Checks reads are unmapped. Any header is discarded.
+    """
+    good_flags = set(["0", "77", "141"])
+    for line in handle:
+        if line[0]=="@":
+            continue
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
+        if flag in good_flags:
+            yield seq.upper(), line
+        else:
+            sys_exit("Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
+                     "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair).")
+
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  error_rate=0.0005):
     #Using 5e-06 is close to a set for my example, both in run time
@@ -133,7 +149,7 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
     elif format=="fastq":
         read_iterator = fastq_iterator
     elif format=="sam":
-        raise NotImplementedError
+        read_iterator = sam_iterator
     else:
         sys_exit("Read format %r not recognised" % format)
 
