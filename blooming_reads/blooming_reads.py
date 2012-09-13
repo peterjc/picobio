@@ -202,7 +202,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
 
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
-    sys.stderr.write("Using %s\n" %  bloom_filename)
+    #sys.stderr.write("Using %s\n" %  bloom_filename)
     simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
 
     #Now loop over the input, write the output
@@ -244,6 +244,9 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
             if wanted:
                 out_handle.write(raw_reads)
                 out_count += len(upper_seqs)
+            if in_count % 100000 == 0:
+                sys.stderr.write("Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n" \
+                                 % (in_count, out_count, (100.0*out_count)/in_count, time.time()-t0, filter_time))
     else:
         for upper_seq, raw_read in read_iterator(in_handle):
             in_count += 1
@@ -262,6 +265,9 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
             if wanted:
                 out_handle.write(raw_read)
                 out_count += 1
+            if in_count% 100000 == 0:
+                sys.stderr.write("Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n" \
+                                 % (in_count, out_count, (100.0*out_count)/in_count, time.time()-t0, filter_time))
     if input:
         in_handle.close()
     if output:
