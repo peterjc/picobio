@@ -233,7 +233,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
             for upper_seq in upper_seqs:
                 for i in range(0, len(upper_seq) - kmer):
                     fragment = upper_seq[i:i+kmer]
-                    if fragment in bloom: # and fragment in simple:
+                    if fragment in bloom and fragment in simple:
                         wanted = True
                         #Don't need to check rest of this read
                         break
@@ -257,7 +257,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
                 #Can modify code to allow this syntax, see:
                 #https://github.com/bitly/dablooms/pull/50
                 #if bloom.check(fragment) and fragment in simple:
-                if fragment in bloom: # and fragment in simple:
+                if fragment in bloom and fragment in simple:
                     wanted = True
                     #Don't need to check rest of read
                     break
