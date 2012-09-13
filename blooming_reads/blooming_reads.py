@@ -99,6 +99,41 @@ def sam_iterator(handle):
             sys_exit("Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
                      "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair).")
 
+def sam_batched_iterator(handle):
+    """SAM parser yielding (upper case sequence list, raw record(s) string) tuples.
+
+    Checks reads are unmapped. Any header is discarded. Requires paired reads are
+    consecutive in the file, FLAG 77 (0x4d) then FLAG 141 (0x8d).
+    """
+    good_flags = set(["0", "77", "141"])
+
+    line = handle.readline()
+    while line[0]=="@":
+        line = handle.readline()
+
+    while line:
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
+        if flag == "0":
+            #Unpaired unmapped read
+            yield [seq.upper()], line
+        elif flag == "77":
+            #Paired read one
+            line2 = handle.readline()
+            qname2, flag2, rname2, pos2, mapq2, cigar2, rnext2, pnext2, tlen2, seq2, rest2 = line2.split("\t", 10)
+            if qname != qname2:
+                sys_exit("Missing second half of %s" % qname)
+            if flag2 != "141":
+                sys_exit("Expected FLAG 141 (0x8d) for second part of %s, got %r" % (qname, flag2))
+            yield [seq.upper(), seq2.upper()], line+line2
+        elif flag == "141":
+            sys_exit("Missing first half of %s" % qname)
+        else:
+            sys_exit("Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
+                     "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair).")
+        line = handle.readline()
+    raise StopIteration
+
+
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  error_rate=0.0005):
     #Using 5e-06 is close to a set for my example, both in run time
@@ -143,15 +178,27 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
-def go(input, output, format, linear_refs, circular_refs, kmer):
-    if format=="fasta":
-        read_iterator = fasta_iterator
-    elif format=="fastq":
-        read_iterator = fastq_iterator
-    elif format=="sam":
-        read_iterator = sam_iterator
+def go(input, output, format, paired, linear_refs, circular_refs, kmer):
+    if paired:
+        if format=="fasta":
+            #read_iterator = fasta_batched_iterator
+            raise NotImplementedError
+        elif format=="fastq":
+            #read_iterator = fastq_batched_iterator
+            raise NotImplementedError
+        elif format=="sam":
+            read_iterator = sam_batched_iterator
+        else:
+            sys_exit("Paired read format %r not recognised" % format)
     else:
-        sys_exit("Read format %r not recognised" % format)
+        if format=="fasta":
+            read_iterator = fasta_iterator
+        elif format=="fastq":
+            read_iterator = fastq_iterator
+        elif format=="sam":
+            read_iterator = sam_iterator
+        else:
+            sys_exit("Read format %r not recognised" % format)
 
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
@@ -176,23 +223,45 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
     out_count = 0
     t0 = time.time()
     filter_time = 0
-    for upper_seq, raw_read in read_iterator(in_handle):
-        in_count += 1
-        wanted = False
-        filter_t0 = time.time()
-        for i in range(0, len(upper_seq) - kmer):
-            fragment = upper_seq[i:i+kmer]
-            #Can modify code to allow this syntax, see:
-            #https://github.com/bitly/dablooms/pull/50
-            #if bloom.check(fragment) and fragment in simple:
-            if fragment in bloom: # and fragment in simple:
-                wanted = True
-                #Don't need to check rest of read
-                break
-        filter_time += time.time() - filter_t0
-        if wanted:
-            out_handle.write(raw_read)
-            out_count += 1
+    if paired:
+        #If find a possible match in either of a pair of reads
+        #keep them both (likewise for any multi-framgent set).
+        for upper_seqs, raw_reads in read_iterator(in_handle):
+            in_count += len(upper_seqs)
+            wanted = False
+            filter_t0 = time.time()
+            for upper_seq in upper_seqs:
+                for i in range(0, len(upper_seq) - kmer):
+                    fragment = upper_seq[i:i+kmer]
+                    if fragment in bloom: # and fragment in simple:
+                        wanted = True
+                        #Don't need to check rest of this read
+                        break
+                if wanted:
+                    #Don't need to check the other reads
+                    break
+            filter_time += time.time() - filter_t0
+            if wanted:
+                out_handle.write(raw_reads)
+                out_count += len(upper_seqs)
+    else:
+        for upper_seq, raw_read in read_iterator(in_handle):
+            in_count += 1
+            wanted = False
+            filter_t0 = time.time()
+            for i in range(0, len(upper_seq) - kmer):
+                fragment = upper_seq[i:i+kmer]
+                #Can modify code to allow this syntax, see:
+                #https://github.com/bitly/dablooms/pull/50
+                #if bloom.check(fragment) and fragment in simple:
+                if fragment in bloom: # and fragment in simple:
+                    wanted = True
+                    #Don't need to check rest of read
+                    break
+            filter_time += time.time() - filter_t0
+            if wanted:
+                out_handle.write(raw_read)
+                out_count += 1
     if input:
         in_handle.close()
     if output:
@@ -224,6 +293,7 @@ def main():
                       type="string", metavar="FORMAT", default="fasta",
                       help="Input (and output) read file format, one of 'fasta',"
                            " 'fastq' or 'sam' (unmapped reads only please).")
+    #TODO - Make paired mode or single mode the default?
     parser.add_option("-i", "--input", dest="input_reads",
                       type="string", metavar="FILE",
                       help="Input file of unmapped reads to be filtered (def. stdin)")
@@ -246,7 +316,8 @@ def main():
     if args:
         parser.error("No arguments expected")
 
-    go(options.input_reads, options.output_reads, options.format,
+    paired = True
+    go(options.input_reads, options.output_reads, options.format, paired,
        options.linear_references, options.circular_references, options.kmer)
 
 if __name__ == "__main__":
