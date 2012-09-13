@@ -39,43 +39,31 @@ except ImportError:
     sys_exit("Missing 'dablooms' Python bindings, available from "
              "https://github.com/bitly/dablooms")
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
-def fasta_iterator(filename, max_len=None, truncate=None):
-    """Simple FASTA parser yielding tuples of (title, sequence) strings."""
+def fasta_iterator(filename):
+    """FASTA parser yielding (upper case sequence, raw record) string tuples."""
     if isinstance(filename, basestring):
         handle = open(filename)
     else:
         handle = filename
-    title, seq = "", ""
+    raw = []
+    seq = []
     for line in handle:
         if line.startswith(">"):
-            if title:
-                if truncate:
-                    seq = seq[:truncate]
-                if max_len and len(seq) > max_len:
-                    raise ValueError("Sequence %s is length %i, max length %i" \
-                                     % (title.split()[0], len(seq), max_len))
-                yield title, seq
-            title = line[1:].rstrip()
-            seq = ""
-        elif title:
-            seq += line.strip()
-        elif not line.strip() or line.startswith("#"):
-            #Ignore blank lines, and any comment lines
-            #between records (starting with hash).
-            pass
+            if seq:
+                yield "".join(seq).upper(), "".join(raw)
+            seq = []
+            raw = [line]
+        elif raw:
+            seq.append(line.strip())
+            raw.append(line)
         else:
             raise ValueError("Bad FASTA line %r" % line)
     if isinstance(filename, basestring):
         handle.close()
-    if title:
-        if truncate:
-            seq = seq[:truncate]
-        if max_len and len(seq) > max_len:
-            raise ValueError("Sequence %s is length %i, max length %i" \
-                             % (title.split()[0], len(seq), max_len))
-        yield title, seq
+    if raw:
+        yield "".join(seq).upper(), "".join(raw)
     raise StopIteration
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
@@ -89,25 +77,24 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     if linear_refs:
         for fasta in linear_refs:
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
-            for title, seq in fasta_iterator(fasta):
-                seq = seq.upper()
-                for i in range(0, len(seq) - kmer):
-                    fragment = seq[i:i+kmer]
+            for upper_seq, raw_read in fasta_iterator(fasta):
+                for i in range(0, len(upper_seq) - kmer):
+                    fragment = upper_seq[i:i+kmer]
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
-                    count += 1 #Can do this in one go from len(seq)
+                    count += 1 #TODO - Can do this in one go from len(upper_seq)
 
     if circular_refs:
         for fasta in circular_refs:
             sys.stderr.write("Hashing circular references in %s\n" % fasta)
-            for title, seq in fasta_iterator(fasta):
+            for upper_seq, raw_read in fasta_iterator(fasta):
                 #Want to consider wrapping round the origin, add k-mer length:
-                seq = (seq + seq[:kmer]).upper()
-                for i in range(0, len(seq) - kmer):
-                    fragment = seq[i:i+kmer]
+                upper_seq += upper_seq[:kmer]
+                for i in range(0, len(upper_seq) - kmer):
+                    fragment = upper_seq[i:i+kmer]
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
-                    count += 1 #Can do this in one go from len(seq)
+                    count += 1 #TODO - Can do this in one go from len(upper_seq)
 
     capacity = len(simple)
     bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
@@ -119,7 +106,16 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
-def go(input, output, linear_refs, circular_refs, kmer):
+def go(input, output, format, linear_refs, circular_refs, kmer):
+    if format=="fasta":
+        read_iterator = fasta_iterator
+    elif format=="fastq":
+        raise NotImplementedError
+    elif format=="sam":
+        raise NotImplementedError
+    else:
+        sys_exit("Read format %r not recognised" % format)
+
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
     print bloom_filename
@@ -137,12 +133,11 @@ def go(input, output, linear_refs, circular_refs, kmer):
     out_count = 0
     t0 = time.time()
     filter_time = 0
-    for (title, seq) in fasta_iterator(input):
+    for upper_seq, raw_read in read_iterator(input):
         in_count += 1
-        upper_seq = seq.upper()
         wanted = False
         filter_t0 = time.time()
-        for i in range(0, len(seq) - kmer):
+        for i in range(0, len(upper_seq) - kmer):
             fragment = upper_seq[i:i+kmer]
             #Can modify code to allow this syntax, see:
             #https://github.com/bitly/dablooms/pull/50
@@ -153,7 +148,7 @@ def go(input, output, linear_refs, circular_refs, kmer):
                 break
         filter_time += time.time() - filter_t0
         if wanted:
-            out_handle.write(">%s\n%s\n" % (title, seq))
+            out_handle.write(raw_read)
             out_count += 1
     if output:
         out_handle.close()
@@ -180,6 +175,10 @@ def main():
     parser.add_option("-k", "--kmer", dest="kmer",
                       type="int", metavar="KMER", default=35,
                       help="k-mer size for filtering (def. 35)")
+    parser.add_option("-f", "--format", dest="format",
+                      type="string", metavar="FORMAT", default="fasta",
+                      help="Input (and output) read file format, one of 'fasta',"
+                           " 'fastq' or 'sam' (unmapped reads only please).")
     parser.add_option("-i", "--input", dest="input_reads",
                       type="string", metavar="FILE",
                       help="Input file of unmapped reads to be filtered (def. stdin)")
@@ -206,7 +205,7 @@ def main():
     #print "Linear references: %r" % options.linear_references
     #print "Circular references: %r" % options.circular_references
     #print "Using k-mer size %i" % options.kmer
-    go(options.input_reads, options.output_reads,
+    go(options.input_reads, options.output_reads, options.format,
        options.linear_references, options.circular_references, options.kmer)
 
 if __name__ == "__main__":
