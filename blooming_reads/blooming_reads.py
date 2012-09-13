@@ -66,6 +66,33 @@ def fasta_iterator(filename):
         yield "".join(seq).upper(), "".join(raw)
     raise StopIteration
 
+def fastq_iterator(filename):
+    """FASTQ parser yielding (upper case sequence, raw record) string tuples.
+
+    Note: Any text on the '+' line is dropped, so it isn't the exact raw
+    record, it could be a slightly smaller file.
+    """
+    #TODO - Test this with nasty FASTQ files
+    #Profile against reusing Biopython's FastqGeneralIterator
+    if isinstance(filename, basestring):
+        handle = open(filename)
+    else:
+        handle = filename
+    while True:
+        title = handle.readline()
+        if not title:
+            raise StopIteration
+        if not title[0] == "@":
+            raise ValueError("Expected FASTQ @ line, got %r" % title)
+        seq = handle.readline()
+        plus = handle.readline()
+        if not plus[0] == "+":
+            raise ValueError("Expected FASTQ + line, got %r" % plus)
+        qual = handle.readline()
+        if len(seq) != len(qual): #both include newline
+            raise ValueError("Different FASTQ seq/qual lengths for %r" % title)
+        yield seq.strip().upper(), title+seq+"+\n"+qual
+
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  error_rate=0.0005):
     #Using 5e-06 is close to a set for my example, both in run time
@@ -110,7 +137,7 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
     if format=="fasta":
         read_iterator = fasta_iterator
     elif format=="fastq":
-        raise NotImplementedError
+        read_iterator = fastq_iterator
     elif format=="sam":
         raise NotImplementedError
     else:
