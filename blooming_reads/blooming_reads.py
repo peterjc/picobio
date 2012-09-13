@@ -41,12 +41,8 @@ except ImportError:
 
 VERSION = "0.0.2"
 
-def fasta_iterator(filename):
+def fasta_iterator(handle):
     """FASTA parser yielding (upper case sequence, raw record) string tuples."""
-    if isinstance(filename, basestring):
-        handle = open(filename)
-    else:
-        handle = filename
     raw = []
     seq = []
     for line in handle:
@@ -60,13 +56,11 @@ def fasta_iterator(filename):
             raw.append(line)
         else:
             raise ValueError("Bad FASTA line %r" % line)
-    if isinstance(filename, basestring):
-        handle.close()
     if raw:
         yield "".join(seq).upper(), "".join(raw)
     raise StopIteration
 
-def fastq_iterator(filename):
+def fastq_iterator(handle):
     """FASTQ parser yielding (upper case sequence, raw record) string tuples.
 
     Note: Any text on the '+' line is dropped, so it isn't the exact raw
@@ -74,10 +68,6 @@ def fastq_iterator(filename):
     """
     #TODO - Test this with nasty FASTQ files
     #Profile against reusing Biopython's FastqGeneralIterator
-    if isinstance(filename, basestring):
-        handle = open(filename)
-    else:
-        handle = filename
     while True:
         title = handle.readline()
         if not title:
@@ -104,17 +94,20 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     if linear_refs:
         for fasta in linear_refs:
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
-            for upper_seq, raw_read in fasta_iterator(fasta):
+            handle = open(fasta)
+            for upper_seq, raw_read in fasta_iterator(handle):
                 for i in range(0, len(upper_seq) - kmer):
                     fragment = upper_seq[i:i+kmer]
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
                     count += 1 #TODO - Can do this in one go from len(upper_seq)
+            handle.close()
 
     if circular_refs:
         for fasta in circular_refs:
             sys.stderr.write("Hashing circular references in %s\n" % fasta)
-            for upper_seq, raw_read in fasta_iterator(fasta):
+            handle = open(fasta)
+            for upper_seq, raw_read in fasta_iterator(handle):
                 #Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
                 for i in range(0, len(upper_seq) - kmer):
@@ -122,6 +115,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
                     count += 1 #TODO - Can do this in one go from len(upper_seq)
+            handle.close()
 
     capacity = len(simple)
     bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
@@ -153,14 +147,16 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
         out_handle = open(output, "w")
     else:
         out_handle = sys.stdout
-    if not input:
-        input = sys.stdin
+    if input:
+        in_handle = open(input)
+    else:
+        in_handle = sys.stdin
 
     in_count = 0
     out_count = 0
     t0 = time.time()
     filter_time = 0
-    for upper_seq, raw_read in read_iterator(input):
+    for upper_seq, raw_read in read_iterator(in_handle):
         in_count += 1
         wanted = False
         filter_t0 = time.time()
@@ -177,6 +173,8 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
         if wanted:
             out_handle.write(raw_read)
             out_count += 1
+    if input:
+        in_handle.close()
     if output:
         out_handle.close()
     total_time = time.time() - t0
