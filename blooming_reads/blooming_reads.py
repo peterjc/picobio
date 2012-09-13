@@ -155,7 +155,7 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
 
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
-    print bloom_filename
+    sys.stderr.write("Using %s\n" %  bloom_filename)
     simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
 
     #Now loop over the input, write the output
@@ -163,10 +163,14 @@ def go(input, output, format, linear_refs, circular_refs, kmer):
         out_handle = open(output, "w")
     else:
         out_handle = sys.stdout
+
     if input:
         in_handle = open(input)
     else:
         in_handle = sys.stdin
+
+    if format=="sam":
+        out_handle.write("@HD\t1.4\tSO:unknown\n")
 
     in_count = 0
     out_count = 0
@@ -242,10 +246,6 @@ def main():
     if args:
         parser.error("No arguments expected")
 
-    print "Will attempt to filter %s --> %s" % (options.input_reads, options.output_reads)
-    #print "Linear references: %r" % options.linear_references
-    #print "Circular references: %r" % options.circular_references
-    #print "Using k-mer size %i" % options.kmer
     go(options.input_reads, options.output_reads, options.format,
        options.linear_references, options.circular_references, options.kmer)
 
