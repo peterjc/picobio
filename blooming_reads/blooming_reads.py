@@ -135,7 +135,7 @@ def sam_batched_iterator(handle):
 
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 error_rate=0.0005):
+                 error_rate=0.01):
     #Using 5e-06 is close to a set for my example, both in run time
     #(a fraction more) and the number of reads kept (9528 vs 8058
     #with sets).
