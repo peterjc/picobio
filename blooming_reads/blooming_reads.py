@@ -208,6 +208,42 @@ def make_deletions(seq):
     for i in range(len(seq)):
         yield seq[:i] + seq[i+1:]
 
+ambiguous_dna_values = {
+    "A": "A",
+    "C": "C",
+    "G": "G",
+    "T": "T",
+    "M": "AC",
+    "R": "AG",
+    "W": "AT",
+    "S": "CG",
+    "Y": "CT",
+    "K": "GT",
+    "V": "ACG",
+    "H": "ACT",
+    "D": "AGT",
+    "B": "CGT",
+    "X": "GATC",
+    "N": "GATC",
+    }
+
+def disambiguate(seq):
+    good = set("ACGT")
+    if good.issuperset(seq):
+        yield seq
+    else:
+        assert len(seq) - sum(seq.count(letter) for letter in good) < 10, \
+            "Have %i ambiguous chars in this %i sequence: %s" \
+                % (len(seq) - sum(seq.count(letter) for letter in good), len(seq), seq)
+        for i, letter in enumerate(seq):
+            if letter not in good:
+                for alt in ambiguous_dna_values[letter]:
+                    #Now do some recursion...
+                    #Would like to use Python 3.3+ syntax 'yield from ...' here
+                    for new in disambiguate(seq[:i] + alt + seq[i+1:]):
+                        yield new
+                break
+
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  mismatches, inserts, error_rate=0.01):
     #Using 5e-06 is close to a set for my example, both in run time
@@ -221,12 +257,16 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
-                assert set(upper_seq).issubset("ACGT"), raw_read.split("\n",1)[0]
+                #assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
+                #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
+                #Note we do the disambiguate call on the fragments rather than
+                #the whole reference to avoid too many levels of recursion.
                 for i in range(0, len(upper_seq) - kmer):
-                    fragment = upper_seq[i:i+kmer]
-                    simple.add(fragment)
-                    #bloom.add(fragment, kmer)
-                    count += 1 #TODO - Can do this in one go from len(upper_seq)
+                    for fragment in disambiguate(upper_seq[i:i+kmer]):
+                        assert set(fragment).issubset("ACGT"), fragment
+                        simple.add(fragment)
+                        #bloom.add(fragment, kmer)
+                        count += 1 #TODO - Can do this in one go from len(upper_seq)
             handle.close()
 
     if circular_refs:
@@ -234,14 +274,16 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing circular references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
-                assert set(upper_seq).issubset("ACGT"), raw_read.split("\n",1)[0]
+                #assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
+                #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
                 #Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
                 for i in range(0, len(upper_seq) - kmer):
-                    fragment = upper_seq[i:i+kmer]
-                    simple.add(fragment)
-                    #bloom.add(fragment, kmer)
-                    count += 1 #TODO - Can do this in one go from len(upper_seq)
+                    for fragment in disambiguate(upper_seq[i:i+kmer]):
+                        assert set(fragment).issubset("ACGT"), fragment
+                        simple.add(fragment)
+                        #bloom.add(fragment, kmer)
+                        count += 1 #TODO - Can do this in one go from len(upper_seq)
             handle.close()
     if mismatches or inserts:
         sys.stderr.write("Have %i unique k-mers before consider mis-matches/inserts\n" \
