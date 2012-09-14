@@ -28,7 +28,7 @@ import tempfile
 import time
 from optparse import OptionParser
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
@@ -82,6 +82,47 @@ def fastq_iterator(handle):
         if len(seq) != len(qual): #both include newline
             raise ValueError("Different FASTQ seq/qual lengths for %r" % title)
         yield seq.strip().upper(), title+seq+"+\n"+qual
+
+def fastq_batched_iterator(handle):
+    """FASTQ parser yielding (upper case sequence list, raw record(s) string) tuples.
+
+    For use on interlaced paired FASTQ reads following the /1 and /2 suffix convention.
+    """
+    while True:
+        #Read /1
+        title = handle.readline()
+        if not title:
+            raise StopIteration
+        if not title[0] == "@":
+            raise ValueError("Expected FASTQ @ line, got %r" % title)
+        id = title.split(None,1)[0]
+        if not id.endswith("/1"):
+            raise ValueError("Expected FASTQ record ending /1, got %r" % title)
+        seq = handle.readline()
+        plus = handle.readline()
+        if not plus[0] == "+":
+            raise ValueError("Expected FASTQ + line, got %r" % plus)
+        qual = handle.readline()
+        if len(seq) != len(qual): #both include newline
+            raise ValueError("Different FASTQ seq/qual lengths for %r" % title)
+        #Read /2
+        title2 = handle.readline()
+        if not title2[0] == "@":
+            raise ValueError("Expected FASTQ @ line, got %r" % title2)
+        id2 = title2.split(None,1)[0]
+        if not id2.endswith("/2"):
+            raise ValueError("Expected FASTQ record ending /2, got %r" % title2)
+        if id[:-2] != id2[:-2]:
+            raise ValueError("Expected paired FASTQ records, got %r and %r" % (title, title2))
+        seq2 = handle.readline()
+        plus = handle.readline()
+        if not plus[0] == "+":
+            raise ValueError("Expected FASTQ + line, got %r" % plus)
+        qual2 = handle.readline()
+        if len(seq) != len(qual): #both include newline
+            raise ValueError("Different FASTQ seq/qual lengths for %r" % title2)        
+        yield [seq.strip().upper(), seq2.strip().upper()], title+seq+"+\n"+qual+title2+seq2+"+\n"+qual2
+
 
 def sam_iterator(handle):
     """SAM parser yielding (upper case sequence, raw record) string tuples.
@@ -184,8 +225,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
             #read_iterator = fasta_batched_iterator
             raise NotImplementedError
         elif format=="fastq":
-            #read_iterator = fastq_batched_iterator
-            raise NotImplementedError
+            read_iterator = fastq_batched_iterator
         elif format=="sam":
             read_iterator = sam_batched_iterator
         else:
