@@ -34,10 +34,10 @@ def stop_err(msg, error_level=1):
     sys.exit(error_level)
 
 try:
-    import pydablooms
+    import khmer
 except ImportError:
-    sys_exit("Missing 'dablooms' Python bindings, available from "
-             "https://github.com/bitly/dablooms")
+    sys_exit("Missing 'khmer' Python bindings, available from "
+             "https://github.com/ged-lab/khmer")
 
 VERSION = "0.0.2"
 
@@ -134,14 +134,11 @@ def sam_batched_iterator(handle):
     raise StopIteration
 
 
-def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 error_rate=0.01):
-    #Using 5e-06 is close to a set for my example, both in run time
-    #(a fraction more) and the number of reads kept (9528 vs 8058
-    #with sets).
+def build_filter(linear_refs, circular_refs, kmer):
     simple = set()
     count = 0
     t0 = time.time()
+    bloom = khmer.new_ktable(kmer)
     if linear_refs:
         for fasta in linear_refs:
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
@@ -152,6 +149,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
                     count += 1 #TODO - Can do this in one go from len(upper_seq)
+                bloom.consume(upper_seq)
             handle.close()
 
     if circular_refs:
@@ -166,15 +164,11 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     simple.add(fragment)
                     #bloom.add(fragment, kmer)
                     count += 1 #TODO - Can do this in one go from len(upper_seq)
+                bloom.consume(upper_seq)
             handle.close()
 
-    capacity = len(simple)
-    bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
-    for fragment in simple:
-        bloom.add(fragment)
-    bloom.flush()
     sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" % (kmer, count, len(simple)))
-    sys.stderr.write("Using Bloom filter with capacity %i and error rate %r\n" % (capacity, error_rate))
+    sys.stderr.write("Using khmer as Bloom filter\n")
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
@@ -200,10 +194,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
         else:
             sys_exit("Read format %r not recognised" % format)
 
-    #Create new bloom file,
-    handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
-    #sys.stderr.write("Using %s\n" %  bloom_filename)
-    simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
+    simple, bloom = build_filter(linear_refs, circular_refs, kmer)
 
     #Now loop over the input, write the output
     if output:
