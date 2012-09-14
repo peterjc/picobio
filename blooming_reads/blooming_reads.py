@@ -221,6 +221,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
+                assert set(upper_seq).issubset("ACGT"), raw_read.split("\n",1)[0]
                 for i in range(0, len(upper_seq) - kmer):
                     fragment = upper_seq[i:i+kmer]
                     simple.add(fragment)
@@ -233,6 +234,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing circular references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
+                assert set(upper_seq).issubset("ACGT"), raw_read.split("\n",1)[0]
                 #Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
                 for i in range(0, len(upper_seq) - kmer):
