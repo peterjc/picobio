@@ -12,7 +12,7 @@ and doing this with the full read set would be too slow.
 The idea of this tool is to act as a pre-filter, removing reads which
 won't map, to concentrate only on those which might map.
 
-The intension is to take as input a raw unaligned sequence read file
+The intention is to take as input a raw unaligned sequence read file
 as input (in FASTQ, FASTA, SFF, or even unaligned SAM/BAM format),
 and produce a filtered version as output.
 
@@ -21,6 +21,20 @@ sequences, the filtered output would only be reads which might map
 to these reference sequences (the Bloom filter is probabilitistic,
 but also we're only going to search for k-mers within each read,
 not perform a full alignment).
+
+TODO:
+
+* Fuzzy matching by adding variants to the bloom/set filter?
+  (One mismatch should be fine on my mitochondial example)
+* Technically SFF support is easy via Biopython, but simple
+  k-mer matching will be hampered by homopolymer errors.
+  Also don't have to worry about handling paired reads.
+* Command line switch to turn on paired read filtering
+  (where if either read matches, both are kept in the output)
+* Flexible FASTQ paired support to cope with paired or single
+  (would negate need for another command line switch)
+* FASTA paired support
+
 """
 import sys
 import os
