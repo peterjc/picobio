@@ -188,9 +188,16 @@ def sam_batched_iterator(handle):
         line = handle.readline()
     raise StopIteration
 
+def make_variants(seq, changes):
+    #TODO - pass len(seq) == kmer as argument for speed?
+    if changes > 1:
+        raise NotImplementedError
+    for i in range(len(seq)):
+        for letter in "ACGT":
+            yield seq[:i] + letter + seq[i+1:]
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 error_rate=0.01):
+                 mismatches, error_rate=0.01):
     #Using 5e-06 is close to a set for my example, both in run time
     #(a fraction more) and the number of reads kept (9528 vs 8058
     #with sets).
@@ -222,6 +229,16 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     #bloom.add(fragment, kmer)
                     count += 1 #TODO - Can do this in one go from len(upper_seq)
             handle.close()
+    if mismatches:
+        sys.stderr.write("Have %i unique k-mers before consider %i mis-matches\n" \
+                         % (len(simple), mismatches))
+        new = set()
+        for fragment in simple:
+            for var in make_variants(fragment, mismatches):
+                new.add(var)
+        simple = new
+        sys.stderr.write("Adding %i mis-matches per k-mer, have %i unique k-mers\n" \
+                         % (mismatches, len(simple)))
 
     capacity = len(simple)
     bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
@@ -233,7 +250,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
-def go(input, output, format, paired, linear_refs, circular_refs, kmer):
+def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatches):
     if paired:
         if format=="fasta":
             #read_iterator = fasta_batched_iterator
@@ -257,7 +274,8 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
     #Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
     #sys.stderr.write("Using %s\n" %  bloom_filename)
-    simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs, kmer)
+    simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs,
+                                 kmer, mismatches)
 
     #Now loop over the input, write the output
     if output:
@@ -338,6 +356,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer):
 def main():
     parser = OptionParser(usage="usage: %prog [options]",
                           version="%prog "+VERSION)
+    #References
     parser.add_option("-l", "--lref", dest="linear_references",
                       type="string", metavar="FILE", action="append",
                       help="""FASTA file of linear reference sequence(s)
@@ -346,9 +365,14 @@ def main():
                       type="string", metavar="FILE", action="append",
                       help="""FASTA file of circular reference sequence(s)
                            Several files can be given if required.""")
+    #Matching
     parser.add_option("-k", "--kmer", dest="kmer",
                       type="int", metavar="KMER", default=35,
                       help="k-mer size for filtering (def. 35)")
+    parser.add_option("-m", "--mismatches", dest="mismatches",
+                      type="int", metavar="MM", default=0,
+                      help="Number of mismatches per kmer (def. 0, max 1)")
+    #Reads
     parser.add_option("-f", "--format", dest="format",
                       type="string", metavar="FORMAT", default="fasta",
                       help="Input (and output) read file format, one of 'fasta',"
@@ -370,6 +394,12 @@ def main():
     if not (10 <= options.kmer <= 100):
         parser.error("Using a k-mer value of %i is not sensible" % options.kmer)
 
+    if options.mismatches < 0:
+        parser.error("Number of mismatches per k-mer (here %i) cannot be negative" % options.mismatches)
+    if options.mismatches > 1:
+        parser.error("Number of mismatches per k-mer (here %i) currently limited to one" \
+                     % options.mismatches)
+
     if (not options.linear_references) and (not options.circular_references):
         parser.error("You must supply some linear and/or circular references")
 
@@ -378,7 +408,8 @@ def main():
 
     paired = True
     go(options.input_reads, options.output_reads, options.format, paired,
-       options.linear_references, options.circular_references, options.kmer)
+       options.linear_references, options.circular_references,
+       options.kmer, options.mismatches)
 
 if __name__ == "__main__":
     main()
