@@ -24,8 +24,6 @@ not perform a full alignment).
 
 TODO:
 
-* Fuzzy matching by adding variants to the bloom/set filter?
-  (One mismatch should be fine on my mitochondial example)
 * Technically SFF support is easy via Biopython, but simple
   k-mer matching will be hampered by homopolymer errors.
   Also don't have to worry about handling paired reads.
@@ -53,7 +51,7 @@ except ImportError:
     sys_exit("Missing 'dablooms' Python bindings, available from "
              "https://github.com/bitly/dablooms")
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 def fasta_iterator(handle):
     """FASTA parser yielding (upper case sequence, raw record) string tuples."""
@@ -245,7 +243,7 @@ def disambiguate(seq):
                 break
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 mismatches, inserts, error_rate=0.01):
+                 mismatches, inserts, deletions, error_rate=0.01):
     #Using 5e-06 is close to a set for my example, both in run time
     #(a fraction more) and the number of reads kept (9528 vs 8058
     #with sets).
@@ -285,8 +283,8 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         #bloom.add(fragment, kmer)
                         count += 1 #TODO - Can do this in one go from len(upper_seq)
             handle.close()
-    if mismatches or inserts:
-        sys.stderr.write("Have %i unique k-mers before consider mis-matches/inserts\n" \
+    if mismatches or inserts or deletions:
+        sys.stderr.write("Have %i unique k-mers before consider fuzzy matches\n" \
                          % (len(simple)))
         new = simple.copy()
         if mismatches:
@@ -301,8 +299,29 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     new.add(var)
             sys.stderr.write("Adding inserts brings this to %i unique k-mers\n" \
                              % len(new))
+        if deletions:
+            #Have to go back to the original FASTA files...
+            #should we do it above?
+            if circular_refs:
+                for fasta in circular_refs:
+                    handle = open(fasta)
+                    for upper_seq, raw_read in fasta_iterator(handle):
+                        upper_seq += upper_seq[:kmer+1]
+                        for i in range(0, len(upper_seq) - kmer+1):
+                            for fragment in make_deletions(upper_seq[i:i+kmer+1]):
+                                new.add(fragment)
+                    handle.close()
+            if linear_refs:
+                for fasta in linear_refs:
+                    handle = open(fasta)
+                    for upper_seq, raw_read in fasta_iterator(handle):
+                        for i in range(0, len(upper_seq) - kmer+1):
+                            for fragment in make_deletions(upper_seq[i:i+kmer+1]):
+                                new.add(fragment)
+                    handle.close()
+            sys.stderr.write("Adding deletions brings this to %i unique k-mers\n" \
+                             % len(new))
         simple = new
-
     capacity = len(simple)
     bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
     for fragment in simple:
@@ -313,7 +332,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
-def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatches, inserts):
+def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatches, inserts, deletions):
     if paired:
         if format=="fasta":
             #read_iterator = fasta_batched_iterator
@@ -338,7 +357,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
     #sys.stderr.write("Using %s\n" %  bloom_filename)
     simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs,
-                                 kmer, mismatches, inserts)
+                                 kmer, mismatches, inserts, deletions)
 
     #Now loop over the input, write the output
     if output:
@@ -463,11 +482,13 @@ def main():
     if options.mismatches > 1:
         parser.error("Number of mismatches per k-mer (here %i) currently limited to one" \
                      % options.mismatches)
-    #TODO - Make inserts a command line option?
+    #TODO - Make substitions/inserts/deletions separate command line options?
     if options.mismatches:
         inserts = True
+        deletions = True
     else:
         inserts = False
+        deletions = False
 
     if (not options.linear_references) and (not options.circular_references):
         parser.error("You must supply some linear and/or circular references")
@@ -478,7 +499,7 @@ def main():
     paired = True
     go(options.input_reads, options.output_reads, options.format, paired,
        options.linear_references, options.circular_references,
-       options.kmer, options.mismatches, inserts)
+       options.kmer, options.mismatches, inserts, deletions)
 
 if __name__ == "__main__":
     main()
