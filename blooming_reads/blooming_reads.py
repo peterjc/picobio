@@ -248,6 +248,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
     #(a fraction more) and the number of reads kept (9528 vs 8058
     #with sets).
     simple = set()
+    del_hashes = set()
     count = 0
     t0 = time.time()
     if linear_refs:
@@ -265,6 +266,10 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         simple.add(fragment)
                         #bloom.add(fragment, kmer)
                         count += 1 #TODO - Can do this in one go from len(upper_seq)
+                if deletions:
+                    for i in range(0, len(upper_seq) - kmer+1):
+                        for fragment in make_deletions(upper_seq[i:i+kmer+1]):
+                            del_hashes.add(fragment)                    
             handle.close()
 
     if circular_refs:
@@ -282,11 +287,23 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         simple.add(fragment)
                         #bloom.add(fragment, kmer)
                         count += 1 #TODO - Can do this in one go from len(upper_seq)
+                if deletions:
+                    for i in range(0, len(upper_seq) - kmer+1):
+                        for fragment in make_deletions(upper_seq[i:i+kmer+1]):
+                            del_hashes.add(fragment)
             handle.close()
     if mismatches or inserts or deletions:
         sys.stderr.write("Have %i unique k-mers before consider fuzzy matches\n" \
                          % (len(simple)))
-        new = simple.copy()
+        if deletions:
+            #Do this first to avoid 3 large sets in memory!
+            new = del_hashes
+            del del_hashes
+            new.update(simple)
+            sys.stderr.write("Adding deletions brings this to %i unique k-mers\n" \
+                             % len(new))
+        else:
+            new = simple.copy()
         if mismatches:
             for fragment in simple:
                 for var in make_variants(fragment, mismatches):
@@ -298,28 +315,6 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 for var in make_inserts(fragment):
                     new.add(var)
             sys.stderr.write("Adding inserts brings this to %i unique k-mers\n" \
-                             % len(new))
-        if deletions:
-            #Have to go back to the original FASTA files...
-            #should we do it above?
-            if circular_refs:
-                for fasta in circular_refs:
-                    handle = open(fasta)
-                    for upper_seq, raw_read in fasta_iterator(handle):
-                        upper_seq += upper_seq[:kmer+1]
-                        for i in range(0, len(upper_seq) - kmer+1):
-                            for fragment in make_deletions(upper_seq[i:i+kmer+1]):
-                                new.add(fragment)
-                    handle.close()
-            if linear_refs:
-                for fasta in linear_refs:
-                    handle = open(fasta)
-                    for upper_seq, raw_read in fasta_iterator(handle):
-                        for i in range(0, len(upper_seq) - kmer+1):
-                            for fragment in make_deletions(upper_seq[i:i+kmer+1]):
-                                new.add(fragment)
-                    handle.close()
-            sys.stderr.write("Adding deletions brings this to %i unique k-mers\n" \
                              % len(new))
         simple = new
     capacity = len(simple)
