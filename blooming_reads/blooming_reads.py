@@ -428,7 +428,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
     #Remove the bloom file
     del bloom
     os.remove(bloom_filename)
-    sys.stderr.write("Kept %i out of %i reads\n" % (out_count, in_count))
+    sys.stderr.write("Kept %i out of %i reads (%0.1f%%)\n" % (out_count, in_count, out_count*100.0/in_count))
 
 def main():
     parser = OptionParser(usage="usage: %prog [options]",
