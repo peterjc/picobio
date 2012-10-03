@@ -3,11 +3,16 @@
 
 The idea is that you take your circular genomes, and double them,
 and use a traditional mapper on that (in single end mode!).
-e.g. I'm mrfast at the moment for this,
+e.g. I'm using mrfast at the moment for this,
 
 What this script does first is remove duplicates due to mapping
 in the second half (or should shift them to the first half if
 just getting one position per read).
+
+Currently this assumes that SAM file is grouped by read name
+(e.g. use 'samtools sort -n ...' to sort by read name), or at
+least grouped/sorted by reference then grouped/sorted by read
+name (e.g. output from mrfast).
 
 TODO:
 
@@ -95,34 +100,46 @@ def go(input, output, paired, linear_refs, circular_refs):
         output_handle.write(line)
         line = input_handle.readline()
 
+    cur_read_name = None
+    reads = set()
     prev_line = None
     while line:
         #SAM read
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
+        qname, flag, rname, pos, rest = line.split("\t", 4)
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
-            pos = int(pos) - 1
-            if length <= pos:
-                assert pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
-                pos -= length #Modulo circle length
-                pos = str(pos+1)
-                line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest])
-                if line == prev_line:
-                    #print "Dropping duplicate"
-                    line = ""
-                else:
-                    #print "Fixed: %r" % line
-                    pass
+            int_pos = int(pos) - 1
+            if length <= int_pos:
+                assert int_pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
+                pos = str(int_pos-length+1) #Modulo circle length 
+        if qname == cur_read_name:
+            #Cache this, as a tuple - ordered to allow sorting on position:
+            #Using a set will eliminate duplicates after adjusting POS
+            reads.add((qname, rname, pos, flag, rest))
+        else:
+            flush_cache(output_handle, reads)
+            reads = set([(qname, rname, pos, flag, rest)])
+            cur_read_name = qname
         #Next line...
-        output_handle.write(line)
-        prev_line = line
         line = input_handle.readline()
-
+    if reads:
+        flush_cache(output_handle, reads)
 
     if isinstance(input, basestring):
         input_handle.close()
     if isinstance(output, basestring):
         output_handle.close()
+
+
+def flush_cache(handle, set_of_read_tuples):
+    #if len(set_of_read_tuples) > 1:
+    #    sys.stderr.write("Interesting...\n")
+    #    for qname, rname, pos, flag, rest in sorted(set_of_read_tuples):
+    #        sys.stderr.write("\t".join([qname, flag, rname, pos, rest]))
+    #Note for sorting we don't use the SAM column order
+    for qname, rname, pos, flag, rest in sorted(set_of_read_tuples):
+        #Assume that 'rest' has the trailing \n
+        handle.write("\t".join([qname, flag, rname, pos, rest]))
 
 
 def get_fasta_ids_and_lengths(fasta_filename):
