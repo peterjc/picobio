@@ -100,7 +100,6 @@ def go(input, output, paired, linear_refs, circular_refs):
 
     cur_read_name = None
     reads = set()
-    prev_line = None
     while line:
         #SAM read
         qname, flag, rname, pos, rest = line.split("\t", 4)
