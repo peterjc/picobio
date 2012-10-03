@@ -161,14 +161,14 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
             #Using a set will eliminate duplicates after adjusting POS
             reads.add((qname, frag, rname, pos, flag, rest))
         else:
-            flush_cache(output_handle, reads, raw)
+            flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
             reads = set([(qname, frag, rname, pos, flag, rest)])
             cur_read_name = qname
         #Next line...
         line = input_handle.readline()
 
     if reads:
-        flush_cache(output_handle, reads, raw)
+        flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
 
     if isinstance(input, basestring):
         input_handle.close()
@@ -177,8 +177,90 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
 
     sys.stderr.write("%i singletons; %i where only /1 mapped, %i where only /2 mapped, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
 
+def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
+    """Modify the two lists in-situ.
 
-def flush_cache(handle, set_of_read_tuples, raw_dict):
+    TODO - Currently considers each reference in isolation!
+    """
+    fixed1 = []
+    fixed2 = []
+    refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
+    refs2 = set(rname for qname, flag, rname, pos, rest in reads2)
+    for ref in sorted(ref_len_linear):
+        r1 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads1 if rname==ref]
+        r2 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads2 if rname==ref]
+        if ref in refs1 and ref in refs2:
+            f1, f2 = fixup_pairs_linear(r1, r2, ref_len_linear[ref])
+            fixed1.extend(f1)
+            fixed2.extend(f2)
+        else:
+            #Mark them as mate unmapped (for now)
+            #What if one other mapping only (so easy choice)?
+            fixed1.extend((qname, flag | 0x41, rname, pos, rest) for qname, flag, rname, pos, rest in r1)
+            fixed2.extend((qname, flag | 0x81, rname, pos, rest) for qname, flag, rname, pos, rest in r2)
+    for ref in sorted(ref_len_circles):
+        r1 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads1 if rname==ref]
+        r2 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads2 if rname==ref]
+        if ref in refs1 and ref in refs2:
+            f1,f2 = fixup_pairs_circular(r1, r2, ref_len_circles[ref])
+            fixed1.extend(f1)
+            fixed2.extend(f2)
+        else:
+            #Mark them as mate unmapped (for now)
+            #What if one other mapping only (so easy choice)?
+            fixed1.extend((qname, flag | 0x41, rname, pos, rest) for qname, flag, rname, pos, rest in r1)
+            fixed2.extend((qname, flag | 0x81, rname, pos, rest) for qname, flag, rname, pos, rest in r2)
+    return fixed1, fixed2
+
+def fixup_pairs_linear(reads1, reads2, length):
+    if len(reads1) == len(reads2) == 1:
+        #Easy, can make them point at each other.
+        #Need to look at locations & strands to decide if good mapping or not.
+        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
+        reads1 = [r1]
+        reads2 = [r2]
+    else:
+        #TODO
+        pass
+    return reads1, reads2
+
+
+def fixup_pairs_circular(reads1, reads2, length):
+    if len(reads1) == len(reads2) == 1:
+        #Easy, can make them point at each other.
+        #Need to look at locations & strands to decide if good mapping or not.
+        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
+        reads1 = [r1]
+        reads2 = [r2]
+    else:
+        #TODO
+        pass
+    return reads1, reads2
+
+
+def make_mapped_pair(read1, read2, template_len=0):
+    """Fill in RNEXT and PNEXT using each other's RNAME and POS."""
+    qname1, flag1, rname1, pos1, rest1 = read1
+    qname2, flag2, rname2, pos2, rest2 = read2
+
+    assert qname1 == qname2
+
+    mapq, cigar, rnext, pnext, tlen, etc = rest1.split("\t", 5)
+    if rname1==rname2:
+        rest1 = "\t".join([mapq, cigar, "=", pos2, str(template_len), etc])
+    else:
+        rest1 = "\t".join([mapq, cigar, rname2, pos2, str(template_len), etc])
+
+    mapq, cigar, rnext, pnext, tlen, etc = rest2.split("\t", 5)
+    if rname1==rname2:
+        rest2 = "\t".join([mapq, cigar, "=", pos1, str(template_len), etc])
+    else:
+        rest2 = "\t".join([mapq, cigar, rname1, pos1, str(template_len), etc])
+
+    return [qname1, flag1, rname1, pos1, rest1], [qname2, flag2, rname2, pos2, rest2]
+
+
+def flush_cache(handle, set_of_read_tuples, raw_dict, ref_len_linear, ref_len_circles):
     global solo0, solo1, solo2, solo12
     reads = sorted(set_of_read_tuples)
     if not reads:
@@ -232,9 +314,7 @@ def flush_cache(handle, set_of_read_tuples, raw_dict):
             reads2 = [(qname, flag, "*", "0", rest)]
         else:
             solo12 += 1
-            #Have both...
-            #TODO - Fill in each other's mapping info
-            pass
+            reads1, reads2 = fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles)
 
     for qname, flag, rname, pos, rest in reads0+reads1+reads2:
         #Assume that 'rest' has the trailing \n
