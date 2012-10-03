@@ -102,7 +102,7 @@ def go(input, output, paired, linear_refs, circular_refs):
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             pos = int(pos) - 1
-            if length < pos:
+            if length <= pos:
                 assert pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
                 pos -= length #Modulo circle length
                 pos = str(pos+1)
