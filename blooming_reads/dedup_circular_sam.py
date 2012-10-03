@@ -36,8 +36,6 @@ end data, you might get two, three or even four lines in SAM
 
 import sys
 import os
-import tempfile
-import time
 from optparse import OptionParser
 
 def sys_exit(msg, error_level=1):
