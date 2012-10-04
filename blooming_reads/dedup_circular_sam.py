@@ -108,7 +108,13 @@ def go(input, output, paired, linear_refs, circular_refs):
             int_pos = int(pos) - 1
             if length <= int_pos:
                 assert int_pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
-                pos = str(int_pos-length+1) #Modulo circle length 
+                #While wait for mrfast 2.5.0.1 to fix this bug,
+                #https://sourceforge.net/tracker/?func=detail&aid=3574131&group_id=260735&atid=1127386
+                #we'll just ignore reads mapped in the second half.
+                #With mrfast they should all be duplicates anyway.
+                line = input_handle.readline()
+                continue
+                #pos = str(int_pos-length+1) #Modulo circle length 
         if qname == cur_read_name:
             #Cache this, as a tuple - ordered to allow sorting on position:
             #Using a set will eliminate duplicates after adjusting POS
