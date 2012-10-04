@@ -182,6 +182,10 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
 
     TODO - Currently considers each reference in isolation!
     """
+    if len(reads1) == len(reads2) == 1 and reads1[0][2] != reads2[0][2]:
+        #Simple case, each maps to one place only, but they are on diff ref
+        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
+        return [r1], [r2]
     fixed1 = []
     fixed2 = []
     refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
