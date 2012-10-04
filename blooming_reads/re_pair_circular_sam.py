@@ -61,7 +61,7 @@ VERSION = "0.0.0"
 solo0 = solo1 = solo2 = solo12 = 0
 
 
-def go(input, output, raw_reads, linear_refs, circular_refs):
+def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
 
     if raw_reads:
         assert os.path.isfile(raw_reads)
@@ -132,6 +132,15 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
     global solo0, solo1, solo2,solo12
     solo0 = solo1 = solo2 = solo12 = 0
 
+
+    global coverage
+    coverage = dict()
+    if coverage_file:
+        import numpy
+        for lengths in [ref_len_linear, ref_len_circles]:
+            for ref, length in lengths.iteritems():
+                coverage[ref] = numpy.zeros((3, length), numpy.float)
+
     cur_read_name = None
     reads = set()
     while line:
@@ -161,6 +170,8 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
             #Using a set will eliminate duplicates after adjusting POS
             reads.add((qname, frag, rname, pos, flag, rest))
         else:
+            if coverage_file:
+                count_coverage(coverage, reads)
             flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
             reads = set([(qname, frag, rname, pos, flag, rest)])
             cur_read_name = qname
@@ -168,6 +179,8 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
         line = input_handle.readline()
 
     if reads:
+        if coverage_file:
+            count_coverage(coverage, reads)
         flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
 
     if isinstance(input, basestring):
@@ -175,17 +188,97 @@ def go(input, output, raw_reads, linear_refs, circular_refs):
     if isinstance(output, basestring):
         output_handle.close()
 
+    if coverage_file:
+        handle = open(coverage_file, "w")
+        for lengths in [ref_len_linear, ref_len_circles]:
+            for ref, length in lengths.iteritems():
+                handle.write(">%s length %i\n" % (ref, length))
+                for row in coverage[ref]:
+                    assert len(row) == length
+                    handle.write("\t".join("%.1f" % v for v in row) + "\n")
+        handle.close()
     sys.stderr.write("%i singletons; %i where only /1 mapped, %i where only /2 mapped, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
+
+
+def cigar_tuples(cigar_str):
+    """CIGAR string parsed into a list of tuples (operator code, count).
+
+    e.g.cigar string of 36M2I3M becomes [('M', 36), ('I', 2), ('M', 3)]
+
+    Any empty CIGAR string (represented as * in SAM) is given as None.
+    """
+    if cigar_str == "*":
+        return None
+    answer = []
+    count = ""
+    for letter in cigar_str:
+        if letter.isdigit():
+            count += letter #string addition
+        else:
+            if letter not in "MIDNSHP=X":
+                raise ValueError("Invalid character %s in CIGAR %s" \
+                                 % (letter, cigar_str))
+            answer.append((letter, int(count)))
+            count = ""
+    return answer
+
+
+def cigar_alen(cigar_str):
+    alen = 0
+    for operator, count in cigar_tuples(cigar_str):
+        if operator in "MDN=X":
+            alen += count
+    return alen
+
+
+def count_coverage(coverage, reads):
+    reads1 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+              for (qname, frag, rname, pos, flag, rest) \
+              in reads if frag==1]
+    reads2 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+              for (qname, frag, rname, pos, flag, rest) \
+              in reads if frag==2]
+    reads0 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+              for (qname, frag, rname, pos, flag, rest) \
+              in reads if frag==0]
+    if reads0:
+        #Singleton
+        assert not reads1 and not reads2
+        field = 0
+        for ref, length in coverage.iteritems():
+            length = values.shape[1]
+            r0 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads0 if ref==rname and not (flag & 0x4)]
+            weight = 1.0 / len(r0)
+            for start, end in r0:
+                for i in xrange(start, end):
+                    values[field, i % length] += weight
+    else:
+        #Paired
+        assert not reads0
+        for ref, values in coverage.iteritems():
+            length = values.shape[1]
+            r1 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads1 if ref==rname and not (flag & 0x4)]
+            r2 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads1 if ref==rname and not (flag & 0x4)]
+            if r1 and r2:
+                #Both read parts /1 and /2 map to same ref, good
+                field = 1
+            else:
+                #Only one of parts maps to this ref, bad
+                field = 2
+            for reads in [r1, r2]:
+                if reads:
+                    weight = 1.0 / len(reads)
+                    for start, end in reads:
+                        for i in xrange(start, end):
+                            values[field, i % length] += weight
+
 
 def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
     """Modify the two lists in-situ.
 
     TODO - Currently considers each reference in isolation!
     """
-    if len(reads1) == len(reads2) == 1 and reads1[0][2] != reads2[0][2]:
-        #Simple case, each maps to one place only, but they are on diff ref
-        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
-        return [r1], [r2]
+    assert reads1 and reads2
     fixed1 = []
     fixed2 = []
     refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
@@ -201,14 +294,19 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
         r1 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads1 if rname==ref]
         r2 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads2 if rname==ref]
         if ref in refs1 and ref in refs2:
+            assert r1 and r2
             f1, f2 = fixup_same_ref_pairs(r1, r2, ref_lengths[ref], circular)
             fixed1.extend(f1)
             fixed2.extend(f2)
+        elif ref in refs1:
+            assert r1 and not r2 
+            #So, we have read1 mapped to ref1 (and possibly elsewhere), but read2
+            #only maps elsewhere. Let's just pick the first read2 as the partner:
+            fixed1.extend(mark_mate(r, reads2[0]) for r in r1)
         else:
-            #Mark them as mate unmapped (for now)
-            #What if one other mapping only (so easy choice)?
-            fixed1.extend((qname, flag | 0x41, rname, pos, rest) for qname, flag, rname, pos, rest in r1)
-            fixed2.extend((qname, flag | 0x81, rname, pos, rest) for qname, flag, rname, pos, rest in r2)
+            assert ref in refs2
+            assert r2 and not r1
+            fixed2.extend(mark_mate(r, reads1[0]) for r in r2)
     return fixed1, fixed2
 
 
@@ -337,6 +435,9 @@ def main():
                       type="string", metavar="FILE", action="append",
                       help="""FASTA file of circular reference sequence(s)
                            Several files can be given if required.""")
+    parser.add_option("-v", "--coverage", dest="coverage_file",
+                      type="string", metavar="FILE",
+                      help="Option file to record coverage to (JSON)."),
     #Reads
     parser.add_option("-i", "--input", dest="input_reads",
                       type="string", metavar="FILE",
@@ -362,7 +463,8 @@ def main():
 
     paired = True
     go(options.input_reads, options.output_reads, options.raw_reads,
-       options.linear_references, options.circular_references)
+       options.linear_references, options.circular_references,
+       options.coverage_file)
 
 if __name__ == "__main__":
     main()
