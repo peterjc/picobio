@@ -224,17 +224,15 @@ def fixup_same_ref_pairs(reads1, reads2, length, circular):
         pass
     return reads1, reads2
 
-
-def make_mapped_pair(read1, read2, template_len=0, happy=False):
-    """Fill in RNEXT and PNEXT using each other's RNAME and POS."""
-    qname1, flag1, rname1, pos1, rest1 = read1
-    qname2, flag2, rname2, pos2, rest2 = read2
+def mark_mate(read_to_edit, mate_read, template_len=0, happy=False):
+    qname1, flag1, rname1, pos1, rest1 = read_to_edit
+    qname2, flag2, rname2, pos2, rest2 = mate_read
 
     assert qname1 == qname2
+
     if happy:
         #Set the properly paired bit
         flag1 |= 0x02
-        flag2 |= 0x02
 
     mapq, cigar, rnext, pnext, tlen, etc = rest1.split("\t", 5)
     if rname1==rname2:
@@ -242,14 +240,13 @@ def make_mapped_pair(read1, read2, template_len=0, happy=False):
     else:
         rest1 = "\t".join([mapq, cigar, rname2, pos2, str(template_len), etc])
 
-    mapq, cigar, rnext, pnext, tlen, etc = rest2.split("\t", 5)
-    if rname1==rname2:
-        rest2 = "\t".join([mapq, cigar, "=", pos1, str(template_len), etc])
-    else:
-        rest2 = "\t".join([mapq, cigar, rname1, pos1, str(template_len), etc])
+    return [qname1, flag1, rname1, pos1, rest1]
 
-    return [qname1, flag1, rname1, pos1, rest1], [qname2, flag2, rname2, pos2, rest2]
-
+def make_mapped_pair(read1, read2, template_len=0, happy=False):
+    """Fill in RNEXT and PNEXT using each other's RNAME and POS."""
+    read1 = mark_mate(read1, read2, template_len, happy)
+    read2 = mark_mate(read2, read1, template_len, happy)
+    return read1, read2
 
 def flush_cache(handle, set_of_read_tuples, raw_dict, ref_len_linear, ref_len_circles):
     global solo0, solo1, solo2, solo12
