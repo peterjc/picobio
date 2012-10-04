@@ -190,23 +190,18 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
     fixed2 = []
     refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
     refs2 = set(rname for qname, flag, rname, pos, rest in reads2)
-    for ref in sorted(ref_len_linear):
-        r1 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads1 if rname==ref]
-        r2 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads2 if rname==ref]
-        if ref in refs1 and ref in refs2:
-            f1, f2 = fixup_pairs_linear(r1, r2, ref_len_linear[ref])
-            fixed1.extend(f1)
-            fixed2.extend(f2)
+    for ref in sorted(refs1.union(refs2)):
+        if ref in ref_len_linear:
+            circular = False
+            ref_lengths = ref_len_linear
         else:
-            #Mark them as mate unmapped (for now)
-            #What if one other mapping only (so easy choice)?
-            fixed1.extend((qname, flag | 0x41, rname, pos, rest) for qname, flag, rname, pos, rest in r1)
-            fixed2.extend((qname, flag | 0x81, rname, pos, rest) for qname, flag, rname, pos, rest in r2)
-    for ref in sorted(ref_len_circles):
+            assert ref in ref_len_circles
+            circular = True
+            ref_lengths = ref_len_circles
         r1 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads1 if rname==ref]
         r2 = [(qname, flag, rname, pos, rest) for qname, flag, rname, pos, rest in reads2 if rname==ref]
         if ref in refs1 and ref in refs2:
-            f1,f2 = fixup_pairs_circular(r1, r2, ref_len_circles[ref])
+            f1, f2 = fixup_same_ref_pairs(r1, r2, ref_lengths[ref], circular)
             fixed1.extend(f1)
             fixed2.extend(f2)
         else:
@@ -216,11 +211,12 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
             fixed2.extend((qname, flag | 0x81, rname, pos, rest) for qname, flag, rname, pos, rest in r2)
     return fixed1, fixed2
 
-def fixup_pairs_linear(reads1, reads2, length):
+
+def fixup_same_ref_pairs(reads1, reads2, length, circular):
     if len(reads1) == len(reads2) == 1:
         #Easy, can make them point at each other.
         #Need to look at locations & strands to decide if good mapping or not.
-        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
+        r1, r2 = make_mapped_pair(reads1[0], reads2[0], happy=True)
         reads1 = [r1]
         reads2 = [r2]
     else:
@@ -229,25 +225,16 @@ def fixup_pairs_linear(reads1, reads2, length):
     return reads1, reads2
 
 
-def fixup_pairs_circular(reads1, reads2, length):
-    if len(reads1) == len(reads2) == 1:
-        #Easy, can make them point at each other.
-        #Need to look at locations & strands to decide if good mapping or not.
-        r1, r2 = make_mapped_pair(reads1[0], reads2[0])
-        reads1 = [r1]
-        reads2 = [r2]
-    else:
-        #TODO
-        pass
-    return reads1, reads2
-
-
-def make_mapped_pair(read1, read2, template_len=0):
+def make_mapped_pair(read1, read2, template_len=0, happy=False):
     """Fill in RNEXT and PNEXT using each other's RNAME and POS."""
     qname1, flag1, rname1, pos1, rest1 = read1
     qname2, flag2, rname2, pos2, rest2 = read2
 
     assert qname1 == qname2
+    if happy:
+        #Set the properly paired bit
+        flag1 |= 0x02
+        flag2 |= 0x02
 
     mapq, cigar, rnext, pnext, tlen, etc = rest1.split("\t", 5)
     if rname1==rname2:
