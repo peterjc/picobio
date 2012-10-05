@@ -258,7 +258,7 @@ def count_coverage(coverage, reads):
         for ref, values in coverage.iteritems():
             length = values.shape[1]
             r1 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads1 if ref==rname and not (flag & 0x4)]
-            r2 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads1 if ref==rname and not (flag & 0x4)]
+            r2 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads2 if ref==rname and not (flag & 0x4)]
             if r1 and r2:
                 #Both read parts /1 and /2 map to same ref, good
                 field = 1
