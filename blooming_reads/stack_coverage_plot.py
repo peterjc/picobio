@@ -1,8 +1,6 @@
+import sys
 import numpy as np
 from matplotlib import pyplot as plt
-
-filename = "test.cov"
-png_filename = "test.png"
 
 def load(filename):
     h = open(filename)
@@ -52,5 +50,13 @@ def stack(data, filename, colors=None):
     plt.show()
     plt.savefig(filename)
 
-data = list(load(filename))
-stack(data, png_filename)
+
+for filename in sys.argv[1:]:
+    if not filename.endswith(".cov"):
+        continue
+    print "-"*60
+    print filename
+    print "-"*60
+    data = list(load(filename))
+    stack(data, filename+".png")
+print "Done"
