@@ -46,9 +46,9 @@ def stack(data, filename, colors=None):
         print "\t".join("%0.1f" % v for v in values.sum(axis=1))
         y_stack = np.cumsum(values, axis=0)
         ax1 = fig.add_subplot(total, 1, i+1)
-        ax1.fill_between(x, 0, y_stack[0,:], facecolor=colors[0]), alpha=.7)
+        ax1.fill_between(x, 0, y_stack[0,:], facecolor=colors[0], alpha=.7)
         for i in range(0, values.shape[0]-1):
-            ax1.fill_between(x, y_stack[i,:], y_stack[i+1,:], facecolor=colors[i+1]), alpha=.7)
+            ax1.fill_between(x, y_stack[i,:], y_stack[i+1,:], facecolor=colors[i+1], alpha=.7)
     plt.show()
     plt.savefig(filename)
 
