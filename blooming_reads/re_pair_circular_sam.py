@@ -255,7 +255,7 @@ def count_coverage(coverage, reads):
             else:
                 #Also on other refs
                 field = 1
-            weight = 1.0 / len(r0)
+            weight = 1.0 / len(reads0)
             for start, end in r0:
                 for i in xrange(start, end):
                     values[field, i % length] += weight
@@ -276,9 +276,9 @@ def count_coverage(coverage, reads):
             else:
                 #Only one of parts maps to this ref, bad
                 field = 4
-            for reads in [r1, r2]:
+            for reads, all_reads in [(r1, reads1), (r2, reads2)]:
                 if reads:
-                    weight = 1.0 / len(reads)
+                    weight = 1.0 / len(all_reads)
                     for start, end in reads:
                         for i in xrange(start, end):
                             values[field, i % length] += weight
