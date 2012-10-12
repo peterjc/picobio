@@ -139,7 +139,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         import numpy
         for lengths in [ref_len_linear, ref_len_circles]:
             for ref, length in lengths.iteritems():
-                coverage[ref] = numpy.zeros((3, length), numpy.float)
+                coverage[ref] = numpy.zeros((5, length), numpy.float)
 
     cur_read_name = None
     reads = set()
@@ -232,6 +232,7 @@ def cigar_alen(cigar_str):
 
 
 def count_coverage(coverage, reads):
+    """Update coverage (dict of arrays) using given mapping of a read/pair."""
     reads1 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
               for (qname, frag, rname, pos, flag, rest) \
               in reads if frag==1]
@@ -248,6 +249,12 @@ def count_coverage(coverage, reads):
         for ref, length in coverage.iteritems():
             length = values.shape[1]
             r0 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads0 if ref==rname and not (flag & 0x4)]
+            if len(r0) == len(reads0):
+                #All on this ref
+                field = 0
+            else:
+                #Also on other refs
+                field = 1
             weight = 1.0 / len(r0)
             for start, end in r0:
                 for i in xrange(start, end):
@@ -261,10 +268,14 @@ def count_coverage(coverage, reads):
             r2 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads2 if ref==rname and not (flag & 0x4)]
             if r1 and r2:
                 #Both read parts /1 and /2 map to same ref, good
-                field = 1
+                if len(r1) == len(reads1) and len(r2) == len(reads2):
+                    #All on this ref
+                    field = 2
+                else:
+                    field = 3
             else:
                 #Only one of parts maps to this ref, bad
-                field = 2
+                field = 4
             for reads in [r1, r2]:
                 if reads:
                     weight = 1.0 / len(reads)
