@@ -22,9 +22,13 @@ def make_colors(start, end, steps):
     return ["#%02x%02x%02x" % tuple(start + i*delta) for i in range(steps)]
 
 def stack(data, filename, colors=None):
-    fig = plt.figure()
     total = len(data)
-    fig = plt.figure()
+    max_value = 0
+    for names, values in data:
+        max_value = max(max_value, values.sum(axis=0).max())
+    plt.ylim([0, max_value])
+
+    fig = plt.figure(figsize=(12,2*total))
     if not colors:
         #Assumes all the examples have same number of colors:
         if data[0][1].shape[0] == 3:
@@ -44,9 +48,13 @@ def stack(data, filename, colors=None):
         print "\t".join("%0.1f" % v for v in values.sum(axis=1))
         y_stack = np.cumsum(values, axis=0)
         ax1 = fig.add_subplot(total, 1, i+1)
+        ax1.set_autoscaley_on(False)
+        ax1.set_ylim([0, max_value])
+        ax1.set_title(name.split(None,1)[0], fontsize="xx-small")
         ax1.fill_between(x, 0, y_stack[0,:], facecolor=colors[0], alpha=.7)
         for i in range(0, values.shape[0]-1):
             ax1.fill_between(x, y_stack[i,:], y_stack[i+1,:], facecolor=colors[i+1], alpha=.7)
+    #fig.tight_layout()
     plt.show()
     plt.savefig(filename)
 
