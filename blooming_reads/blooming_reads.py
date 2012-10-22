@@ -24,6 +24,7 @@ not perform a full alignment).
 
 TODO:
 
+* Include reverse complement of every k-mer as well
 * Technically SFF support is easy via Biopython, but simple
   k-mer matching will be hampered by homopolymer errors.
   Also don't have to worry about handling paired reads.
