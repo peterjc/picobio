@@ -5,12 +5,16 @@ Checks read identifiers agree, or end with /1 and /2 respectively.
 """
 import sys
 import gzip
-from Bio.SeqIO.QualityIO import FastqGeneralIterator
 
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
+
+try:
+    from Bio.SeqIO.QualityIO import FastqGeneralIterator
+except ImportError:
+    sys_exit("Missing FastqGeneralIterator from Biopython")
 
 if len(sys.argv) != 3:
     sys_exit("Requires two arguments, a pair of FASTQ filenames")
