@@ -22,9 +22,15 @@ to these reference sequences (the Bloom filter is probabilitistic,
 but also we're only going to search for k-mers within each read,
 not perform a full alignment).
 
+We search reads against both the forward and reverse strand of the
+reference. Currently this is done when building the filter, which
+is problably faster at the cost of more memory (bigger filter). The
+alternative would be to make a filter from the reference forward
+strands only, and to check the reads and the reverse complement of
+each read against it. I expect that to be slower.
+
 TODO:
 
-* Include reverse complement of every k-mer as well
 * Technically SFF support is easy via Biopython, but simple
   k-mer matching will be hampered by homopolymer errors.
   Also don't have to worry about handling paired reads.
@@ -40,6 +46,7 @@ import os
 import tempfile
 import time
 from optparse import OptionParser
+from Bio.Seq import reverse_complement
 
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -52,7 +59,7 @@ except ImportError:
     sys_exit("Missing 'dablooms' Python bindings, available from "
              "https://github.com/bitly/dablooms")
 
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 def fasta_iterator(handle):
     """FASTA parser yielding (upper case sequence, raw record) string tuples."""
@@ -244,7 +251,7 @@ def disambiguate(seq):
                 break
 
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 mismatches, inserts, deletions, error_rate=0.01):
+                 mismatches, inserts, deletions, error_rate=0.01, rc=True):
     #Using 5e-06 is close to a set for my example, both in run time
     #(a fraction more) and the number of reads kept (9528 vs 8058
     #with sets).
@@ -293,6 +300,12 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         for fragment in make_deletions(upper_seq[i:i+kmer+1]):
                             del_hashes.add(fragment)
             handle.close()
+    if rc:
+        #Would popping be slow? Should mean less memory at once
+        temp = simple.copy()
+        for fragment in temp:
+            simple.add(reverse_complement(fragment))
+        del temp
     if mismatches or inserts or deletions:
         sys.stderr.write("Have %i unique k-mers before consider fuzzy matches\n" \
                          % (len(simple)))
