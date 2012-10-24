@@ -96,7 +96,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     if output is None:
         output_handle = sys.stdout
     elif isinstance(output, basestring):
-        output_handle = open(output)
+        output_handle = open(output, "w")
     else:
         output_handle = output
 
