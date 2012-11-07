@@ -14,8 +14,8 @@ and without the equals, or their BAM equivalents.
 
 Simple usage with SAM files, optional argument [mode] can be "add"
 (default, insert equals signs) or "remove" (remove equals signs),
-or "full" (set SEQ to "*" for perfect matches, otherwise add equals
-signs for matching bases):
+or "full" (set SEQ and QUAL to "*" for perfect matches, otherwise
+add equals signs to SEQ for matching bases):
 
 $ ./sam_seq_equals reference.fasta [mode] < original.sam > equals.sam
 
@@ -193,7 +193,7 @@ for line in sys.stdin:
     if line[0]!="@":
         #Should be a read
         count += 1
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split("\t", 10)
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
         if seq != "*":
             bases += len(seq)
             #TODO - Look at CIGAR or qual if SEQ is missing?
@@ -210,11 +210,14 @@ for line in sys.stdin:
             #Add/remove equals signs in the read's sequence:
             try:
                 seq = add_or_remove_equals(ref_seq, seq, int(pos)-1, cigar, add_equals, drop_seq)
+                if seq == "*":
+                    #According to spec, if omit SEQ must also omit QUAL (and samtools complains)
+                    qual = "*"
             except:
                 sys.stderr.write(line)
                 raise
             mod += 1
-            line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest])
+            line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
     sys.stdout.write(line)
 sys.stderr.write("Modified %i out of %i reads\n" % (mod, count))
 sys.stderr.write("In total %i bases in all %i reads\n" % (bases, count))
