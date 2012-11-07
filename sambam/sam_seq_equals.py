@@ -13,7 +13,9 @@ demonstrated by comparing a gzipped version of the SAM files with
 and without the equals, or their BAM equivalents.
 
 Simple usage with SAM files, optional argument [mode] can be "add"
-(default, insert equals signs) or "remove" (remove equals signs):
+(default, insert equals signs) or "remove" (remove equals signs),
+or "full" (set SEQ to "*" for perfect matches, otherwise add equals
+signs for matching bases):
 
 $ ./sam_seq_equals reference.fasta [mode] < original.sam > equals.sam
 
@@ -34,12 +36,18 @@ import sys
 if len(sys.argv) == 2:
     reference_filename = sys.argv[1]
     add_equals = True
+    drop_seq = False
 elif len(sys.argv) ==3:
     reference_filename = sys.argv[1]
     if sys.argv[2].lower() == "add":
         add_equals = True
+        drop_seq = False
     elif sys.argv[2].lower() == "remove":
         add_equals = False
+        drop_seq = False
+    elif sys.argv[2].lower() == "full":
+        add_equals = True
+        drop_seq = True
     else:
         sys.stderr.write("ERROR: Second (optional) argument must be 'add' (default) or 'remove' (no quotes)\n\n")
         sys.stderr.write(usage)
@@ -70,7 +78,7 @@ def decode_cigar(cigar):
 
 assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
 
-def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True):
+def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
     """Returns read_seq with equals signs for matched bases.
 
     Assumes both ref_seq and read_seq are using the same case.
@@ -125,12 +133,19 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True):
     if pending:
         raise RunTimeError("Still had %i bases left" % len(pending))
     assert len(answer) == len(read_seq), "%s -> %s with %s" % (read_seq, answer, cigar)
+    if drop and answer == "=" * len(answer) and len(answer) > 1:
+        #Don't need the sequence at all!
+        return "*"
     return answer
 
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5M", True)
 assert temp == "=====", temp
+temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5M", True, True)
+assert temp == "*", temp
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5=", True)
 assert temp == "=====",temp
+temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5=", True, True)
+assert temp == "*",temp
 temp = add_or_remove_equals("ACGTWWWACGT", "=====", 3, "5M", False)
 assert temp == "TWWWA",temp
 temp = add_or_remove_equals("ACGTWWWACGT", "=====", 3, "5=", False)
@@ -194,7 +209,7 @@ for line in sys.stdin:
                 ref_name = rname
             #Add/remove equals signs in the read's sequence:
             try:
-                seq = add_or_remove_equals(ref_seq, seq, int(pos)-1, cigar, add_equals)
+                seq = add_or_remove_equals(ref_seq, seq, int(pos)-1, cigar, add_equals, drop_seq)
             except:
                 sys.stderr.write(line)
                 raise
