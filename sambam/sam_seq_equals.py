@@ -54,7 +54,11 @@ elif len(sys.argv) ==3:
         sys.stderr.write(usage)
         sys.exit(1)
 else:
-    sys.stderr.write("ERROR: Bad arguments\n\n")
+    sys.stderr.write("ERROR: Bad arguments.\n\n")
+    sys.stderr.write("Expects SAM on stdin, and writes SAM to stdout. Requires the FASTA\n")
+    sys.stderr.write("reference filename as the first argument, with an optional second\n")
+    sys.stderr.write("argument of the mode (add, drop, or full).\n\n")
+    sys.stderr.write("Read the start of the script for more details.\n")
     sys.exit(1)
 
 try:
