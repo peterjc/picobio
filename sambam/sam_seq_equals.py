@@ -14,8 +14,9 @@ and without the equals, or their BAM equivalents.
 
 Simple usage with SAM files, optional argument [mode] can be "add"
 (default, insert equals signs) or "remove" (remove equals signs),
-or "full" (set SEQ and QUAL to "*" for perfect matches, otherwise
-add equals signs to SEQ for matching bases):
+or "full" (set SEQ and QUAL to "*" for perfect matches and uses
+the CIGAR equal operator, otherwise like the default "add" mode,
+just add equals signs to SEQ for matching bases):
 
 $ ./sam_seq_equals reference.fasta [mode] < original.sam > equals.sam
 
@@ -135,37 +136,37 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
     assert len(answer) == len(read_seq), "%s -> %s with %s" % (read_seq, answer, cigar)
     if drop and answer == "=" * len(answer) and len(answer) > 1:
         #Don't need the sequence at all!
-        return "*"
-    return answer
+        return "*", cigar.replace("M", "=")
+    return answer, cigar
 
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5M", True)
-assert temp == "=====", temp
+assert temp == ("=====", "5M"), temp
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5M", True, True)
-assert temp == "*", temp
+assert temp == ("*", "5="), temp
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5=", True)
-assert temp == "=====",temp
+assert temp == ("=====", "5="),temp
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5=", True, True)
-assert temp == "*",temp
+assert temp == ("*", "5="),temp
 temp = add_or_remove_equals("ACGTWWWACGT", "=====", 3, "5M", False)
-assert temp == "TWWWA",temp
+assert temp == ("TWWWA", "5M"),temp
 temp = add_or_remove_equals("ACGTWWWACGT", "=====", 3, "5=", False)
-assert temp == "TWWWA",temp
+assert temp == ("TWWWA", "5="),temp
 temp = add_or_remove_equals("ACGTWWWACGT", "==AWA", 3, "5M", True)
-assert "==A==" == temp, temp
+assert temp == ("==A==", "5M"), temp
 temp = add_or_remove_equals("ACGTWWWACGT", "==AWA", 3, "2=1X2=", True)
-assert "==A==" == temp, temp
+assert temp == ("==A==", "2=1X2="), temp
 temp = add_or_remove_equals("ACGTWWWACGT", "==A==", 3, "5M", False)
-assert "TWAWA" == temp, temp
+assert temp == ("TWAWA", "5M"), temp
 temp = add_or_remove_equals("ACGTWWWACGT", "==A==", 3, "2=1X2=", False)
-assert "TWAWA" == temp, temp
+assert temp == ("TWAWA", "2=1X2="), temp
 
 temp_mt = "GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCTCCATGCATTTGGTATTTTCGTCTGGGGGGTGTGCACGCGATAGCATTGCGAGACGCTGGAGCCGGAGCACCCTATGTCGCAGTATCTGTCTTTGATTCCTGCCTCATTCTATTATTTATCGCACCTACGTTCAATATTACAGGCGAACATACCTACTAAAGTGTGTTAATTAATTAATGCTTGTAGGACATAATAATA" #etc
 temp = add_or_remove_equals(temp_mt, "GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCNCCAAT",
                             0, "47M", True)
-assert "=========================================N===AT" == temp, temp
+assert ("=========================================N===AT", "47M") == temp, temp
 temp = add_or_remove_equals(temp_mt, "TATTAACCCCTCACGTGATCTCTCCCTGCATTTTATTTTT",
                             19, "33M2D7M", True)
-assert "========C======T==T======C=============T" == temp, temp
+assert ("========C======T==T======C=============T", "33M2D7M") == temp, temp
 #temp = add_or_remove_equals(temp_mt, "CGAAATCTGGTTCGTACTTCAGGGTCATAAAGCCTAAATAGCCCACCCGTTCCGCTTAGATAAGACATCACGATGG",
 #                            86, "76M", True)
 #assert "" == temp, temp
@@ -209,7 +210,7 @@ for line in sys.stdin:
                 ref_name = rname
             #Add/remove equals signs in the read's sequence:
             try:
-                seq = add_or_remove_equals(ref_seq, seq, int(pos)-1, cigar, add_equals, drop_seq)
+                seq, cigar = add_or_remove_equals(ref_seq, seq, int(pos)-1, cigar, add_equals, drop_seq)
                 if seq == "*":
                     #According to spec, if omit SEQ must also omit QUAL (and samtools complains)
                     qual = "*"
