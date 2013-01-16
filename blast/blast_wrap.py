@@ -35,8 +35,8 @@ TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
 
-master = "/mnt/gfs/blast/galaxy"
-local = "/var/blast/galaxy"
+master = "/mnt/shared/cluster/blast/galaxy"
+local = "/var/local/blast/galaxy"
 #db = "ncbi/nr"
 
 import sys
@@ -81,6 +81,7 @@ if master in cmd:
         print "%s done in %is" % (db, int(taken))
         
 #Run the command
+#print cmd
 err = os.system(cmd)
 if 0 < err < 128:
     sys.exit(err)
