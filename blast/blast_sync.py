@@ -81,6 +81,9 @@ def sync_blast_alias_db(master, local, db, index):
         if line.startswith("DBLIST "):
             dbs = line[7:].strip().split()
             for d in dbs:
+                if d.startswith("/"):
+                    sys.stderr.write("ERROR: Abolute paths in %s index file?\n" % index)
+                    return 1
                 d = os.path.join(os.path.split(index)[0], d)
                 err = sync_blast_db(master, local, relpath(d, master))
                 if err:
@@ -115,7 +118,7 @@ for db in names:
     #Wait a little, enough for other copies of the script
     #to finish the sync check if the files are current
     if os.path.isfile(lock):
-        sys.stderr.write("BLAST Database already locked,\n")
+        sys.stderr.write("BLAST Database already locked, %s\n" % lock)
         time.sleep(5)
     if os.path.isfile(lock):
         time.sleep(10)
