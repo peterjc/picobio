@@ -1,0 +1,16 @@
+Figure 1. Transmission electron micrographs of phage virions showing their isometric heads and long non-contractile tails.
+show more
+
+Panel A shows multiple SpaA1 virions and panel B shows a single Bce A1 (B) virions. All scale bars represent 100 nm.
+
+doi:10.1371/journal.pone.0040683.g001
+
+Accession numbers HE614281 and gi|399498862|ref|NC_018277.1| (SpaA1)
+and HE614282 and gi|397174303|emb|HE614282.1| (BceA1)
+
+From:
+
+Swanson MM, Reavy B, Makarova KS, Cock PJ, Hopkins DW, et al. (2012)
+Novel Bacteriophages Containing a Genome of Another Bacteriophage within Their Genomes.
+PLoS ONE 7(7): e40683. doi:10.1371/journal.pone.0040683 
+http://dx.doi.org/10.1371/journal.pone.0040683
