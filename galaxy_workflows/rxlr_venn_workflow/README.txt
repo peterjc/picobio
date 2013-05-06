@@ -33,5 +33,5 @@ These dependencies should be resolved automatically via the Galaxy Tool Shed:
  * http://toolshed.g2.bx.psu.edu/view/peterjc/venn_list
 
 However, at the time of writing those Galaxy tools have their own dependencies
-which require manual installation (SignalP v3.0, HMMER v2.0, and the R/Bioconductor
-package limma).
+required for this workflow which require manual installation (SignalP v3.0,
+HMMER v2.0, and the R/Bioconductor package limma).

@@ -23,3 +23,15 @@ http://toolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
 
 Development is being done on github here:
 https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
+
+
+Dependencies
+============
+
+These dependencies should be resolved automatically via the Galaxy Tool Shed:
+ * http://toolshed.g2.bx.psu.edu/view/peterjc/tmhmm_and_signalp
+ * http://toolshed.g2.bx.psu.edu/view/peterjc/seq_filter_by_id
+
+However, at the time of writing those Galaxy tools have their own dependencies
+required for this workflow which require manual installation (SignalP v3.0
+and TMHMM v2.0).
