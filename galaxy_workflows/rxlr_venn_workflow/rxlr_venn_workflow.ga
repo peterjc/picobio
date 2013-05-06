@@ -158,6 +158,13 @@
                     "action_arguments": {}, 
                     "action_type": "HideDatasetAction", 
                     "output_name": "out_file1"
+                }, 
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Positive Whisson et al. (2007) results"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
                 }
             }, 
             "tool_errors": null, 
@@ -193,6 +200,13 @@
                     "action_arguments": {}, 
                     "action_type": "HideDatasetAction", 
                     "output_name": "out_file1"
+                }, 
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Positive Win et al. (2007) results"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
                 }
             }, 
             "tool_errors": null, 
@@ -227,6 +241,13 @@
                 "HideDatasetActionout_file1": {
                     "action_arguments": {}, 
                     "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }, 
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Positive Bhattacharjee et al. (2006) results"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
                     "output_name": "out_file1"
                 }
             }, 
@@ -276,6 +297,13 @@
                     "action_arguments": {}, 
                     "action_type": "HideDatasetAction", 
                     "output_name": "output_pos"
+                }, 
+                "RenameDatasetActionoutput_pos": {
+                    "action_arguments": {
+                        "newname": "Positive Whisson et al. (2007) results"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "output_pos"
                 }
             }, 
             "tool_errors": null, 
@@ -290,7 +318,7 @@
             "id": 8, 
             "input_connections": {
                 "sets_0|set": {
-                    "id": 6, 
+                    "id": 4, 
                     "output_name": "out_file1"
                 }, 
                 "sets_1|set": {
@@ -298,7 +326,7 @@
                     "output_name": "out_file1"
                 }, 
                 "sets_2|set": {
-                    "id": 4, 
+                    "id": 6, 
                     "output_name": "out_file1"
                 }, 
                 "universe|main": {
@@ -329,7 +357,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "venn_list", 
-            "tool_state": "{\"__page__\": 0, \"universe\": \"{\\\"main\\\": null, \\\"type_select\\\": \\\"explicit\\\", \\\"__current_case__\\\": 0}\", \"sets\": \"[{\\\"__index__\\\": 0, \\\"set\\\": null, \\\"lab\\\": \\\"Bhattacharjee et al\\\"}, {\\\"__index__\\\": 1, \\\"set\\\": null, \\\"lab\\\": \\\"Win et al\\\"}, {\\\"__index__\\\": 2, \\\"set\\\": null, \\\"lab\\\": \\\"Whisson et al\\\"}]\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"main_lab\": \"\\\"Venn Diagram comparing RXLR predictions\\\"\"}", 
+            "tool_state": "{\"__page__\": 0, \"universe\": \"{\\\"main\\\": null, \\\"type_select\\\": \\\"explicit\\\", \\\"__current_case__\\\": 0}\", \"sets\": \"[{\\\"__index__\\\": 0, \\\"set\\\": null, \\\"lab\\\": \\\"Whisson et al.\\\"}, {\\\"__index__\\\": 1, \\\"set\\\": null, \\\"lab\\\": \\\"Win et al.\\\"}, {\\\"__index__\\\": 2, \\\"set\\\": null, \\\"lab\\\": \\\"Bhattacharjee et al.\\\"}]\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"main_lab\": \"\\\"Venn Diagram comparing RXLR predictions\\\"\"}", 
             "tool_version": "0.0.4", 
             "type": "tool", 
             "user_outputs": []
@@ -372,6 +400,13 @@
                 "HideDatasetActionoutput_pos": {
                     "action_arguments": {}, 
                     "action_type": "HideDatasetAction", 
+                    "output_name": "output_pos"
+                }, 
+                "RenameDatasetActionoutput_pos": {
+                    "action_arguments": {
+                        "newname": "Positive Whisson et al. (2007) and Win et al. (2007) results"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
                     "output_name": "output_pos"
                 }
             }, 
