@@ -13,3 +13,13 @@ http://dx.doi.org/10.1016/j.jmb.2004.05.028
 
 Krogh A, Larsson B, von Heijne G, Sonnhammer E (2001) Predicting transmembrane protein topology with a hidden Markov model: application to complete genomes. J Mol Biol 305: 567- 580.
 http://dx.doi.org/10.1006/jmbi.2000.4315
+
+
+Availability
+============
+
+This workflow is available on the main Galaxy Tool Shed:
+http://toolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
+
+Development is being done on github here:
+https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
