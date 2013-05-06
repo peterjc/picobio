@@ -5,5 +5,5 @@
     <!-- Revision 2:abdd608c869b on the main tool shed is v0.0.5, the current latest - but older should be OK -->
     <repository toolshed="http://toolshed.g2.bx.psu.edu" name="seq_filter_by_id" owner="peterjc" changeset_revision="abdd608c869b" />
     <!-- Revision 0:baf7031d470e on the main tool shed is v0.0.3, currently the only revision -->
-    <repository toolshed="http://toolshed.g2.bx.psu.edu" name="venn_list " owner="peterjc" changeset_revision="baf7031d470e" />
+    <repository toolshed="http://toolshed.g2.bx.psu.edu" name="venn_list" owner="peterjc" changeset_revision="baf7031d470e" />
 </repositories>
