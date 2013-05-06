@@ -1,0 +1,428 @@
+{
+    "a_galaxy_workflow": "true", 
+    "annotation": "", 
+    "format-version": "0.1", 
+    "name": "3 RXLR methods, Venn Diagram, overlap FASTA", 
+    "steps": {
+        "0": {
+            "annotation": "", 
+            "id": 0, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "", 
+                    "name": "Input Dataset"
+                }
+            ], 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 200, 
+                "top": 363
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"Input Dataset\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": []
+        }, 
+        "1": {
+            "annotation": "", 
+            "id": 1, 
+            "input_connections": {
+                "fasta_file": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "name": "RXLR Motifs", 
+            "outputs": [
+                {
+                    "name": "tabular_file", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 420, 
+                "top": 363
+            }, 
+            "post_job_actions": {
+                "HideDatasetActiontabular_file": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "rxlr_motifs", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Whisson2007\\\"\"}", 
+            "tool_version": "0.0.5", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "2": {
+            "annotation": "", 
+            "id": 2, 
+            "input_connections": {
+                "fasta_file": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "name": "RXLR Motifs", 
+            "outputs": [
+                {
+                    "name": "tabular_file", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 420, 
+                "top": 483
+            }, 
+            "post_job_actions": {
+                "HideDatasetActiontabular_file": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "rxlr_motifs", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Win2007\\\"\"}", 
+            "tool_version": "0.0.5", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "3": {
+            "annotation": "", 
+            "id": 3, 
+            "input_connections": {
+                "fasta_file": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "name": "RXLR Motifs", 
+            "outputs": [
+                {
+                    "name": "tabular_file", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 420, 
+                "top": 603
+            }, 
+            "post_job_actions": {
+                "HideDatasetActiontabular_file": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "rxlr_motifs", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Bhattacharjee2006\\\"\"}", 
+            "tool_version": "0.0.5", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "4": {
+            "annotation": "", 
+            "id": 4, 
+            "input_connections": {
+                "input": {
+                    "id": 1, 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 640, 
+                "top": 363
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionout_file1": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "Filter1", 
+            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_version": "1.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "5": {
+            "annotation": "", 
+            "id": 5, 
+            "input_connections": {
+                "input": {
+                    "id": 2, 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 640, 
+                "top": 483
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionout_file1": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "Filter1", 
+            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_version": "1.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "6": {
+            "annotation": "", 
+            "id": 6, 
+            "input_connections": {
+                "input": {
+                    "id": 3, 
+                    "output_name": "tabular_file"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 640, 
+                "top": 603
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionout_file1": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "Filter1", 
+            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_version": "1.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "7": {
+            "annotation": "", 
+            "id": 7, 
+            "input_connections": {
+                "input_file": {
+                    "id": 0, 
+                    "output_name": "output"
+                }, 
+                "input_tabular": {
+                    "id": 4, 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter sequences by ID", 
+            "outputs": [
+                {
+                    "name": "output_pos", 
+                    "type": "fasta"
+                }, 
+                {
+                    "name": "output_neg", 
+                    "type": "fasta"
+                }
+            ], 
+            "position": {
+                "left": 944, 
+                "top": 753
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutput_neg": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output_neg"
+                }, 
+                "HideDatasetActionoutput_pos": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output_pos"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "seq_filter_by_id", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_version": "0.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "8": {
+            "annotation": "", 
+            "id": 8, 
+            "input_connections": {
+                "sets_0|set": {
+                    "id": 6, 
+                    "output_name": "out_file1"
+                }, 
+                "sets_1|set": {
+                    "id": 5, 
+                    "output_name": "out_file1"
+                }, 
+                "sets_2|set": {
+                    "id": 4, 
+                    "output_name": "out_file1"
+                }, 
+                "universe|main": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Venn Diagram", 
+            "outputs": [
+                {
+                    "name": "PDF", 
+                    "type": "pdf"
+                }
+            ], 
+            "position": {
+                "left": 1086, 
+                "top": 200
+            }, 
+            "post_job_actions": {}, 
+            "tool_errors": null, 
+            "tool_id": "venn_list", 
+            "tool_state": "{\"__page__\": 0, \"universe\": \"{\\\"main\\\": null, \\\"type_select\\\": \\\"explicit\\\", \\\"__current_case__\\\": 0}\", \"sets\": \"[{\\\"__index__\\\": 0, \\\"set\\\": null, \\\"lab\\\": \\\"Bhattacharjee et al\\\"}, {\\\"__index__\\\": 1, \\\"set\\\": null, \\\"lab\\\": \\\"Win et al\\\"}, {\\\"__index__\\\": 2, \\\"set\\\": null, \\\"lab\\\": \\\"Whisson et al\\\"}]\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"main_lab\": \"\\\"Venn Diagram\\\"\"}", 
+            "tool_version": "0.0.3", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "9": {
+            "annotation": "", 
+            "id": 9, 
+            "input_connections": {
+                "input_file": {
+                    "id": 7, 
+                    "output_name": "output_pos"
+                }, 
+                "input_tabular": {
+                    "id": 5, 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter sequences by ID", 
+            "outputs": [
+                {
+                    "name": "output_pos", 
+                    "type": "fasta"
+                }, 
+                {
+                    "name": "output_neg", 
+                    "type": "fasta"
+                }
+            ], 
+            "position": {
+                "left": 1321, 
+                "top": 621
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutput_neg": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output_neg"
+                }, 
+                "HideDatasetActionoutput_pos": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output_pos"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "seq_filter_by_id", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_version": "0.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "10": {
+            "annotation": "", 
+            "id": 10, 
+            "input_connections": {
+                "input_file": {
+                    "id": 9, 
+                    "output_name": "output_pos"
+                }, 
+                "input_tabular": {
+                    "id": 6, 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Filter sequences by ID", 
+            "outputs": [
+                {
+                    "name": "output_pos", 
+                    "type": "fasta"
+                }, 
+                {
+                    "name": "output_neg", 
+                    "type": "fasta"
+                }
+            ], 
+            "position": {
+                "left": 1641, 
+                "top": 391
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutput_neg": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output_neg"
+                }, 
+                "RenameDatasetActionoutput_pos": {
+                    "action_arguments": {
+                        "newname": "RXLR by all 3 methods"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "output_pos"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "seq_filter_by_id", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_version": "0.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }
+    }
+}
