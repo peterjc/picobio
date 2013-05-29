@@ -16,7 +16,8 @@ main_caption = "Potato flower"
 seq = str(SeqIO.read("SpaA1.fasta", "fasta").seq) * 10
 shape = (400, 300)
 shape_rgb = (400, 300, 4)
-scale = 0.125 * cm #per bp
+h_scale = 0.140 * cm #per bp
+v_scale = 0.125 * cm #per bp
 
 #Original is 1274 x 937 pixels, try about 20%
 pixels = np.product(shape)
@@ -39,9 +40,7 @@ assert pixels <= len(seq)
 assert 0 <= data.min() <= data.max() <= 255
 
 #Open PDF
-#TODO - Horizontal scale per pixel should be more then vertical
-#(pixels on digital cameras/monitors are not square)
-width, height = page_size = [x * scale for x in shape[::-1]]
+width, height = page_size = h_scale * shape[1], v_scale * shape[0]
 c = canvas.Canvas(pdf_file, page_size)
 c.setTitle(main_caption)
 d = Drawing(*page_size)
@@ -58,7 +57,7 @@ for row in range(shape[0]):
         color = colors.Color(r / r_max, g / g_max, b / b_max)
         #color = colors.CMYKColor(black = (255 - data[col, row]) / 255.0)
         #From top left?
-        s = String((col + 0.5) * scale, (shape[0]-row) * scale,
+        s = String((col + 0.5) * h_scale, (shape[0]-row) * v_scale,
                    seq[base], fillColor = color,
                    fontSize = 4, textAnchor = "middle")
         d.add(s)
