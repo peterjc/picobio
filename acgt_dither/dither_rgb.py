@@ -69,6 +69,11 @@ pdf_file = "potato_flower_%s.pdf"
 main_caption = "Potato flower"
 
 seq = str(SeqIO.read("chr01.fasta", "fasta").seq)
+#Reduce runs of N to a single N to avoid visual distraction
+while "NNNNN" in seq:
+    seq = seq.replace("NNNNN", "N")
+while "NN" in seq:
+    seq = seq.replace("NN", "N")
 
 for name, shape in [("A1", (424, 672)),
                     ("A2", (300, 475)),
