@@ -5,7 +5,7 @@ from PIL import Image
 from reportlab.pdfgen import canvas
 from reportlab.graphics import renderPDF
 from reportlab.graphics.shapes import Drawing, String, Line, Rect, Wedge
-from reportlab.lib.units import cm, inch
+from reportlab.lib.units import mm, cm, inch
 from reportlab.lib import colors
 
 png_file = "potato_flower.png"
@@ -43,6 +43,7 @@ assert 0 <= data.min() <= data.max() <= 255
 
 #Open PDF
 width, height = page_size = h_scale * shape[1], v_scale * shape[0]
+print "Creating %s, %i by %i mm" % (pdf_file, width / mm, height / mm)
 c = canvas.Canvas(pdf_file, page_size)
 c.setTitle(main_caption)
 d = Drawing(*page_size)
