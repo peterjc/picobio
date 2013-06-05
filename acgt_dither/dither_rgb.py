@@ -52,7 +52,7 @@ A0 841 x 1189 mm -> 600 x 951 pixels
 A1 594 x 841 mm --> 424 x 672 pixels
 A2 420 x 594 mm --> 300 x 475 pixels
 A3 297 x 420 mm --> 212 x 336 pixels
-A4 210 x 297 mm
+A4 210 x 297 mm --> 150 x 237 pixels
 """
 
 #print "A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale)
@@ -63,6 +63,8 @@ A4 210 x 297 mm
 #--> A2: Suggest width 300, height 475 pixels
 #print "A3: Suggest width %i, height %i pixels" % (297 * mm / h_scale, 420 * mm / v_scale)
 #--> A3: Suggest width 212, height 336 pixels
+#print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale) 
+#--> A4: Suggest width 150, height 237 pixels
 
 png_file = "potato_flower_424x672.png"
 pdf_file = "potato_flower_%s.pdf"
@@ -75,9 +77,13 @@ while "NNNNN" in seq:
 while "NN" in seq:
     seq = seq.replace("NN", "N")
 
-for name, shape in [("A1", (424, 672)),
-                    ("A2", (300, 475)),
-                    ("A3", (212, 336))]:
+for name, shape in [
+        ("A4", (150, 237)),
+        ("A3", (212, 336)),
+        ("A2", (300, 475)),
+        ("A1", (424, 672)),
+        #("A0", (600, 951)),
+        ]:
     print "Size %s, using %i by %i pixels" % (name, shape[0], shape[1])
     im = Image.open(png_file).resize(shape)
     run(im, seq, pdf_file % name, main_caption)
