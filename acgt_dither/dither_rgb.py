@@ -13,7 +13,6 @@ pdf_file = "potato_flower.pdf"
 main_caption = "Potato flower"
 
 #Load sequence
-seq = str(SeqIO.read("SpaA1.fasta", "fasta").seq) * 10
 shape = (400, 300)
 shape_rgb = (400, 300, 4)
 h_scale = 0.140 * cm #per bp
@@ -21,6 +20,9 @@ v_scale = 0.125 * cm #per bp
 
 #Original is 1274 x 937 pixels, try about 20%
 pixels = np.product(shape)
+seq = str(SeqIO.read("chr01.fasta", "fasta").seq[0:pixels])
+assert len(seq) == pixels
+
 im = Image.open(png_file).resize(shape)
 #im.show()
 #data = im.getdata()
