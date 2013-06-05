@@ -8,6 +8,8 @@ from reportlab.graphics.shapes import Drawing, String, Line, Rect, Wedge
 from reportlab.lib.units import mm, cm, inch
 from reportlab.lib import colors
 
+#These are hueristic, and currently slighlty squash the image vertically,
+#so h_scale should be a little smaller or the v_scale a little bigger.
 h_scale = 0.140 * cm #per bp
 v_scale = 0.125 * cm #per bp
 
@@ -44,16 +46,6 @@ def run(im, seq, pdf_file, main_caption):
     renderPDF.draw(d, c, 0, 0)
     c.showPage()
     c.save()
-
-"""
-We want a portrait poster...
-
-A0 841 x 1189 mm -> 600 x 951 pixels
-A1 594 x 841 mm --> 424 x 672 pixels
-A2 420 x 594 mm --> 300 x 475 pixels
-A3 297 x 420 mm --> 212 x 336 pixels
-A4 210 x 297 mm --> 150 x 237 pixels
-"""
 
 #print "A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale)
 #--> A0: Suggest width 600, height 951 pixels
