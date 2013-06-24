@@ -58,7 +58,8 @@ def run(im, seq, pdf_file, main_caption):
 #print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale) 
 #--> A4: Suggest width 150, height 237 pixels
 
-png_file = "potato_flower_424x672.png"
+png_fileA = "potato_flower_424x672.png"
+png_fileB = "potato_flower_600x951.png"
 pdf_file = "potato_flower_%s.pdf"
 main_caption = "Potato flower"
 
@@ -69,12 +70,12 @@ while "NNNNN" in seq:
 while "NN" in seq:
     seq = seq.replace("NN", "N")
 
-for name, shape in [
-        ("A4", (150, 237)),
-        ("A3", (212, 336)),
-        ("A2", (300, 475)),
-        ("A1", (424, 672)),
-        #("A0", (600, 951)),
+for name, shape, png_file in [
+        ("A4", (150, 237), png_fileB),
+        ("A3", (212, 336), png_fileA),
+        ("A2", (300, 475), png_fileB),
+        ("A1", (424, 672), png_fileA),
+        ("A0", (600, 951), png_fileB),
         ]:
     print "Size %s, using %i by %i pixels" % (name, shape[0], shape[1])
     im = Image.open(png_file).resize(shape)
