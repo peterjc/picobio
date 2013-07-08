@@ -21,6 +21,9 @@ Availability
 This workflow is available on the main Galaxy Tool Shed:
 http://toolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
 
+Test releases (which should not be used) are on the Test Tool Shed:
+http://testtoolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
+
 Development is being done on github here:
 https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
 
@@ -35,3 +38,22 @@ These dependencies should be resolved automatically via the Galaxy Tool Shed:
 However, at the time of writing those Galaxy tools have their own dependencies
 required for this workflow which require manual installation (SignalP v3.0
 and TMHMM v2.0).
+
+
+Developers
+==========
+
+This workflow is under source code control here:
+
+https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
+
+To prepare the tar-ball for uploading to the Tool Shed, I use this:
+
+$ tar -cf secreted_protein_workflow.tar.gz README.txt repository_dependencies.xml secreted_protein_workflow.ga
+
+Check this,
+
+$ tar -tzf secreted_protein_workflow.tar.gz 
+README.txt
+repository_dependencies.xml
+secreted_protein_workflow.ga
