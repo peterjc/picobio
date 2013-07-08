@@ -29,12 +29,15 @@ Availability
 
 This workflow is available to download and/or install from the main
 Galaxy Tool Shed:
+
 http://toolshed.g2.bx.psu.edu/view/peterjc/rxlr_venn_workflow
 
 Test releases (which should not normally be used) are on the Test Tool Shed:
+
 http://testtoolshed.g2.bx.psu.edu/view/peterjc/rxlr_venn_workflow
 
 Development is being done on github here:
+
 https://github.com/peterjc/picobio/tree/master/galaxy_workflows/rxlr_venn_workflow
 
 
@@ -60,11 +63,11 @@ https://github.com/peterjc/picobio/tree/master/galaxy_workflows/rxlr_venn_workfl
 
 To prepare the tar-ball for uploading to the Tool Shed, I use this:
 
-$ tar -cf rxlr_venn_workflow.tar.gz README.txt repository_dependencies.xml rxlr_venn_workflow.ga
+    $ tar -cf rxlr_venn_workflow.tar.gz README.txt repository_dependencies.xml rxlr_venn_workflow.ga
 
 Check this,
 
-$ tar -tzf rxlr_venn_workflow.tar.gz
-README.txt
-repository_dependencies.xml
-rxlr_venn_workflow.ga
+    $ tar -tzf rxlr_venn_workflow.tar.gz
+    README.txt
+    repository_dependencies.xml
+    rxlr_venn_workflow.ga

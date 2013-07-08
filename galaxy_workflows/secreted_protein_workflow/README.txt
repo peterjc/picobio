@@ -39,12 +39,15 @@ Availability
 
 This workflow is available to download and/or install from the main
 Galaxy Tool Shed:
+
 http://toolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
 
 Test releases (which should not normally be used) are on the Test Tool Shed:
+
 http://testtoolshed.g2.bx.psu.edu/view/peterjc/secreted_protein_workflow
 
 Development is being done on github here:
+
 https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
 
 
@@ -69,11 +72,11 @@ https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein
 
 To prepare the tar-ball for uploading to the Tool Shed, I use this:
 
-$ tar -cf secreted_protein_workflow.tar.gz README.txt repository_dependencies.xml secreted_protein_workflow.ga
+    $ tar -cf secreted_protein_workflow.tar.gz README.txt repository_dependencies.xml secreted_protein_workflow.ga
 
 Check this,
 
-$ tar -tzf secreted_protein_workflow.tar.gz 
-README.txt
-repository_dependencies.xml
-secreted_protein_workflow.ga
+    $ tar -tzf secreted_protein_workflow.tar.gz 
+    README.txt
+    repository_dependencies.xml
+    secreted_protein_workflow.ga
