@@ -27,10 +27,11 @@ http://dx.doi.org/10.1371/journal.ppat.0020050
 Availability
 ============
 
-This workflow is available on the main Galaxy Tool Shed:
+This workflow is available to download and/or install from the main
+Galaxy Tool Shed:
 http://toolshed.g2.bx.psu.edu/view/peterjc/rxlr_venn_workflow
 
-Test releases (which should not be used) are on the Test Tool Shed:
+Test releases (which should not normally be used) are on the Test Tool Shed:
 http://testtoolshed.g2.bx.psu.edu/view/peterjc/rxlr_venn_workflow
 
 Development is being done on github here:
