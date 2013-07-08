@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <repositories description="This requires my SignalP and TMHMM wrapers, and my FASTA filtering tool.">
     <!-- Revision 15:6abd809cefdd on the main tool shed is v0.2.4, the current latest - but older should be OK -->
-    <repository ame="tmhmm_and_signalp" owner="peterjc" />
+    <repository name="tmhmm_and_signalp" owner="peterjc" />
     <!-- Revision 2:abdd608c869b on the main tool shed is v0.0.5, the current latest - but older should be OK -->
     <repository name="seq_filter_by_id" owner="peterjc" />
     <!-- Revisiion 2:c96bef0643dc on the main tool shed is v0.0.3, the current latest -->
