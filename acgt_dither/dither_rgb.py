@@ -1,3 +1,4 @@
+import os
 from Bio import SeqIO
 import numpy as np
 from PIL import Image
@@ -58,25 +59,35 @@ def run(im, seq, pdf_file, main_caption):
 #print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale) 
 #--> A4: Suggest width 150, height 237 pixels
 
-png_fileA = "potato_flower_424x672.png"
-png_fileB = "potato_flower_600x951.png"
-pdf_file = "potato_flower_%s.pdf"
-main_caption = "Potato flower"
+for name, seq_file in [
+        ("Potato flower", "chr01.fasta"),
+        ("Potato branch", "chr02.fasta"),
+        ("Potato tubers", "chr03.fasta"),
+    ]:
+    stem = name.lower().replace(" ", "_")
+    png_fileA = "%s_424x672.png" % stem
+    png_fileB = "%s_600x951.png" % stem
+    pdf_file = stem + "_%s.pdf"
 
-seq = str(SeqIO.read("chr01.fasta", "fasta").seq)
-#Reduce runs of N to a single N to avoid visual distraction
-while "NNNNN" in seq:
-    seq = seq.replace("NNNNN", "N")
-while "NN" in seq:
-    seq = seq.replace("NN", "N")
+    seq = str(SeqIO.read(seq_file, "fasta").seq)
+    #Reduce runs of N to a single N to avoid visual distraction
+    while "NNNNN" in seq:
+        seq = seq.replace("NNNNN", "N")
+    while "NN" in seq:
+        seq = seq.replace("NN", "N")
 
-for name, shape, png_file in [
-        ("A4", (150, 237), png_fileB),
-        ("A3", (212, 336), png_fileA),
-        ("A2", (300, 475), png_fileB),
-        ("A1", (424, 672), png_fileA),
-        ("A0", (600, 951), png_fileB),
+    print "Drawing %s using %s" % (name, seq_file)
+    for name, shape, png_file in [
+            ("A4", (150, 237), png_fileB),
+            ("A3", (212, 336), png_fileA),
+            ("A2", (300, 475), png_fileB),
+            ("A1", (424, 672), png_fileA),
+            ("A0", (600, 951), png_fileB),
         ]:
-    print "Size %s, using %i by %i pixels" % (name, shape[0], shape[1])
-    im = Image.open(png_file).resize(shape)
-    run(im, seq, pdf_file % name, main_caption)
+        if not os.path.isfile(png_file):
+            print "Missing %s" % png_file
+            continue
+        print "Size %s, using %i by %i pixels from %s" \
+            % (name, shape[0], shape[1], png_file)
+        im = Image.open(png_file).resize(shape)
+        run(im, seq, pdf_file % name, name)
