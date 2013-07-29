@@ -60,13 +60,32 @@ def run(im, seq, pdf_file, main_caption):
 #--> A4: Suggest width 150, height 237 pixels
 
 for name, seq_file in [
+        ("Purple on black 002", "chr06.fasta"),
+        #("Potato field 001", "chr07.fasta"),
+        ("Potato field 002", "chr07.fasta"),
+        ("Potato roots 001", "chr08.fasta"),
+        ("Tractor 001", "chr09.fasta"),
         ("Potato flower", "chr01.fasta"),
-        ("Potato branch", "chr02.fasta"),
-        ("Potato tubers", "chr03.fasta"),
+        #("Potato branch", "chr02.fasta"),
+        ("Potato branch center", "chr02.fasta"),
+        ("new branch 001", "chr02.fasta"),
+        #("Potato tubers", "chr03.fasta"),
+        #("Potato tubers2", "chr03.fasta"),
+        ("Potato tubers 003", "chr03.fasta"),
+        ("Potato leaves", "chr04.fasta"),
+        ("Potato blue flowers", "chr05.fasta"),
+        ("Blue Flower Brown", "chr05.fasta"),
+        ("Blue Flower dark", "chr05.fasta"),
     ]:
     stem = name.lower().replace(" ", "_")
+    png_file = "%s.png" % stem
     png_fileA = "%s_424x672.png" % stem
     png_fileB = "%s_600x951.png" % stem
+    if not os.path.isfile(png_fileB):
+        png_fileB = png_file
+    if not os.path.isfile(png_fileA):
+        png_fileA = png_fileB
+    
     pdf_file = stem + "_%s.pdf"
 
     seq = str(SeqIO.read(seq_file, "fasta").seq)
@@ -86,6 +105,9 @@ for name, seq_file in [
         ]:
         if not os.path.isfile(png_file):
             print "Missing %s" % png_file
+            continue
+        if os.path.isfile(pdf_file % name):
+            print "Skipping as %s exists..." % (pdf_file % name)
             continue
         print "Size %s, using %i by %i pixels from %s" \
             % (name, shape[0], shape[1], png_file)
