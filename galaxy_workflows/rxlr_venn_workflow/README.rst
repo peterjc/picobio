@@ -5,6 +5,20 @@ passing all three methods.
 See http://www.galaxyproject.org for information about the Galaxy Project.
 
 
+Sample Data
+===========
+
+This workflow was developed and run on several Phytophthora species.
+For example, try the "Phyca11" protein set for Phytophthora capsici:
+
+http://genome.jgi-psf.org/Phyca11/download/Phyca11_filtered_proteins.fasta.gz
+
+You can upload this directly into Galaxy via this URL. Galaxy will handle
+removing the gzip compression to give you the FASTA protein file which
+has 19,805 protein sequences. Of these, only 79 sequences pass all three
+of the RXLR prediction tools.
+
+
 Citation
 ========
 
