@@ -24,10 +24,9 @@ has 19,805 protein sequences. The expected results:
 Of these, only 79 sequences pass all three of the RXLR prediction tools,
 while 19643 have no RXLR matches at all.
 
-.. image:: Phyca11_example_output.png
+.. image:: http://raw.github.com/peterjc/picobio/master/galaxy_workflows/rxlr_venn_workflow/Phyca11_example_output.png
    :height: 400px
    :width: 400px
-   :alt: RXLR Venn diagram using Phytophthora capsici (Phyca11)
 
 
 Citation
