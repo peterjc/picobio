@@ -55,8 +55,9 @@ Dependencies
 ============
 
 These dependencies should be resolved automatically via the Galaxy Tool Shed:
- * http://toolshed.g2.bx.psu.edu/view/peterjc/tmhmm_and_signalp
- * http://toolshed.g2.bx.psu.edu/view/peterjc/seq_filter_by_id
+
+* http://toolshed.g2.bx.psu.edu/view/peterjc/tmhmm_and_signalp
+* http://toolshed.g2.bx.psu.edu/view/peterjc/seq_filter_by_id
 
 However, at the time of writing those Galaxy tools have their own
 dependencies required for this workflow which require manual
@@ -72,11 +73,11 @@ https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein
 
 To prepare the tar-ball for uploading to the Tool Shed, I use this:
 
-    $ tar -cf secreted_protein_workflow.tar.gz README.txt repository_dependencies.xml secreted_protein_workflow.ga
+    $ tar -cf secreted_protein_workflow.tar.gz README.rst repository_dependencies.xml secreted_protein_workflow.ga
 
 Check this,
 
     $ tar -tzf secreted_protein_workflow.tar.gz 
-    README.txt
+    README.rst
     repository_dependencies.xml
     secreted_protein_workflow.ga

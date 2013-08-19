@@ -45,9 +45,10 @@ Dependencies
 ============
 
 These dependencies should be resolved automatically via the Galaxy Tool Shed:
- * http://toolshed.g2.bx.psu.edu/view/peterjc/tmhmm_and_signalp
- * http://toolshed.g2.bx.psu.edu/view/peterjc/seq_filter_by_id
- * http://toolshed.g2.bx.psu.edu/view/peterjc/venn_list
+
+* http://toolshed.g2.bx.psu.edu/view/peterjc/tmhmm_and_signalp
+* http://toolshed.g2.bx.psu.edu/view/peterjc/seq_filter_by_id
+* http://toolshed.g2.bx.psu.edu/view/peterjc/venn_list
 
 However, at the time of writing those Galaxy tools have their own dependencies
 required for this workflow which require manual installation (SignalP v3.0,
@@ -63,11 +64,11 @@ https://github.com/peterjc/picobio/tree/master/galaxy_workflows/rxlr_venn_workfl
 
 To prepare the tar-ball for uploading to the Tool Shed, I use this:
 
-    $ tar -cf rxlr_venn_workflow.tar.gz README.txt repository_dependencies.xml rxlr_venn_workflow.ga
+    $ tar -cf rxlr_venn_workflow.tar.gz README.rst repository_dependencies.xml rxlr_venn_workflow.ga
 
 Check this,
 
     $ tar -tzf rxlr_venn_workflow.tar.gz
-    README.txt
+    README.rst
     repository_dependencies.xml
     rxlr_venn_workflow.ga
