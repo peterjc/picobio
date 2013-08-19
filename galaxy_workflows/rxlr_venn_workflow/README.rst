@@ -5,20 +5,28 @@ passing all three methods.
 See http://www.galaxyproject.org for information about the Galaxy Project.
 
 
-References
-==========
+Citation
+========
 
-Stephen C. Whisson, Petra C. Boevink, Lucy Moleleki, et al. (2007)
+If you use this workflow directly, or a derivative of it, in work leading
+to a scientific publication, please cite:
+
+Cock, P.J.A. and Pritchard, L. 2013. Galaxy as a platform for identifying
+candidate pathogen effectors. Chapter 1 in "Plant-Pathogen Interactions:
+Methods and Protocols (Second Edition)"; Methods in Molecular Biology.
+Humana Press, Springer. In press.
+
+Whisson, S.C., Boevink, C.V., Moleleki, L., et al. (2007)
 A translocation signal for delivery of oomycete effector proteins into
 host plant cells. Nature 450:115-118.
 http://dx.doi.org/10.1038/nature06203
 
-Joe Win, William Morgan, Jorunn Bos, et al. (2007)
+Win, J., Morgan, W., Bos, J., et al. (2007)
 Adaptive evolution has targeted the C-terminal domain of the RXLR effectors
 of plant pathogenic oomycetes. The Plant Cell 19:2349-2369.
 http://dx.doi.org/10.1105/tpc.107.051037
 
-Souvik Bhattacharjee, N. Luisa Hiller, Konstantinos Liolios, et al. (2006)
+Bhattacharjee, S., Luisa Hiller, N., Liolios, K., et al. (2006)
 The malarial host-targeting signal is conserved in the Irish potato famine
 pathogen. PLoS Pathogens 2(5):e50.
 http://dx.doi.org/10.1371/journal.ppat.0020050
