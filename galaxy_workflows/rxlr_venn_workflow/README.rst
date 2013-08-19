@@ -15,8 +15,14 @@ http://genome.jgi-psf.org/Phyca11/download/Phyca11_filtered_proteins.fasta.gz
 
 You can upload this directly into Galaxy via this URL. Galaxy will handle
 removing the gzip compression to give you the FASTA protein file which
-has 19,805 protein sequences. Of these, only 79 sequences pass all three
-of the RXLR prediction tools.
+has 19,805 protein sequences. The expected results:
+
+* 89 RXLRs using Whisson et al. (2007)
+* 124 RXLRs using Win et al. (2007)
+* 162 RXLRs using Bhattacharjee et al. (006)
+
+Of these, only 79 sequences pass all three of the RXLR prediction tools,
+while 19643 have no RXLR matches at all.
 
 
 Citation
