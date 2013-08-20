@@ -10,6 +10,20 @@ the candidate effector protocol described in Jones et al. (2009).
 See http://www.galaxyproject.org for information about the Galaxy Project.
 
 
+Sample Data
+===========
+
+This workflow was developed and run on several nematode species. For example,
+try the protein set for Bursaphelenchus xylophilus (Kikuchi et al. 2011):
+
+ftp://ftp.sanger.ac.uk/pub/pathogens/Bursaphelenchus/xylophilus/Assembly-v1.2/BUX.v1.2.genedb.protein.fa.gz
+
+You can upload this directly into Galaxy via this URL. Galaxy will handle
+removing the gzip compression to give you the FASTA protein file which has
+18,074 sequences. The expected result (selecting organism type Eukaryote)
+is a FASTA protein file of 2,297 predicted secreted protein sequences.
+
+
 Citation
 ========
 
