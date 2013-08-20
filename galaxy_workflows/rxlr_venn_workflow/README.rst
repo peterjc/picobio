@@ -19,7 +19,7 @@ has 19,805 protein sequences. The expected results:
 
 * 89 RXLRs using Whisson et al. (2007)
 * 124 RXLRs using Win et al. (2007)
-* 162 RXLRs using Bhattacharjee et al. (006)
+* 162 RXLRs using Bhattacharjee et al. (2006)
 
 Of these, only 79 sequences pass all three of the RXLR prediction tools,
 while 19643 have no RXLR matches at all.
