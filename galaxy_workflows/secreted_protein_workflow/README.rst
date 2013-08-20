@@ -4,8 +4,8 @@ secreted proteins from a given protein FASTA file.
 It runs SignalP v3.0 (Bendtsen et al. 2004) and selects only proteins with a
 strong predicted signal peptide, and then runs TMHMM v2.0 (Krogh et al. 2001)
 on those, and selects only proteins without a predicted trans-membrane helix.
-This workflow was used in Kikuchi et al (2001), and is a simplification of
-the candidate effector protocol described in Jones et al (2009).
+This workflow was used in Kikuchi et al. (2011), and is a simplification of
+the candidate effector protocol described in Jones et al. (2009).
 
 See http://www.galaxyproject.org for information about the Galaxy Project.
 
