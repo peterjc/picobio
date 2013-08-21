@@ -92,6 +92,19 @@ dependencies required for this workflow which require manual
 installation (SignalP v3.0 and TMHMM v2.0).
 
 
+History
+=======
+
+======= ======================================================================
+Version Changes
+------- ----------------------------------------------------------------------
+v0.0.1  - Initial release to Tool Shed (May, 2013)
+        - Expanded README file to include example data
+v0.0.2  - Updated versions of the tools used, inclulding core Galaxy Filter
+          tool to avoid warning about new ``header_lines`` parameter.
+======= ======================================================================
+
+
 Developers
 ==========
 
