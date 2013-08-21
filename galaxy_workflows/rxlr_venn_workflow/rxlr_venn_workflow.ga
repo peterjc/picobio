@@ -1,6 +1,6 @@
 {
     "a_galaxy_workflow": "true", 
-    "annotation": "", 
+    "annotation": "Takes a protein FASTA file, runs three different RXLR motif methods, draws a Venn diagram comparing them, and creates a FASTA file of those proteins passing all three screens.<br />\n<br />\nThis workflow is <a href=\"http://toolshed.g2.bx.psu.edu/view/peterjc/rxlr_venn_workflow\" target=\"_blank\">available on the Galaxy Tool Shed</a> with a README file giving more information including sample data, and full citation details (Cock and Pritchard 2013).", 
     "format-version": "0.1", 
     "name": "3 RXLR methods, Venn Diagram, overlap FASTA", 
     "steps": {

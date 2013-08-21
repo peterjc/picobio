@@ -87,6 +87,19 @@ required for this workflow which require manual installation (SignalP v3.0,
 HMMER v2.0, and the R/Bioconductor package limma).
 
 
+History
+=======
+
+======= ======================================================================
+Version Changes
+------- ----------------------------------------------------------------------
+v0.0.1  - Initial release to Tool Shed (May, 2013)
+        - Expanded README file to include example data
+v0.0.2  - Added link to Tool Shed in the workflow annotation explaining there
+          is a README file with sample data, and a requested citation.
+======= ======================================================================
+
+
 Developers
 ==========
 
