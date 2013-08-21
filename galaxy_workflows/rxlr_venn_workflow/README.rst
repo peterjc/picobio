@@ -95,7 +95,9 @@ Version Changes
 ------- ----------------------------------------------------------------------
 v0.0.1  - Initial release to Tool Shed (May, 2013)
         - Expanded README file to include example data
-v0.0.2  - Added link to Tool Shed in the workflow annotation explaining there
+v0.0.2  - Updated versions of the tools used, inclulding core Galaxy Filter
+          tool to avoid warning about new ``header_lines`` parameter.
+        - Added link to Tool Shed in the workflow annotation explaining there
           is a README file with sample data, and a requested citation.
 ======= ======================================================================
 

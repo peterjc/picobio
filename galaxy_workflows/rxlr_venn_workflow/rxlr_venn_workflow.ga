@@ -57,8 +57,8 @@
             }, 
             "tool_errors": null, 
             "tool_id": "rxlr_motifs", 
-            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Whisson2007\\\"\"}", 
-            "tool_version": "0.0.6", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"__rerun_remap_job_id__\": null, \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Whisson2007\\\"\"}", 
+            "tool_version": "0.0.7", 
             "type": "tool", 
             "user_outputs": []
         }, 
@@ -92,8 +92,8 @@
             }, 
             "tool_errors": null, 
             "tool_id": "rxlr_motifs", 
-            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Win2007\\\"\"}", 
-            "tool_version": "0.0.6", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"__rerun_remap_job_id__\": null, \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Win2007\\\"\"}", 
+            "tool_version": "0.0.7", 
             "type": "tool", 
             "user_outputs": []
         }, 
@@ -127,8 +127,8 @@
             }, 
             "tool_errors": null, 
             "tool_id": "rxlr_motifs", 
-            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Bhattacharjee2006\\\"\"}", 
-            "tool_version": "0.0.6", 
+            "tool_state": "{\"__page__\": 0, \"fasta_file\": \"null\", \"__rerun_remap_job_id__\": null, \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"model\": \"\\\"Bhattacharjee2006\\\"\"}", 
+            "tool_version": "0.0.7", 
             "type": "tool", 
             "user_outputs": []
         }, 
@@ -169,7 +169,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "Filter1", 
-            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_state": "{\"__page__\": 0, \"__rerun_remap_job_id__\": null, \"cond\": \"\\\"c2=='Y'\\\"\", \"input\": \"null\", \"header_lines\": \"\\\"0\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
             "tool_version": "1.1.0", 
             "type": "tool", 
             "user_outputs": []
@@ -211,7 +211,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "Filter1", 
-            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_state": "{\"__page__\": 0, \"__rerun_remap_job_id__\": null, \"cond\": \"\\\"c2=='Y'\\\"\", \"input\": \"null\", \"header_lines\": \"\\\"0\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
             "tool_version": "1.1.0", 
             "type": "tool", 
             "user_outputs": []
@@ -253,7 +253,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "Filter1", 
-            "tool_state": "{\"__page__\": 0, \"cond\": \"\\\"c2=='Y'\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"input\": \"null\"}", 
+            "tool_state": "{\"__page__\": 0, \"__rerun_remap_job_id__\": null, \"cond\": \"\\\"c2=='Y'\\\"\", \"input\": \"null\", \"header_lines\": \"\\\"0\\\"\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
             "tool_version": "1.1.0", 
             "type": "tool", 
             "user_outputs": []
@@ -308,7 +308,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "seq_filter_by_id", 
-            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"__rerun_remap_job_id__\": null, \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
             "tool_version": "0.0.5", 
             "type": "tool", 
             "user_outputs": []
@@ -357,7 +357,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "venn_list", 
-            "tool_state": "{\"__page__\": 0, \"universe\": \"{\\\"main\\\": null, \\\"type_select\\\": \\\"explicit\\\", \\\"__current_case__\\\": 0}\", \"sets\": \"[{\\\"__index__\\\": 0, \\\"set\\\": null, \\\"lab\\\": \\\"Whisson et al.\\\"}, {\\\"__index__\\\": 1, \\\"set\\\": null, \\\"lab\\\": \\\"Win et al.\\\"}, {\\\"__index__\\\": 2, \\\"set\\\": null, \\\"lab\\\": \\\"Bhattacharjee et al.\\\"}]\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"main_lab\": \"\\\"Venn Diagram comparing RXLR predictions\\\"\"}", 
+            "tool_state": "{\"__page__\": 0, \"universe\": \"{\\\"main\\\": null, \\\"type_select\\\": \\\"explicit\\\", \\\"__current_case__\\\": 0}\", \"__rerun_remap_job_id__\": null, \"main_lab\": \"\\\"Venn Diagram comparing RXLR predictions\\\"\", \"sets\": \"[{\\\"__index__\\\": 0, \\\"set\\\": null, \\\"lab\\\": \\\"Whisson et al.\\\"}, {\\\"__index__\\\": 1, \\\"set\\\": null, \\\"lab\\\": \\\"Win et al.\\\"}, {\\\"__index__\\\": 2, \\\"set\\\": null, \\\"lab\\\": \\\"Bhattacharjee et al.\\\"}]\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
             "tool_version": "0.0.4", 
             "type": "tool", 
             "user_outputs": []
@@ -412,7 +412,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "seq_filter_by_id", 
-            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"__rerun_remap_job_id__\": null, \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
             "tool_version": "0.0.5", 
             "type": "tool", 
             "user_outputs": []
@@ -462,7 +462,7 @@
             }, 
             "tool_errors": null, 
             "tool_id": "seq_filter_by_id", 
-            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
+            "tool_state": "{\"__page__\": 0, \"output_choice_cond\": \"{\\\"output_choice\\\": \\\"pos\\\", \\\"__current_case__\\\": 1}\", \"input_file\": \"null\", \"__rerun_remap_job_id__\": null, \"input_tabular\": \"null\", \"chromInfo\": \"\\\"/opt/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"columns\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"1\\\"]}\"}", 
             "tool_version": "0.0.5", 
             "type": "tool", 
             "user_outputs": []
