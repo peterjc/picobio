@@ -8,8 +8,8 @@ See http://www.galaxyproject.org for information about the Galaxy Project.
 Sample Data
 ===========
 
-This workflow was developed and run on several Phytophthora species.
-For example, try the "Phyca11" protein set for Phytophthora capsici:
+This workflow was developed and run on several *Phytophthora* species.
+For example, try the "Phyca11" protein set for *Phytophthora capsici*:
 
 http://genome.jgi-psf.org/Phyca11/download/Phyca11_filtered_proteins.fasta.gz
 
@@ -39,6 +39,14 @@ Cock, P.J.A. and Pritchard, L. 2013. Galaxy as a platform for identifying
 candidate pathogen effectors. Chapter 1 in "Plant-Pathogen Interactions:
 Methods and Protocols (Second Edition)"; Methods in Molecular Biology.
 Humana Press, Springer. In press.
+
+For the associated RXLR Galaxy tool, please cite:
+
+Cock, P.J.A., Grüning, B., Paszkiewicz, K. and Pritchard, L. (2013)
+Galaxy tools and workflows for sequence analysis with applications
+in molecular plant pathology. (Submitted).
+
+For the three underlying methods, please cite:
 
 Whisson, S.C., Boevink, C.V., Moleleki, L., et al. (2007)
 A translocation signal for delivery of oomycete effector proteins into
