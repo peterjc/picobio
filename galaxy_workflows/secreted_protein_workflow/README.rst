@@ -14,7 +14,7 @@ Sample Data
 ===========
 
 This workflow was developed and run on several nematode species. For example,
-try the protein set for Bursaphelenchus xylophilus (Kikuchi et al. 2011):
+try the protein set for *Bursaphelenchus xylophilus* (Kikuchi et al. 2011):
 
 ftp://ftp.sanger.ac.uk/pub/pathogens/Bursaphelenchus/xylophilus/Assembly-v1.2/BUX.v1.2.genedb.protein.fa.gz
 
@@ -37,6 +37,10 @@ Humana Press, Springer. In press.
 
 Also consider citing:
 
+Cock, P.J.A., Grüning, B., Paszkiewicz, K. and Pritchard, L. (2013)
+Galaxy tools and workflows for sequence analysis with applications in
+molecular plant pathology. (Submitted).
+
 Bendtsen, J.D., Nielsen, H., von Heijne, G., Brunak, S. (2004)
 Improved prediction of signal peptides: SignalP 3.0. J Mol Biol 340: 783–95.
 http://dx.doi.org/10.1016/j.jmb.2004.05.028
@@ -52,13 +56,13 @@ Additional References
 
 Kikuchi, T., Cotton, J.A., Dalzell, J.J., Hasegawa. K., et al. (2011)
 Genomic insights into the origin of parasitism in the emerging plant
-pathogen Bursaphelenchus xylophilus. PLoS Pathog 7: e1002219.
+pathogen *Bursaphelenchus xylophilus*. PLoS Pathog 7: e1002219.
 http://dx.doi.org/10.1371/journal.ppat.1002219
 
 Jones, J.T., Kumar, A., Pylypenko, L.A., Thirugnanasambandam, A., et al. (2009)
 Identification and functional characterization of effectors in expressed
 sequence tags from various life cycle stages of the potato cyst nematode
-Globodera pallida. Mol Plant Pathol 10: 815–28.
+*Globodera pallida*. Mol Plant Pathol 10: 815–28.
 http://dx.doi.org/10.1111/j.1364-3703.2009.00585.x
 
 
