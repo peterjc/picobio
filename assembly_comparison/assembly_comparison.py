@@ -17,6 +17,7 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
+MIN_HIT = 5000
 
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -69,28 +70,51 @@ gd_track_for_features = gd_diagram.new_track(1,
                                              start=0, end=len(record))
 gd_record_features = gd_track_for_features.new_set()
 
+
 for contig in SeqIO.parse(assembly_fasta, "fasta"):
     if len(gd_diagram.tracks) > 10:
         #For testing, shortcut
         break
     contig_len = len(contig)
-    gd_track_for_contig = gd_diagram.new_track(len(gd_diagram.tracks)+1,
+    assert contig_len <= max_len
+
+    blast_hits = blast_results[contig.id]
+    assert len(blast_hits) == 1
+    hit = blast_hits[0]
+    assert hit.query_id == contig.id
+    assert hit.id == record.id or ("|%s|" % record.id) in hit.id, "%r vs %r" % (hit.id, record.id)
+    blast_hsps = blast_hits.hsps
+    blast_hsps = [hsp for hsp in blast_hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
+    if not blast_hsps:
+        continue
+    blast_hsps.sort(key = lambda hsp: hsp.hit_start)
+    del blast_hits, hit
+
+    gd_track_for_contig = gd_diagram.new_track(2, #insert next to reference
                                                name=contig.id,
-                                               greytrack=True, height=0.5,
-                                               start=0, end=contig_len)
+                                               greytrack=False, height=0.5,
+                                               start=0, end=max_len)
     gd_contig_features = gd_track_for_contig.new_set()
-    for hit in blast_results[contig.id]:
-        assert hit.query_id == contig.id
-        assert hit.id == record.id or ("|%s|" % record.id) in hit.id, "%r vs %r" % (hit.id, record.id)
-        for hsp in hit.hsps:
-            color = colors.firebrick
-            border = colors.lightgrey
-            loc = FeatureLocation(hsp.query_start, hsp.query_end, strand=0)
-            q = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
-            loc = FeatureLocation(hsp.hit_start, hsp.hit_end, strand=0)
-            h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
-            gd_diagram.cross_track_links.append(CrossLink(q, h, color, border))
-                                               
+
+    #Add feature for whole contig,
+    offset = blast_hsps[0].hit_start - blast_hsps[0].query_start
+    offset = min(max(0, offset), max_len - contig_len)
+    loc = FeatureLocation(offset, offset + contig_len, strand=0)
+    gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black)
+    #print "%s (len %i) offset %i" % (contig.id, contig_len, offset)
+
+    #Add cross-links,
+    for hsp in blast_hsps:
+        #print "%s:%i-%i hits %s:%i-%i" % (hsp.query_id, hsp.query_start, hsp.query_end,
+        #                                  hsp.hit_id, hsp.hit_start, hsp.hit_end)
+        color = colors.firebrick
+        border = colors.lightgrey
+        loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
+        q = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
+        loc = FeatureLocation(hsp.hit_start, hsp.hit_end, strand=0)
+        h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
+        gd_diagram.cross_track_links.append(CrossLink(q, h, color, border))
+
 
 gd_feature_set = gd_track_for_features.new_set()
 for feature in record.features:
