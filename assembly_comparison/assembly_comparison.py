@@ -201,8 +201,8 @@ for feature in record.features:
                                label_position="start",
                                label_size=6, label_angle=0)
 
-page = ((3 + 0.5*len(gd_diagram.tracks)) * cm, max_len * cm / 100000.0)
-gd_diagram.draw(format="linear", pagesize=page, fragments=1,
-                start=0, end=max_len)
+page = (100*cm, 100*cm)
+gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
+                pagesize=page, start=0, end=max_len)
 gd_diagram.write(diagram_pdf, "PDF")
 print "Saved %r" % diagram_pdf
