@@ -18,6 +18,7 @@ from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
 MIN_HIT = 5000
+MIN_GAP = 50000
 
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -57,6 +58,8 @@ def do_blast(query_fasta, db_fasta, blast_file):
 
 if not os.path.isfile(blast_file):
     do_blast(assembly_fasta, reference_fasta, blast_file)
+
+contigs = SeqIO.index(assembly_fasta, "fasta")
 blast_results = SearchIO.index(blast_file, "blast-tab")
 
 #TODO - Multiple references (e.g. with plasmids)
@@ -71,44 +74,66 @@ gd_track_for_features = gd_diagram.new_track(1,
 gd_record_features = gd_track_for_features.new_set()
 
 
-for contig in SeqIO.parse(assembly_fasta, "fasta"):
-    #if len(gd_diagram.tracks) > 30:
-    #    #For testing, shortcut
-    #    break
-    contig_len = len(contig)
-    assert contig_len <= max_len
-
-    try:
-        blast_hits = blast_results[contig.id]
-    except KeyError:
-        continue
-    assert len(blast_hits) == 1
-    hit = blast_hits[0]
-    assert hit.query_id == contig.id
-    assert hit.id == record.id or ("|%s|" % record.id) in hit.id, "%r vs %r" % (hit.id, record.id)
-    blast_hsps = blast_hits.hsps
-    blast_hsps = [hsp for hsp in blast_hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
-    if not blast_hsps:
-        continue
-    blast_hsps.sort(key = lambda hsp: hsp.hit_start)
-    del blast_hits, hit
-
-    gd_track_for_contig = gd_diagram.new_track(2, #insert next to reference
-                                               name=contig.id,
-                                               greytrack=False, height=0.5,
-                                               start=0, end=max_len)
-    gd_contig_features = gd_track_for_contig.new_set()
-
-    #Add feature for whole contig,
+def make_offset(blast_hsps):
     if blast_hsps[0].hit_strand == -1 and blast_hsps[-1].hit_strand == -1:
         #Assume whole thing flipped...
         offset = blast_hsps[0].hit_start - blast_hsps[-1].query_start
     else:
         offset = blast_hsps[0].hit_start - blast_hsps[0].query_start
+    #return min(max(0, offset), max_len - contig_len)
+    return offset
+
+#Sort the contigs by horizontal position on the diagram
+#(yes, this does mean parsing the entire BLAST output)
+contig_offset_ids = sorted((make_offset(b.hsps), b.id)
+                           for b in SearchIO.parse(blast_file, "blast-tab"))
+
+
+contig_tracks = []
+for offset, contig_id in contig_offset_ids:
+    #TODO - Use BLAST query length instead of parsing FASTA file?
+    contig_len = len(contigs[contig_id])
+    assert contig_len <= max_len
     offset = min(max(0, offset), max_len - contig_len)
+
+    blast_hits = blast_results[contig_id]
+    assert len(blast_hits) == 1
+    hit = blast_hits[0]
+    assert hit.query_id == contig_id
+    assert hit.id == record.id or ("|%s|" % record.id) in hit.id, "%r vs %r" % (hit.id, record.id)
+    blast_hsps = blast_hits.hsps
+    blast_hsps = [hsp for hsp in blast_hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
+    if not blast_hsps:
+        continue
+    blast_hsps.sort(key = make_offset)
+    del blast_hits, hit
+
+    #Which track can we put this on?
+    gd_track_for_contig = None
+    gd_contig_features = None
+    #print "%s needs offset %i" % (contig_id, offset)
+    for track, fs in contig_tracks:
+        #TODO - Can we calculate max of features instead of _used hack?
+        if fs._used + MIN_GAP < offset:
+            #Good, will fit in this track
+            gd_track_for_contig = track
+            gd_contig_features = fs
+            break
+    if not gd_track_for_contig:
+        #print "Have %i tracks, adding one more" % len(contig_tracks)
+        gd_track_for_contig = gd_diagram.new_track(2, #insert next to reference
+                                                   name=contig_id,
+                                                   greytrack=False, height=0.5,
+                                                   start=0, end=max_len)
+        gd_contig_features = gd_track_for_contig.new_set()
+        contig_tracks.append((gd_track_for_contig, gd_contig_features))
+
+
+    #Add feature for whole contig,
     loc = FeatureLocation(offset, offset + contig_len, strand=0)
     gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black)
-    #print "%s (len %i) offset %i" % (contig.id, contig_len, offset)
+    gd_contig_features._used = offset +contig_len
+    #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
     #Add cross-links,
     for hsp in blast_hsps:
