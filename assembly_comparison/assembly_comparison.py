@@ -73,8 +73,46 @@ gd_track_for_features = gd_diagram.new_track(1,
                                              start=0, end=len(record))
 gd_record_features = gd_track_for_features.new_set()
 
+def reverse_complement_hsp_fragment(frag, query_length):
+    rev = SearchIO.HSPFragment(hit_id=frag.hit_id, query_id=frag.query_id)
+    rev.query_start = query_length - frag.query_end
+    rev.query_end = query_length - frag.query_start
+    rev.hit_start = frag.hit_start
+    rev.hit_end = frag.hit_end
+    if frag.hit_strand == -1:
+        rev.hit_strand = +1
+    elif frag.hit_strand == +1:
+        rev.hit_strand = -1
+    else:
+        #O or None,
+        rev.hit_strand = frag.hit_strand
+    return rev
+
+def reverse_complement_hsp(hsp, query_length):
+    return SearchIO.HSP(fragments = [reverse_complement_hsp_fragment(frag, query_length) \
+                                     for frag in hsp.fragments[::-1]])
+
+def filter_blast(blast_result, query_length):
+    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
+    hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
+    plus = 0
+    minus = 0
+    flipped = False
+    for hsp in hsps:
+        if hsp.hit_strand == -1:
+            minus += hsp.hit_end - hsp.query_start
+        else:
+            plus += hsp.hit_end - hsp.query_start
+    if minus > plus:
+        #Reverse the contig
+        flipped = True
+        hsps = [reverse_complement_hsp(hsp, query_length) for hsp in hsps]
+        hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
+    return make_offset(hsps), blast_result.id, hsps, flipped
 
 def make_offset(blast_hsps):
+    if not blast_hsps:
+        return 0
     if blast_hsps[0].hit_strand == -1 and blast_hsps[-1].hit_strand == -1:
         #Assume whole thing flipped...
         offset = blast_hsps[0].hit_start - blast_hsps[-1].query_start
@@ -85,28 +123,20 @@ def make_offset(blast_hsps):
 
 #Sort the contigs by horizontal position on the diagram
 #(yes, this does mean parsing the entire BLAST output)
-contig_offset_ids = sorted((make_offset(b.hsps), b.id)
-                           for b in SearchIO.parse(blast_file, "blast-tab"))
+#(and yes, also the FASTA file to get the query lengths)
+blast_data = sorted(filter_blast(b, len(contigs[b.id])) \
+                        for b in SearchIO.parse(blast_file, "blast-tab"))
 
 
 contig_tracks = []
-for offset, contig_id in contig_offset_ids:
+for offset, contig_id, blast_hsps, flipped in blast_data:
+    if not blast_hsps:
+        continue
+
     #TODO - Use BLAST query length instead of parsing FASTA file?
     contig_len = len(contigs[contig_id])
     assert contig_len <= max_len
     offset = min(max(0, offset), max_len - contig_len)
-
-    blast_hits = blast_results[contig_id]
-    assert len(blast_hits) == 1
-    hit = blast_hits[0]
-    assert hit.query_id == contig_id
-    assert hit.id == record.id or ("|%s|" % record.id) in hit.id, "%r vs %r" % (hit.id, record.id)
-    blast_hsps = blast_hits.hsps
-    blast_hsps = [hsp for hsp in blast_hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
-    if not blast_hsps:
-        continue
-    blast_hsps.sort(key = make_offset)
-    del blast_hits, hit
 
     #Which track can we put this on?
     gd_track_for_contig = None
@@ -139,12 +169,20 @@ for offset, contig_id in contig_offset_ids:
     for hsp in blast_hsps:
         #print "%s:%i-%i hits %s:%i-%i" % (hsp.query_id, hsp.query_start, hsp.query_end,
         #                                  hsp.hit_id, hsp.hit_start, hsp.hit_end)
-        if hsp.hit_strand == -1:
-            flip = True
-            color = colors.blue
+        if flipped:
+            if hsp.hit_strand == -1:
+                flip = True
+                color = colors.darkgreen
+            else:
+                flip = False
+                color = colors.purple
         else:
-            flip = False
-            color = colors.firebrick
+            if hsp.hit_strand == -1:
+                flip = True
+                color = colors.blue
+            else:
+                flip = False
+                color = colors.firebrick
         border = colors.lightgrey
         loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
         q = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
