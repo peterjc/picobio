@@ -139,14 +139,22 @@ def filter_blast(blast_result, query_length):
         flipped = True
         hsps = [reverse_complement_hsp(hsp, query_length) for hsp in hsps]
         hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
-    return make_offset(hsps), blast_result.id, hsps, flipped
+    return make_offset(hsps, query_length), blast_result.id, hsps, flipped
 
-def make_offset(blast_hsps):
+
+def weighted_mean(values_and_weights):
+    """Sum (value * weights) / Sum (weights)"""
+    return float(sum(v * w for v, w in values_and_weights)) / \
+           float(sum(w for v, w in values_and_weights))
+
+
+def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
-    offset = blast_hsps[0].hit_start - blast_hsps[0].query_start
-    #return min(max(0, offset), max_len - contig_len)
-    return offset
+    offset = int(weighted_mean([(hsp.hit_start - hsp.query_start,
+                               hsp.hit_end - hsp.hit_start)
+                               for hsp in blast_hsps]))
+    return min(max(0, offset), max_len - contig_len)
 
 #Sort the contigs by horizontal position on the diagram
 #(yes, this does mean parsing the entire BLAST output)
