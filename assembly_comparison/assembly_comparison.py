@@ -24,6 +24,14 @@ usage = """Usage: do_comparison.py assembly.fasta reference.fasta
 
 If a reference GenBank file exists next to the reference FASTA file but
 with the extension *.gbk, that will be loaded to draw any annotated genes.
+
+There should be a (nucleotide) BLAST database next to the reference FASTA
+file, created with some thing like this such that the BLAST database files
+are named reference.fasta.n* and the database is referenced simply as
+reference.fasta when calling blastn:
+
+$ makeblastdb -in reference.fasta -dbtype nucl
+
 """
 
 def stop_err(msg, error_level=1):
@@ -170,7 +178,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 
     #Add feature for whole contig,
     loc = FeatureLocation(offset, offset + contig_len, strand=0)
-    gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black)
+    gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
+                                   label=True, name=contig_id)
     gd_contig_features._used = offset +contig_len
     #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
