@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+"""Python script to render photos using bases A, C, G, and T for pixels.
+
+Takes as input a PNG photo (JPEG should work if the right dependencies
+are installed), and a FASTA sequence file, and uses them to produce a
+PDF output image using ReportLab.
+
+The motivation and example images are desribed on this blog post:
+http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
+"""
+
 import os
 from Bio import SeqIO
 import numpy as np
@@ -38,6 +49,9 @@ def run(im, seq, pdf_file, main_caption):
         for col in range(shape[1]):
             #Ignore any alpha channel
             r, g, b = data[row, col, 0:3]
+            #This scaling according to the channel maxima seemed like
+            #a good idea to maximize contrast for use as a background
+            #image:
             color = colors.Color(r / r_max, g / g_max, b / b_max)
             s = String((col + 0.5) * h_scale, (shape[0]-row) * v_scale,
                        seq[base], fillColor = color,
@@ -59,6 +73,10 @@ def run(im, seq, pdf_file, main_caption):
 #print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale) 
 #--> A4: Suggest width 150, height 237 pixels
 
+
+#This is a hard coded list of potato images used for the
+#poster backgrounds described here,
+#http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 for name, seq_file in [
         ("Purple on black 002", "chr06.fasta"),
         #("Potato field 001", "chr07.fasta"),
