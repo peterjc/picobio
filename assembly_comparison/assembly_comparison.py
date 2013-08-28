@@ -18,7 +18,7 @@ from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
 MIN_HIT = 5000
-MIN_GAP = 50000
+MIN_GAP = 20000
 
 usage = """Usage: do_comparison.py assembly.fasta reference.fasta
 
@@ -124,7 +124,7 @@ def reverse_complement_hsp(hsp, query_length):
     return rev
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
+    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= MIN_HIT]
     hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
     plus = 0
     minus = 0
@@ -144,11 +144,7 @@ def filter_blast(blast_result, query_length):
 def make_offset(blast_hsps):
     if not blast_hsps:
         return 0
-    if blast_hsps[0].hit_strand == -1 and blast_hsps[-1].hit_strand == -1:
-        #Assume whole thing flipped...
-        offset = blast_hsps[0].hit_start - blast_hsps[-1].query_start
-    else:
-        offset = blast_hsps[0].hit_start - blast_hsps[0].query_start
+    offset = blast_hsps[0].hit_start - blast_hsps[0].query_start
     #return min(max(0, offset), max_len - contig_len)
     return offset
 
@@ -182,7 +178,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
             break
     if not gd_track_for_contig:
         #print "Have %i tracks, adding one more" % len(contig_tracks)
-        gd_track_for_contig = gd_diagram.new_track(2, #insert next to reference
+        #1 = references, 2 = gap, 3+ = contigs
+        gd_track_for_contig = gd_diagram.new_track(3,
                                                    name=contig_id,
                                                    greytrack=False, height=0.5,
                                                    start=0, end=max_len)
