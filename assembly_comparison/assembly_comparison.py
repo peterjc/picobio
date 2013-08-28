@@ -86,9 +86,21 @@ max_len = len(record)
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 gd_track_for_features = gd_diagram.new_track(1,
                                              name=record.name,
-                                             greytrack=True, height=1.0,
+                                             greytrack=False, height=0.5,
                                              start=0, end=len(record))
+gd_feature_set = gd_track_for_features.new_set()
+#Add a dark grey background
+gd_feature_set.add_feature(SeqFeature(FeatureLocation(0, len(record))),
+                           sigil="BOX", color="grey", label=False),
+for feature in record.features:
+    if feature.type != "gene":
+        continue
+    gd_feature_set.add_feature(feature, sigil="BOX",
+                               color="lightblue", label=True,
+                               label_position="start",
+                               label_size=6, label_angle=0)
 gd_record_features = gd_track_for_features.new_set()
+
 
 def reverse_complement_hsp_fragment(frag, query_length):
     rev = SearchIO.HSPFragment(hit_id=frag.hit_id, query_id=frag.query_id)
@@ -212,16 +224,6 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
-
-gd_feature_set = gd_track_for_features.new_set()
-for feature in record.features:
-    if feature.type != "gene":
-        continue
-    gd_feature_set.add_feature(feature, sigil="BIGARROW",
-                               color="lightblue", label=True,
-                               #name=str(i+1),
-                               label_position="start",
-                               label_size=6, label_angle=0)
 
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
