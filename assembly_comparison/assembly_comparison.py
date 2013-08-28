@@ -142,18 +142,20 @@ def filter_blast(blast_result, query_length):
     return make_offset(hsps, query_length), blast_result.id, hsps, flipped
 
 
-def weighted_mean(values_and_weights):
-    """Sum (value * weights) / Sum (weights)"""
-    return float(sum(v * w for v, w in values_and_weights)) / \
-           float(sum(w for v, w in values_and_weights))
+def weighted_median(values_and_weights):
+    """Median of values with integer weights."""
+    x = []
+    count = sum(w for v, w in values_and_weights)
+    map(x.extend,([v]*w for v, w in values_and_weights))
+    return (x[count/2]+x[(count-1)/2])/2.
 
 
 def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
-    offset = int(weighted_mean([(hsp.hit_start - hsp.query_start,
-                               hsp.hit_end - hsp.hit_start)
-                               for hsp in blast_hsps]))
+    offset = int(weighted_median([(hsp.hit_start - hsp.query_start,
+                                  hsp.hit_end - hsp.hit_start)
+                                  for hsp in blast_hsps]))
     return min(max(0, offset), max_len - contig_len)
 
 #Sort the contigs by horizontal position on the diagram
