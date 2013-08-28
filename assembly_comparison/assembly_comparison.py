@@ -106,8 +106,10 @@ def reverse_complement_hsp_fragment(frag, query_length):
     return rev
 
 def reverse_complement_hsp(hsp, query_length):
-    return SearchIO.HSP(fragments = [reverse_complement_hsp_fragment(frag, query_length) \
-                                     for frag in hsp.fragments[::-1]])
+    rev = SearchIO.HSP(fragments = [reverse_complement_hsp_fragment(frag, query_length) \
+                                    for frag in hsp.fragments[::-1]])
+    rev.ident_pct = hsp.ident_pct
+    return rev
 
 def filter_blast(blast_result, query_length):
     hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) > MIN_HIT]
@@ -202,6 +204,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
                 flip = False
                 color = colors.firebrick
         border = colors.lightgrey
+        #Fade the colour based on percentage identify, 100% identity = 50% transparent
+        color = colors.Color(color.red, color.green, color.blue, alpha=(hsp.ident_pct/200.0))
         loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
         q = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
         loc = FeatureLocation(hsp.hit_start, hsp.hit_end, strand=0)
