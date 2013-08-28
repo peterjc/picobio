@@ -20,6 +20,12 @@ from Bio.Graphics.GenomeDiagram import CrossLink
 MIN_HIT = 5000
 MIN_GAP = 50000
 
+usage = """Usage: do_comparison.py assembly.fasta reference.fasta
+
+If a reference GenBank file exists next to the reference FASTA file but
+with the extension *.gbk, that will be loaded to draw any annotated genes.
+"""
+
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
@@ -27,7 +33,7 @@ def stop_err(msg, error_level=1):
 
 #TODO - Use argparse if API becomes non-trivial.
 if len(sys.argv) != 3:
-    stop_err("Usage: do_comparison.py assembly.fasta reference.fasta")
+    stop_err(usage)
 assembly_fasta, reference_fasta = sys.argv[1:]
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
@@ -63,7 +69,10 @@ contigs = SeqIO.index(assembly_fasta, "fasta")
 blast_results = SearchIO.index(blast_file, "blast-tab")
 
 #TODO - Multiple references (e.g. with plasmids)
-record = SeqIO.read(reference_genbank, "genbank")
+if os.path.isfile(reference_genbank):
+    record = SeqIO.read(reference_genbank, "genbank")
+else:
+    record = SeqIO.read(reference_fasta, "fasta")
 max_len = len(record)
 
 gd_diagram = GenomeDiagram.Diagram("Comparison")
