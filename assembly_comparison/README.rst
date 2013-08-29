@@ -36,28 +36,27 @@ http://pathogenomics.bham.ac.uk/blog/2011/06/ehec-genome-assembly/
 
 We will also need a complete reference genome, ideally one which has been
 annotated. For example, although not a particularly close match, we could try
-*E. coli* K-12 by downloading these two files:
+this *E. coli* O104 H4 strain by downloading these two files:
 
-* ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.fna
-* ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.gbk
+* ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_O104_H4_2011C_3493_uid176127/NC_018658.gbk
+* ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_O104_H4_2011C_3493_uid176127/NC_018658.fna
 
 You will need to install the NCBI BLAST+ standalone tools, specifically we
 will use ``makeblastdb`` and (from within the Python script) ``blastn``.
 Now prepare a BLAST database from the reference FASTA file,
 
-    $ makeblastdb -in NC_000913.fna -dbtype nucl
+    $ makeblastdb -in NC_018658.fna -dbtype nucl
 
 You can now run this script using this command:
 
-    $ python assembly_comparison.py TY2482.fasta.txt  NC_000913.fna
+    $ python assembly_comparison.py TY2482.fasta.txt NC_018658.fna
 
 This will call ``blastn`` to produce tabluar output, then produce a PDF diagram
 comparing the TY-2482 assembly to the full circle of the reference *E. coli*
 strain.
 
-Note that with the default settings, these strains are not similar enough to
-show matches along most of the reference - just small regions all the way
-around it.
+All the contigs mapped with these default settings are very small, but the figure
+shows matches all the way round the genome which is a good sign.
 
 
 TODO
@@ -65,6 +64,8 @@ TODO
 
 * Proper command line API including specification of output PDF filename
   and the tabular BLAST results.
+
+* Auto-generate reference FASTA file if given just GenBank/EMBL file?
 
 * Control over sequence similarity thresholds.
 
