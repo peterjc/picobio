@@ -28,7 +28,6 @@ This script produces a GenomeDiagram using ReportLab, defaulting to circular
 figures suitable for most bacterial genomes or plasmids, but linear diagrams
 are also possible.
 
-I intend to add another example with some inversions to better explain this.
 However, the central track is the reference genome drawn as a full circle in
 dark grey, with any annotated genes shown in pale blue.
 
@@ -46,11 +45,12 @@ http://news.open-bio.org/news/2012/03/cross-links-in-genomediagram/
 By default the colours are red/blue where a contig mapsto the same strand
 (red) or flipped to the opposite strand(blue). If most of a contig maps to
 the reverse strand, it is drawn inverted and coloured purple/green instead.
+I intend to add another example with some inversions to better explain this.
 
 Regions of the genome not represented in the assembly are visible on the
 centraltrack as dark grey (with pale blue genes) with no cross-links.
 
-Regions of the assembly not representedin the reference genomeare visible
+Regions of the assembly not represented in the reference genomeare visible
 on the contigs as dark grey regions (often at either end of a contig).
 
 
@@ -114,8 +114,8 @@ strain.
    :width: 400px
    :alt: Thumbnail of first TY-2482 assembly versus NC_018658 reference
 
-All the contigs mapped with these default settings are very small, but the figure
-shows matches all the way round the genome which is a good sign.
+All these contigs are very small, but the figure shows matches all the way round
+the genome which is a good sign.
 
 
 Sample Data - Example Two
@@ -145,7 +145,7 @@ And run the script::
    :alt: Thumbnail of later TY-2482 assembly versus NC_018658 reference
 
 The BGI released several versions of this genome during 2011, this was an
-intermediate version and the figure shows it is covers almost all of the
+intermediate version and the figure shows it covers almost all of the full
 genome in reasonably sized contigs - comparing the figures by eye we can see
 this is a big improvement over the first assembly (the previous example).
 
