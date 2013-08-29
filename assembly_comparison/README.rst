@@ -45,11 +45,11 @@ during the outbreak by downloading these two files:
 
 You will need to install the NCBI BLAST+ standalone tools, specifically we
 will use ``makeblastdb`` and (from within the Python script) ``blastn``.
-Now prepare a BLAST database from the reference FASTA file,
+Now prepare a BLAST database from the reference FASTA file::
 
     $ makeblastdb -in NC_018658.fna -dbtype nucl
 
-You can now run this script using this command:
+You can now run this script using this command::
 
     $ python assembly_comparison.py TY2482.fasta.txt NC_018658.fna
 
@@ -71,15 +71,15 @@ Sample Data - Example Two
 
 Continuing this *E. coli* TY-2482 example, lets look at a later assembly from
 the same strain - using the same reference genome downloaded and turned into
-a BLAST database above.
+a BLAST database above::
 
     $ wget ftp://ftp.genomics.org.cn/pub/Ecoli_TY-2482/Escherichia_coli_TY-2482.scaffold.20110610.fa.gz
 
-After downloaded it, decompress it:
+After downloaded it, decompress it::
 
     $ gunzip Escherichia_coli_TY-2482.scaffold.20110610.fa.gz
 
-And run the script:
+And run the script::
 
     $ python assembly_comparison.py Escherichia_coli_TY-2482.scaffold.20110610.fa NC_018658.fna
     ...
@@ -101,11 +101,11 @@ this is a big improvement over the first assembly (the previous example).
 Sample Data - Example Three
 ===========================
 
-This is yet another *E. coli* assembly listed on that same wiki page, again download it:
+This is yet another *E. coli* assembly listed on that same wiki page, again download it::
 
     $ wget https://github.com/ehec-outbreak-crowdsourced/BGI-data-analysis/raw/master/strains/H112180280/seqProject/HealthProtectionAgencyUK/assemblies/HPA_V2/EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta
 
-And run the script:,
+And run the script::
 
     $ python assembly_comparison.py EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta NC_018658.fna
     ...
