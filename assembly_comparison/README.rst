@@ -55,6 +55,11 @@ This will call ``blastn`` to produce tabluar output, then produce a PDF diagram
 comparing the TY-2482 assembly to the full circle of the reference *E. coli*
 strain.
 
+.. image:: images/TY2482_vs_NC_018658.png
+   :height: 400px
+   :width: 400px
+   :alt: Thumbnail of TY-2482 assembly versus NC_018658 reference
+
 All the contigs mapped with these default settings are very small, but the figure
 shows matches all the way round the genome which is a good sign.
 
@@ -68,6 +73,12 @@ And,
 
 This example is also from the same wiki page, but is for the H112180280 strain
 sequenced by the Health Protection Agency (UK), and had just 13 large contigs.
+
+.. image:: images/H112180280_vs_NC_018658.png
+   :height: 400px
+   :width: 400px
+   :alt: Thumbnail of H112180280 assembly versus NC_018658 reference
+
 This time the figure shows six mappying very nicely onto the reference genome
 main chromosome (I presume the other contigs are plasmids).
 
