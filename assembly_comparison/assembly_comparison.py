@@ -165,17 +165,26 @@ def make_offset(blast_hsps, contig_len):
 #(and yes, also the FASTA file to get the query lengths)
 blast_data = sorted(filter_blast(b, len(contigs[b.id])) \
                         for b in SearchIO.parse(blast_file, "blast-tab"))
-
-
+contigs_shown = 0
+contigs_shown_bp = 0
+contigs_not_shown_bp = 0
 contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
+    #TODO - Use BLAST query length instead of parsing FASTA file?
+    contig_len = len(contigs[contig_id])
+    assert contig_len <= max_len
+
     if not blast_hsps:
+        contigs_not_shown_bp += contig_len
         continue
 
     #TODO - Use BLAST query length instead of parsing FASTA file?
     contig_len = len(contigs[contig_id])
     assert contig_len <= max_len
     offset = min(max(0, offset), max_len - contig_len)
+
+    contigs_shown += 1
+    contigs_shown_bp +=contig_len
 
     #Which track can we put this on?
     gd_track_for_contig = None
@@ -233,6 +242,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
+print "Drawing %i of the %i contigs, %i bp" % (contigs_shown, len(blast_data), contigs_shown_bp)
+print "Ignored %i contigs, %i bp" % (len(blast_data) - contigs_shown, contigs_not_shown_bp)
 
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
