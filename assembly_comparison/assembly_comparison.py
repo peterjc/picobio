@@ -45,8 +45,10 @@ if len(sys.argv) != 3:
 assembly_fasta, reference_fasta = sys.argv[1:]
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
-blast_file = assembly_fasta + ".blast.tsv"
-diagram_pdf = assembly_fasta + ".blast.pdf"
+output_stem = "%s_vs_%s" % (os.path.basename(assembly_fasta),
+                            os.path.basename(reference_fasta))
+blast_file = output_stem + ".blast.tsv"
+diagram_pdf = output_stem + ".blast.pdf"
 
 if not os.path.isfile(assembly_fasta):
     stop_err("Assemlby FASTA file not found: %r" % assembly_fasta)
