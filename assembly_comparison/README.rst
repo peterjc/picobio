@@ -1,8 +1,9 @@
-Python scripts for visual assessment of (bacterial) assemblies.
+Python script(s) for visual assessment of (bacterial) assemblies
+================================================================
 
-These use Biopython and GenomeDiagram (calling ReportLab) to render
-images of my assemblies, with the goal of a visual summary especially
-where a reference assembly is available.
+Python code using Biopython and GenomeDiagram (calling ReportLab) to render
+images of (bacterial) assemblies, with the goal of a visual summary especially
+where a reference genome is available.
 
 
 Dependencies
@@ -15,8 +16,8 @@ Dependencies
   ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 
 
-Sample Data
-===========
+Sample Data - Example One
+=========================
 
 As an example, we will use the first public assembly of the 2011 Shiga-toxin
 producing *Escherichia coli* O104:H4 outbreak in Germany. This was part of the
@@ -63,7 +64,12 @@ strain.
 All the contigs mapped with these default settings are very small, but the figure
 shows matches all the way round the genome which is a good sign.
 
-So, onto a second (related) *E. coli* example assembly, using the same reference,
+
+Sample Data - Example Two
+=========================
+
+So, onto a second (related) *E. coli* example assembly, using the same reference
+genome downloaded and turned into a BLAST database above:
 
     $ wget https://github.com/ehec-outbreak-crowdsourced/BGI-data-analysis/raw/master/strains/H112180280/seqProject/HealthProtectionAgencyUK/assemblies/HPA_V2/EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta
 
@@ -105,3 +111,4 @@ TODO
 * Galaxy wrapper?
 
 * etc
+
