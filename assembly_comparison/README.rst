@@ -8,6 +8,18 @@ where a reference genome is available.
 This is a work in progress, and has not yet been formally released. See the
 TODO list at the end.
 
+.. image:: images/TY2482_20110610_vs_NC_018658.png
+   :scale: 50 %
+   :height: 200px
+   :width: 200px
+   :alt: Thumbnail of later TY-2482 assembly versus NC_018658 reference
+
+.. image:: images/H112180280_vs_NC_018658.png
+   :scale: 50 %
+   :height: 200px
+   :width: 200px
+   :alt: Thumbnail of H112180280 assembly versus NC_018658 reference
+
 
 Explanation
 ===========
