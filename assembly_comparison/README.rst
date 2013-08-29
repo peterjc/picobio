@@ -5,6 +5,42 @@ Python code using Biopython and GenomeDiagram (calling ReportLab) to render
 images of (bacterial) assemblies, with the goal of a visual summary especially
 where a reference genome is available.
 
+This is a work in progress, and has not yet been formally released. See the
+TODO list at the end.
+
+
+Explanation
+===========
+
+This script produces a GenomeDiagram using ReportLab, defaulting to circular
+figures suitable for most bacterial genomes or plasmids, but linear diagrams
+are also possible.
+
+I intend to add another example with some inversions to better explain this.
+However, the central track is the reference genome drawn as a full circle in
+dark grey, with any annotated genes shown in pale blue.
+
+The outer tracks are used for any contig/scaffold which maps onto the main
+chromosome, the vertical placement (height) is arbitrary and just to avoid
+overlaps. The horizontal placement (radial position) is weighted to put
+each contig/scaffold above where most of it maps.
+
+The mappings between the contig/scaffold and the main chromosome are colour
+coded, with the transparency set by the percentage identity (with the current
+settings there is relatively little variation). This uses the cross-link
+functionality added in Biopython 1.59, introduced in this blog post:
+http://news.open-bio.org/news/2012/03/cross-links-in-genomediagram/
+
+By default the colours are red/blue where a contig mapsto the same strand
+(red) or flipped to the opposite strand(blue). If most of a contig maps to
+the reverse strand, it is drawn inverted and coloured purple/green instead.
+
+Regions of the genome not represented in the assembly are visible on the
+centraltrack as dark grey (with pale blue genes) with no cross-links.
+
+Regions of the assembly not representedin the reference genomeare visible
+on the contigs as dark grey regions (often at either end of a contig).
+
 
 Dependencies
 ============
@@ -125,8 +161,8 @@ Protection Agency (UK), and it had just 13 large scaffolds:
    :width: 400px
    :alt: Thumbnail of H112180280 assembly versus NC_018658 reference
 
-This time the figure shows six mappying very nicely onto the reference genome
-main chromosome (I presume the other contigs are plasmids).
+This time the figure shows six sequences mapping very nicely onto the reference genome
+main chromosome (I presume the other four sequences are plasmids).
 
 
 TODO
