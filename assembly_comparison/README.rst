@@ -58,6 +58,16 @@ strain.
 All the contigs mapped with these default settings are very small, but the figure
 shows matches all the way round the genome which is a good sign.
 
+So, onto a second (related) *E. coli* example assembly, using the same reference,
+
+    $ wget https://github.com/ehec-outbreak-crowdsourced/BGI-data-analysis/raw/master/strains/H112180280/seqProject/HealthProtectionAgencyUK/assemblies/HPA_V2/EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta
+    $ python assembly_comparison.py EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta NC_018658.fna
+
+This example is also from the same wiki page, but is for the H112180280 strain
+sequenced by the Health Protection Agency (UK), and had just 13 large contigs.
+This time the figure shows six mappying very nicely onto the reference genome
+main chromosome (I presume the other contigs are plasmids).
+
 
 TODO
 ====
@@ -68,6 +78,11 @@ TODO
 * Auto-generate reference FASTA file if given just GenBank/EMBL file?
 
 * Control over sequence similarity thresholds.
+
+* Control over linear or circular output.
+
+* Multiple reference sequences (e.g. plasmids), perhaps as separate pages?
+  What about contigs hitting multiple plasmids?
 
 * Try BLAT etc instead of BLASTN.
 
