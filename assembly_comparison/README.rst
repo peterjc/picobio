@@ -61,6 +61,9 @@ shows matches all the way round the genome which is a good sign.
 So, onto a second (related) *E. coli* example assembly, using the same reference,
 
     $ wget https://github.com/ehec-outbreak-crowdsourced/BGI-data-analysis/raw/master/strains/H112180280/seqProject/HealthProtectionAgencyUK/assemblies/HPA_V2/EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta
+
+And,
+
     $ python assembly_comparison.py EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta NC_018658.fna
 
 This example is also from the same wiki page, but is for the H112180280 strain
