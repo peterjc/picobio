@@ -36,8 +36,9 @@ MIRA 3.2 assembler. It was initially released via his blog,
 http://pathogenomics.bham.ac.uk/blog/2011/06/ehec-genome-assembly/
 
 We will also need a complete reference genome, ideally one which has been
-annotated. For example, although not a particularly close match, we could try
-this *E. coli* O104 H4 strain by downloading these two files:
+annotated. With the advantage of hindsight, we can use the complete genome
+from a closely related strain isolated from a US citizen infected in Germany
+during the outbreak by downloading these two files:
 
 * ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_O104_H4_2011C_3493_uid176127/NC_018658.gbk
 * ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Escherichia_coli_O104_H4_2011C_3493_uid176127/NC_018658.fna
@@ -59,7 +60,7 @@ strain.
 .. image:: images/TY2482_vs_NC_018658.png
    :height: 400px
    :width: 400px
-   :alt: Thumbnail of TY-2482 assembly versus NC_018658 reference
+   :alt: Thumbnail of first TY-2482 assembly versus NC_018658 reference
 
 All the contigs mapped with these default settings are very small, but the figure
 shows matches all the way round the genome which is a good sign.
@@ -68,17 +69,52 @@ shows matches all the way round the genome which is a good sign.
 Sample Data - Example Two
 =========================
 
-So, onto a second (related) *E. coli* example assembly, using the same reference
-genome downloaded and turned into a BLAST database above:
+Continuing this *E. coli* TY-2482 example, lets look at a later assembly from
+the same strain - using the same reference genome downloaded and turned into
+a BLAST database above.
+
+    $ wget ftp://ftp.genomics.org.cn/pub/Ecoli_TY-2482/Escherichia_coli_TY-2482.scaffold.20110610.fa.gz
+
+After downloaded it, decompress it:
+
+    $ gunzip Escherichia_coli_TY-2482.scaffold.20110610.fa.gz
+
+And run the script:
+
+    $ python assembly_comparison.py Escherichia_coli_TY-2482.scaffold.20110610.fa NC_018658.fna
+    ...
+    Drawing 75 of the 433 contigs, 4994174 bp
+    Ignored 358 contigs, 265816 bp
+    ...
+
+.. image:: images/TY2482_20110610_vs_NC_018658.png
+   :height: 400px
+   :width: 400px
+   :alt: Thumbnail of later TY-2482 assembly versus NC_018658 reference
+
+The BGI released several versions of this genome during 2011, this was an
+intermediate version and the figure shows it is covers almost all of the
+genome in reasonably sized contigs - comparing the figures by eye we can see
+this is a big improvement over the first assembly (the previous example).
+
+
+Sample Data - Example Three
+===========================
+
+This is yet another *E. coli* assembly listed on that same wiki page, again download it:
 
     $ wget https://github.com/ehec-outbreak-crowdsourced/BGI-data-analysis/raw/master/strains/H112180280/seqProject/HealthProtectionAgencyUK/assemblies/HPA_V2/EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta
 
-And,
+And run the script:,
 
     $ python assembly_comparison.py EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta NC_018658.fna
+    ...
+    Drawing 7 of the 11 contigs, 5233123 bp
+    Ignored 4 contigs, 81671 bp
+    ....
 
-This example is also from the same wiki page, but is for the H112180280 strain
-sequenced by the Health Protection Agency (UK), and had just 13 large contigs.
+This is for he H112180280 strain sequenced by the Health Protection Agency (UK),
+using a reference guided assembles, and had just 13 large contigs.
 
 .. image:: images/H112180280_vs_NC_018658.png
    :height: 400px
