@@ -52,6 +52,10 @@ Now prepare a BLAST database from the reference FASTA file::
 You can now run this script using this command::
 
     $ python assembly_comparison.py TY2482.fasta.txt NC_018658.fna
+    ...
+    Drawing 253 of the 2899 contigs/scaffolds, 1880904 bp
+    Ignored 2646 contigs/scaffolds, 3472539 bp
+    ...
 
 This will call ``blastn`` to produce tabluar output, then produce a PDF diagram
 comparing the TY-2482 assembly to the full circle of the reference *E. coli*
@@ -83,8 +87,8 @@ And run the script::
 
     $ python assembly_comparison.py Escherichia_coli_TY-2482.scaffold.20110610.fa NC_018658.fna
     ...
-    Drawing 75 of the 433 contigs, 4994174 bp
-    Ignored 358 contigs, 265816 bp
+    Drawing 75 of the 433 contigs/scaffolds, 4994174 bp
+    Ignored 358 contigs/scaffolds, 265816 bp
     ...
 
 .. image:: images/TY2482_20110610_vs_NC_018658.png
@@ -109,12 +113,12 @@ And run the script::
 
     $ python assembly_comparison.py EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta NC_018658.fna
     ...
-    Drawing 7 of the 11 contigs, 5233123 bp
-    Ignored 4 contigs, 81671 bp
+    Drawing 7 of the 11 contigs/scaffolds, 5233123 bp
+    Ignored 4 contigs/scaffolds, 81671 bp
     ....
 
-This is for he H112180280 strain sequenced by the Health Protection Agency (UK),
-using a reference guided assembles, and had just 13 large contigs.
+This is for second assembly of the H112180280 strain sequenced by the Health
+Protection Agency (UK), and it had just 13 large scaffolds:
 
 .. image:: images/H112180280_vs_NC_018658.png
    :height: 400px

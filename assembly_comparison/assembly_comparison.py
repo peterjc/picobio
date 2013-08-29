@@ -242,8 +242,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
-print "Drawing %i of the %i contigs, %i bp" % (contigs_shown, len(blast_data), contigs_shown_bp)
-print "Ignored %i contigs, %i bp" % (len(blast_data) - contigs_shown, contigs_not_shown_bp)
+print "Drawing %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(blast_data), contigs_shown_bp)
+print "Ignored %i contigs/scaffolds, %i bp" % (len(blast_data) - contigs_shown, contigs_not_shown_bp)
 
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
