@@ -131,9 +131,9 @@ def filter_blast(blast_result, query_length):
     flipped = False
     for hsp in hsps:
         if hsp.hit_strand == -1:
-            minus += hsp.hit_end - hsp.query_start
+            minus += hsp.hit_end - hsp.hit_start
         else:
-            plus += hsp.hit_end - hsp.query_start
+            plus += hsp.hit_end - hsp.hit_start
     if minus > plus:
         #Reverse the contig
         flipped = True
