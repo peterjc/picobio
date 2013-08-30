@@ -45,8 +45,8 @@ if len(sys.argv) != 3:
 assembly_fasta, reference_fasta = sys.argv[1:]
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
-output_stem = "%s_vs_%s" % (os.path.basename(assembly_fasta),
-                            os.path.basename(reference_fasta))
+output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
+                            os.path.splitext(os.path.basename(reference_fasta))[0])
 blast_file = output_stem + ".blast.tsv"
 diagram_pdf = output_stem + ".blast.pdf"
 
