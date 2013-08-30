@@ -172,15 +172,12 @@ contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
     #TODO - Use BLAST query length instead of parsing FASTA file?
     contig_len = len(contigs[contig_id])
-    assert contig_len <= max_len
-
     if not blast_hsps:
         contigs_not_shown_bp += contig_len
         continue
 
-    #TODO - Use BLAST query length instead of parsing FASTA file?
-    contig_len = len(contigs[contig_id])
-    assert contig_len <= max_len
+    assert contig_len <= max_len, \
+        "Contig %s length %i, reference %i" % (contig_id, contig_len, max_len)
     offset = min(max(0, offset), max_len - contig_len)
 
     contigs_shown += 1
