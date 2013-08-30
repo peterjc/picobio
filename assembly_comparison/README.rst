@@ -28,7 +28,7 @@ This script produces a GenomeDiagram using ReportLab, defaulting to circular
 figures suitable for most bacterial genomes or plasmids, but linear diagrams
 are also possible.
 
-However, the central track is the reference genome drawn as a full circle in
+The central track is the reference genome drawn as a full circle in
 dark grey, with any annotated genes shown in pale blue.
 
 The outer tracks are used for any contig/scaffold which maps onto the main
@@ -42,15 +42,15 @@ settings there is relatively little variation). This uses the cross-link
 functionality added in Biopython 1.59, introduced in this blog post:
 http://news.open-bio.org/news/2012/03/cross-links-in-genomediagram/
 
-By default the colours are red/blue where a contig mapsto the same strand
+By default the colours are red/blue where a contig maps to the same strand
 (red) or flipped to the opposite strand(blue). If most of a contig maps to
 the reverse strand, it is drawn inverted and coloured purple/green instead.
 I intend to add another example with some inversions to better explain this.
 
 Regions of the genome not represented in the assembly are visible on the
-centraltrack as dark grey (with pale blue genes) with no cross-links.
+central track as dark grey (with pale blue genes) with no cross-links.
 
-Regions of the assembly not represented in the reference genomeare visible
+Regions of the assembly not represented in the reference genome are visible
 on the contigs as dark grey regions (often at either end of a contig).
 
 
