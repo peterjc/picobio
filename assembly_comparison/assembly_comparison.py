@@ -4,9 +4,14 @@
 
 import os
 import sys
+import warnings
+
+from Bio import BiopythonExperimentalWarning
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", BiopythonExperimentalWarning)
+    from Bio import SearchIO
 
 from Bio import SeqIO
-from Bio import SearchIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Blast.Applications import NcbiblastnCommandline
 
