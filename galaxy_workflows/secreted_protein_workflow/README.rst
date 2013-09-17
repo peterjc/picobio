@@ -11,7 +11,7 @@ As of 17 September 2013, development has moved from here:
 
 * https://github.com/peterjc/picobio/tree/master/galaxy_workflows/secreted_protein_workflow
 
-To here, along with the associated Galaxy tools::
+To here, along with the associated Galaxy tools:
 
 * https://github.com/peterjc/pico_galaxy/tree/master/workflows/secreted_protein_workflow
 
