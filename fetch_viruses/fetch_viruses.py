@@ -1,5 +1,6 @@
 import os
 from Bio import Entrez
+from Bio import TogoWS
 from Bio import SeqIO
 from StringIO import StringIO
 Entrez.email="peter.cock@hutton.ac.uk"
@@ -19,51 +20,52 @@ for name, taxon_id in [
     print "="*60
     print name
     print "="*60
-    search_text="txid%s[orgn] AND complete[status]"%taxon_id
+    search_text="txid%s[orgn] AND complete[Properties]" % taxon_id
         
-    handle = Entrez.esearch("genome", term=search_text, usehistory=True)
+    handle = Entrez.esearch("nucleotide", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
     webenv = search_results["WebEnv"]
     query_key = search_results["QueryKey"]
     count = int(search_results["Count"])
     print "%i hits" % count
-
-    #Now fails, brief return mode no longer available :(
-    data = Entrez.efetch("genome", retmode="brief", retstart=0, retmax=count,
-                         webenv=webenv, query_key=query_key).read()
-    assert data, data
     names = []
-    for line in data.split("\n") :
-        line = line.rstrip()
-        if not line : continue
-        try :
-            index,acc,rest = line.split(None,2)
-        except ValueError, err :
-            print line
-            raise err
-        acc = acc.rstrip(".")
-        if acc not in names :
-            names.append(acc)
-        else :
-            print "Duplicated: %s" % line
-    assert len(names)==count, "%i vs %i" % (len(names), count)
+
+    #Get the accessions...
+    batch_size = 1000
+    for start in range(0,count,batch_size):
+        end = min(count, start+batch_size)
+        print("Getting accessions for record %i to %i" % (start+1, end))
+        fetch_handle = Entrez.efetch(db="nucleotide", rettype="acc", retmode="xml",
+                                     retstart=start, retmax=batch_size,
+                                     webenv=webenv, query_key=query_key)
+        data = fetch_handle.read().strip().split()
+        fetch_handle.close()
+        assert len(data) == end - start
+        names.extend(data)
+    assert len(names) == count
+    print("%s to %s" % (names[0], names[-1]))
 
     handle = open("GenBank/%s.txt" % name,"w")
     handle.write("\n".join(names))
     handle.close()
 
-    for index, name in enumerate(names):
+    #Get the sequences
+    for acc in names:
+        name, version = acc.split(".")
         filename = "GenBank/%s.gbk" % name
         if not os.path.isfile(filename) :
-            print "Fetching %i of %i" % (index+1, count)
-            data = Entrez.efetch("genome", rettype="gb", retstart=index, retmax=1,
-                                 webenv=webenv, query_key=query_key).read()
-            assert data.lstrip().startswith("LOCUS ")
-            assert data.rstrip().endswith("//")
+            print("Fetching %s" % (name))
+            #Fails, seems efetch now requires using history :(
+            #data = Entrez.efetch("genome", rettype="gb", id=acc).read()
+            fetch_handle = TogoWS.entry("nuccore", acc)
+            data = fetch_handle.read() # defaults to gb
+            fetch_handle.close()
+            assert data.lstrip().startswith("LOCUS "), data
+            assert data.rstrip().endswith("//"), data
             #Test we can parse it:
             record = SeqIO.read(StringIO(data),"gb")
-            assert names[index]==record.name
+            assert name == record.name, "Got %r expected %r" % (record.name, name)
             #Save it:
             handle = open(filename, "w")
             handle.write(data)
@@ -72,7 +74,6 @@ for name, taxon_id in [
         #Test we can parse it:
         if name not in checked :
             record = SeqIO.read(open(filename),"gb")
-            assert names[index]==record.name
-            print "Verified %s" % name
+            assert name == record.name, "Got %r from %r expected %r" % (record.name, filename, name)
+            print("Verified %s" % name)
             checked.add(name)
-    
