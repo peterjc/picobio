@@ -2,7 +2,7 @@ import os
 from Bio import Entrez
 from Bio import SeqIO
 from StringIO import StringIO
-Entrez.email="peter.cock@scri.ac.uk"
+Entrez.email="peter.cock@hutton.ac.uk"
 
 checked = set()
 # dsDNA viruses, no RNA stage, Taxonomy ID: 35237
@@ -19,9 +19,9 @@ for name, taxon_id in [
     print "="*60
     print name
     print "="*60
-    search_text="txid%s[orgn] AND complete[prop]"%taxon_id
+    search_text="txid%s[orgn] AND complete[status]"%taxon_id
         
-    handle = Entrez.esearch("genome",term=search_text, usehistory=True)
+    handle = Entrez.esearch("genome", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
     webenv = search_results["WebEnv"]
@@ -29,7 +29,8 @@ for name, taxon_id in [
     count = int(search_results["Count"])
     print "%i hits" % count
 
-    data = Entrez.efetch("genome", rettype="brief", retstart=0, retmax=count,
+    #Now fails, brief return mode no longer available :(
+    data = Entrez.efetch("genome", retmode="brief", retstart=0, retmax=count,
                          webenv=webenv, query_key=query_key).read()
     assert data, data
     names = []
