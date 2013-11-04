@@ -39,7 +39,7 @@ def dedup(input_fasta, output_fasta):
     for s in by_seq:
         titles = by_seq[s]
         #chr(1) = CTRL+A
-        handle.write(">%s\n%s\n" % (chr(1).join(titles), s))
+        handle.write(">%s\n%s\n" % (chr(1).join(sorted(titles)), s))
     handle.close()
 
 
