@@ -66,11 +66,21 @@ for group in ["dsDnaViruses",
     print(group)
     print("="*len(group))
     names = open("GenBank/%s.txt" % group).read().split("\n")
+    genomes_file = "%s_%s_genomes.fna" % (group, date_stamp)
     protein_file = "%s_%s_proteins.faa" % (group, date_stamp)
     protein_nr = "%s_%s_proteins_NR.faa" % (group, date_stamp)
     nuc_file = "%s_%s_genes.ffn" % (group, date_stamp)
     nuc_nr = "%s_%s_genes_NR.ffn" % (group, date_stamp)
     print("Looking at %i %s" % (len(names), group))
+
+
+    if os.path.isfile(genomes_file):
+        print("Got %s" % genomes_file)
+    else:
+        print("Writing %s..." % genomes_file)
+        records = (SeqIO.read("GenBank/%s.gbk" % (acc+".").split(".")[0], "gb") for acc in names)
+        count = SeqIO.write(records, genomes_file, "fasta")
+        print("%i records in %s" % (count, genomes_file))
 
 
     if os.path.isfile(protein_file):
