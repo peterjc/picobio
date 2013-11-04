@@ -16,7 +16,7 @@ from Bio.SeqRecord import SeqRecord
 date_stamp = "20131104"
 
 tables = {"NC_008956":1, "NC_008954":1, "NC_008949":1, "NC_008948":1,
-          "NC_011452":1}
+          "NC_011452":1, "NC_008956":1}
 
 def get_nuc(seq, loc_string) :
     reverse = False
@@ -53,14 +53,17 @@ for group in ["dsDnaViruses",
         bad = 0
         count = 0
         for index, name in enumerate(names):
+            name = name.split(".", 1)[0]
             filename = "GenBank/%s.gbk" % name
             parent = None
             for record in SeqIO.parse(open(filename),"genbank-cds") :
                 if "pseudo" in record.annotations : continue
+                if "pseudogene" in record.annotations: continue
                 count+=1
                 try :
                     protein_id = record.annotations["protein_id"]
                 except KeyError:
+                    print(filename)
                     print(record)
                     assert False
                 gi = None
@@ -101,12 +104,14 @@ for group in ["dsDnaViruses",
         handle = open(nuc_file,"w")
         count = 0
         for index, name in enumerate(names):
+            name = name.split(".", 1)[0]
             filename = "GenBank/%s.gbk" % name
             #print(name)
             parent = SeqIO.read(open(filename),"genbank")
             for f in parent.features :
                 if f.type != "CDS" : continue
                 if "pseudo" in f.qualifiers : continue
+                if "pseudogene" in f.qualifiers : continue
                 nuc = f.extract(parent.seq)
                 protein_id = f.qualifiers["protein_id"][0]
                 gi = None
