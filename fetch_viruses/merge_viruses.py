@@ -13,6 +13,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+date_stamp = "20131104"
+
 tables = {"NC_008956":1, "NC_008954":1, "NC_008949":1, "NC_008948":1,
           "NC_011452":1}
 
@@ -39,8 +41,8 @@ for group in ["dsDnaViruses",
     print(group)
     print("="*len(group))
     names = open("GenBank/%s.txt" % group).read().split("\n")
-    protein_file = "%s_20091028_proteins.faa" % group
-    nuc_file = "%s_20091028_genes.ffn" % group
+    protein_file = "%s_%s_proteins.faa" % (group, date_stamp)
+    nuc_file = "%s_%s_genes.ffn" % (group, date_stamp)
     print("Looking at %i %s" % (len(names), group))
 
 
