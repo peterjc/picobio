@@ -29,7 +29,10 @@ def download(acc, name, filename):
 def download_batch(acc_list, check=False):
     missing = []
     for acc in acc_list:
-        name, version = acc.split(".")
+        if "." in acc:
+            name, version = acc.split(".")
+        else:
+            name = acc
         filename = "GenBank/%s.gbk" % name
         if not os.path.isfile(filename):
             missing.append(acc)
@@ -37,7 +40,10 @@ def download_batch(acc_list, check=False):
             check(acc, name, filename)
     count = len(missing)
     for index, acc in enumerate(missing):
-        name, version = acc.split(".")
+        if "." in acc:
+            name, version = acc.split(".")
+        else:
+            name = acc
         filename = "GenBank/%s.gbk" % name
         assert not os.path.isfile(filename)
         print("Fetching %s (%i of %i)" % (name, index+1, count))
