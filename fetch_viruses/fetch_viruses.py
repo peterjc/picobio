@@ -51,11 +51,11 @@ for name, taxon_id in [
     handle.close()
 
     #Get the sequences
-    for acc in names:
+    for index, acc in enumerate(names):
         name, version = acc.split(".")
         filename = "GenBank/%s.gbk" % name
         if not os.path.isfile(filename) :
-            print("Fetching %s" % (name))
+            print("Fetching %s (%i of %i)" % (name, index+1, count))
             #Fails, seems efetch now requires using history :(
             #data = Entrez.efetch("genome", rettype="gb", id=acc).read()
             fetch_handle = TogoWS.entry("nuccore", acc)
@@ -65,7 +65,8 @@ for name, taxon_id in [
             assert data.rstrip().endswith("//"), data
             #Test we can parse it:
             record = SeqIO.read(StringIO(data),"gb")
-            assert name == record.name, "Got %r expected %r" % (record.name, name)
+            assert name == record.name or record.id.startswith(name + "."), \
+                "Got %r and %r expected %r" % (record.id, record.name, name)
             #Save it:
             handle = open(filename, "w")
             handle.write(data)
@@ -74,6 +75,7 @@ for name, taxon_id in [
         #Test we can parse it:
         if name not in checked :
             record = SeqIO.read(open(filename),"gb")
-            assert name == record.name, "Got %r from %r expected %r" % (record.name, filename, name)
+            assert name == record.name or record.id.startswith(name + "."), \
+                "Got %r and %r expected %r" % (record.id, record.name, name)
             print("Verified %s" % name)
             checked.add(name)
