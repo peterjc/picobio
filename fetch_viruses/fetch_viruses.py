@@ -78,7 +78,7 @@ for group, taxon_id in [
         download_batch(names)
 
     print("Running NCBI search...")
-    search_text = "txid%s[orgn] AND complete[Properties]" % taxon_id        
+    search_text = "txid%s[orgn] AND complete[Properties] AND genome" % taxon_id
     handle = Entrez.esearch("nucleotide", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
@@ -86,9 +86,13 @@ for group, taxon_id in [
     query_key = search_results["QueryKey"]
     count = int(search_results["Count"])
     print("%i hits" % count)
-    names = []
+
+    if len(names) == count:
+        print("Probably no new names...")
+        continue
 
     #Get the accessions...
+    names = []
     batch_size = 1000
     for start in range(0,count,batch_size):
         end = min(count, start+batch_size)
