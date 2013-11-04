@@ -11,9 +11,8 @@ from Bio import Entrez
 Entrez.email="peter.cock@hutton.ac.uk"
 
 def download(acc, name, filename):
-    #Fails, seems efetch now requires using history :(                                                                                                                               
-    #data = Entrez.efetch("genome", rettype="gb", id=acc).read()                                                                                                                     
-    fetch_handle = TogoWS.entry("nuccore", acc)
+    fetch_handle = Entrez.efetch("nuccore", rettype="gbwithparts", id=acc)
+    #fetch_handle = TogoWS.entry("nuccore", acc)
     data = fetch_handle.read() # defaults to gb                                                                                                                                      
     fetch_handle.close()
     assert data.lstrip().startswith("LOCUS "), data
