@@ -1,8 +1,13 @@
 import os
-from Bio import Entrez
-from Bio import TogoWS
+try:
+    from StringIO import StringIO # Python 2
+except ImportError:
+    from io import StringIO # Python 3
+
 from Bio import SeqIO
-from StringIO import StringIO
+from Bio import TogoWS
+from Bio import Entrez
+
 Entrez.email="peter.cock@hutton.ac.uk"
 
 def download(acc, name, filename):
@@ -50,14 +55,15 @@ def check(acc, name, filename):
 # ssRNA viruses, Taxonomy ID: 439488
 # Viruses, Taxonomy ID: 10239
 for group, taxon_id in [
-    ("dsDnaViruses", "35237"),
-    ("dsRnaViruses", "35325"),
-    ("ssDnaViruses", "29258"),
-    ("ssRnaViruses", "439488"),
-    ("allViruses","10239")] :
-    print "="*60
-    print group
-    print "="*60
+        ("dsDnaViruses", "35237"),
+        ("dsRnaViruses", "35325"),
+        ("ssDnaViruses", "29258"),
+        ("ssRnaViruses", "439488"),
+        ("allViruses","10239"),
+    ] :
+    print("="*60)
+    print(group)
+    print("="*60)
 
     if os.path.isfile("GenBank/%s.txt" % group):
         print("Pre-fetching any outstanding old search results...")
@@ -74,7 +80,7 @@ for group, taxon_id in [
     webenv = search_results["WebEnv"]
     query_key = search_results["QueryKey"]
     count = int(search_results["Count"])
-    print "%i hits" % count
+    print("%i hits" % count)
     names = []
 
     #Get the accessions...
