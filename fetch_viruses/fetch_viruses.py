@@ -5,23 +5,69 @@ from Bio import SeqIO
 from StringIO import StringIO
 Entrez.email="peter.cock@hutton.ac.uk"
 
-checked = set()
+def download(acc, name, filename):
+    #Fails, seems efetch now requires using history :(                                                                                                                               
+    #data = Entrez.efetch("genome", rettype="gb", id=acc).read()                                                                                                                     
+    fetch_handle = TogoWS.entry("nuccore", acc)
+    data = fetch_handle.read() # defaults to gb                                                                                                                                      
+    fetch_handle.close()
+    assert data.lstrip().startswith("LOCUS "), data
+    assert data.rstrip().endswith("//"), data
+    #Test we can parse it:                                                                                                                                                           
+    record = SeqIO.read(StringIO(data),"gb")
+    assert name == record.name or record.id.startswith(name + "."), \
+        "Got %r and %r expected %r" % (record.id, record.name, name)
+    #Save it:                                                                                                                                                                        
+    handle = open(filename, "w")
+    handle.write(data)
+    handle.close()
+
+def download_batch(acc_list, check=False):
+    missing = []
+    for acc in acc_list:
+        name, version = acc.split(".")
+        filename = "GenBank/%s.gbk" % name
+        if not os.path.isfile(filename):
+            missing.append(acc)
+        elif check:
+            check(acc, name, filename)
+    count = len(missing)
+    for index, acc in enumerate(missing):
+        name, version = acc.split(".")
+        filename = "GenBank/%s.gbk" % name
+        assert not os.path.isfile(filename)
+        print("Fetching %s (%i of %i)" % (name, index+1, count))
+        download(acc, name, filename)
+
+def check(acc, name, filename):
+    record = SeqIO.read(open(filename),"gb")
+    assert name == record.name or record.id.startswith(name + "."), \
+        "Got %r and %r expected %r" % (record.id, record.name, name)
+
 # dsDNA viruses, no RNA stage, Taxonomy ID: 35237
 # dsRNA viruses, Taxonomy ID: 35325
 # ssDNA viruses, Taxonomy ID: 29258
 # ssRNA viruses, Taxonomy ID: 439488
 # Viruses, Taxonomy ID: 10239
-for name, taxon_id in [
+for group, taxon_id in [
     ("dsDnaViruses", "35237"),
     ("dsRnaViruses", "35325"),
     ("ssDnaViruses", "29258"),
     ("ssRnaViruses", "439488"),
     ("allViruses","10239")] :
     print "="*60
-    print name
+    print group
     print "="*60
-    search_text="txid%s[orgn] AND complete[Properties]" % taxon_id
-        
+
+    if os.path.isfile("GenBank/%s.txt" % group):
+        print("Pre-fetching any outstanding old search results...")
+        handle = open("GenBank/%s.txt" % group)
+        names =[line.strip() for line in handle]
+        handle.close()
+        download_batch(names)
+
+    print("Running NCBI search...")
+    search_text = "txid%s[orgn] AND complete[Properties]" % taxon_id        
     handle = Entrez.esearch("nucleotide", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
@@ -44,38 +90,11 @@ for name, taxon_id in [
         assert len(data) == end - start
         names.extend(data)
     assert len(names) == count
-    print("%s to %s" % (names[0], names[-1]))
+    print("%i records, %s to %s" % (len(names), names[0], names[-1]))
 
-    handle = open("GenBank/%s.txt" % name,"w")
+    handle = open("GenBank/%s.txt" % group,"w")
     handle.write("\n".join(names))
     handle.close()
 
     #Get the sequences
-    for index, acc in enumerate(names):
-        name, version = acc.split(".")
-        filename = "GenBank/%s.gbk" % name
-        if not os.path.isfile(filename) :
-            print("Fetching %s (%i of %i)" % (name, index+1, count))
-            #Fails, seems efetch now requires using history :(
-            #data = Entrez.efetch("genome", rettype="gb", id=acc).read()
-            fetch_handle = TogoWS.entry("nuccore", acc)
-            data = fetch_handle.read() # defaults to gb
-            fetch_handle.close()
-            assert data.lstrip().startswith("LOCUS "), data
-            assert data.rstrip().endswith("//"), data
-            #Test we can parse it:
-            record = SeqIO.read(StringIO(data),"gb")
-            assert name == record.name or record.id.startswith(name + "."), \
-                "Got %r and %r expected %r" % (record.id, record.name, name)
-            #Save it:
-            handle = open(filename, "w")
-            handle.write(data)
-            handle.close()
-            #print "%s saved" % record.name
-        #Test we can parse it:
-        if name not in checked :
-            record = SeqIO.read(open(filename),"gb")
-            assert name == record.name or record.id.startswith(name + "."), \
-                "Got %r and %r expected %r" % (record.id, record.name, name)
-            print("Verified %s" % name)
-            checked.add(name)
+    download_batch(names)
