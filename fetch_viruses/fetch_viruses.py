@@ -76,6 +76,8 @@ for group, taxon_id in [
         names =[line.strip() for line in handle]
         handle.close()
         download_batch(names)
+    else:
+        names = []
 
     print("Running NCBI search...")
     search_text = "txid%s[orgn] AND complete[Properties] AND genome" % taxon_id
