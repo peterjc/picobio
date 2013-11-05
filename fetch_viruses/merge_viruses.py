@@ -73,6 +73,19 @@ def make_db(fasta, protein=False):
     if rc:
         raise RuntimeError("Return code %i from:\n%s" % (rc, cmd))
 
+def make_merged_genomes(genomes_file, names):
+    count = 0
+    handle = open(genomes_file, "w")
+    for name in names:
+        acc = (name + ".").split(".")[0]
+        record = SeqIO.read("GenBank/%s.gbk" % acc, "gb")
+        gi = record.annotations["gi"]
+        #Convert to NCBI style FASTA identifier...
+        record.id = "gi|%s|ref|%s" % (gi, record.id)
+        count += SeqIO.write(record, handle, "fasta")
+    handle.close()
+    return count
+
 
 for group in ["dsDnaViruses",
               "ssDnaViruses",
@@ -96,8 +109,7 @@ for group in ["dsDnaViruses",
         print("Got %s" % genomes_file)
     else:
         print("Writing %s..." % genomes_file)
-        records = (SeqIO.read("GenBank/%s.gbk" % (acc+".").split(".")[0], "gb") for acc in names)
-        count = SeqIO.write(records, genomes_file, "fasta")
+        count = make_merged_genomes(genomes_file, names)
         print("%i records in %s" % (count, genomes_file))
 
     if os.path.isfile(genomes_nr):
