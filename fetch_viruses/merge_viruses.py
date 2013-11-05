@@ -116,7 +116,8 @@ for group in ["dsDnaViruses",
         print("Got %s" % genomes_nr)
     else:
         dedup(genomes_file, genomes_nr)
-
+    
+    make_db(genomes_file, protein=False)
 
     if os.path.isfile(protein_file):
         print("Got %s" % protein_file)
