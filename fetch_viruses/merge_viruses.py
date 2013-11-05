@@ -57,6 +57,23 @@ def get_nuc(seq, loc_string) :
         return nuc
 
 
+def make_db(fasta, protein=False):
+    stem = os.path.splitext(fasta)[0]
+    if protein:
+        t = "prot"
+        if os.path.isfile(stem + ".pin"):
+            return
+    else:
+        t = "nucl"
+        if os.path.isfile(stem + ".nin"):
+            return
+    cmd = "makeblastdb -in %s -dbtype %s -out %s -parse_seqids" % (fasta, t, stem)
+    print(cmd)
+    rc = os.system(cmd)
+    if rc:
+        raise RuntimeError("Return code %i from:\n%s" % (rc, cmd))
+
+
 for group in ["dsDnaViruses",
               "ssDnaViruses",
               "dsRnaViruses",
@@ -145,6 +162,8 @@ for group in ["dsDnaViruses",
         print("Got %s" % protein_nr)
     else:
         dedup(protein_file, protein_nr)
+
+    make_db(protein_nr, protein=True)
         
     if os.path.isfile(nuc_file):
         print("Got %s" % nuc_file)
@@ -187,3 +206,5 @@ for group in ["dsDnaViruses",
         print("Got %s" % nuc_nr)
     else:
         dedup(nuc_file, nuc_nr)
+
+    make_db(nuc_nr, protein=False)
