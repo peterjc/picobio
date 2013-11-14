@@ -13,7 +13,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-date_stamp = "20131105"
+date_stamp = "20131114"
 
 tables = {"NC_008956":1, "NC_008954":1, "NC_008949":1, "NC_008948":1,
           "NC_011452":1, "NC_008956":1}
