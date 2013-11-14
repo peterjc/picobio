@@ -59,6 +59,7 @@ def check(acc, name, filename):
 # ssDNA viruses, Taxonomy ID: 29258
 # ssRNA viruses, Taxonomy ID: 439488
 # Viruses, Taxonomy ID: 10239
+# Cellular organisms, Taxonomy ID: 131567 (to avoid chimeras)
 for group, taxon_id in [
         ("dsDnaViruses", "35237"),
         ("dsRnaViruses", "35325"),
@@ -80,7 +81,7 @@ for group, taxon_id in [
         names = []
 
     print("Running NCBI search...")
-    search_text = "txid%s[orgn] AND complete[Properties] AND genome" % taxon_id
+    search_text = "txid%s[orgn] AND complete[Properties] AND genome NOT txid131567[orgn]" % taxon_id
     handle = Entrez.esearch("nucleotide", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
