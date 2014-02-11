@@ -11,17 +11,10 @@ def stop_err(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-def _sequence_back_translate(aligned_protein_record, unaligned_nucleotide_record, gap=None):
+def sequence_back_translate(aligned_protein_record, unaligned_nucleotide_record, gap):
     #TODO - Separate arguments for protein gap and nucleotide gap?
-    if hasattr(aligned_protein_record.seq.alphabet, "gap_char"):
-        if not gap:
-            gap = aligned_protein_record.seq.alphabet.gap_char
-        elif gap != aligned_protein_record.seq.alphabet.gap_char:
-            raise ValueError("Gap %r does not match %r from %r aligned protein alphabet" \
-                             % (gap, aligned_protein_record.seq.alphabet.gap_char,
-                                aligned_protein_record.id))
-    if not gap:
-        raise ValueError("Please supply the protein alignment gap character")
+    if not gap or len(gap) != 1:
+        raise ValueError("Please supply a single gap character")
 
     alpha = unaligned_nucleotide_record.seq.alphabet
     if hasattr(alpha, "gap_char"):
@@ -61,13 +54,8 @@ def alignment_back_translate(protein_alignment, nucleotide_records, key_function
     #TODO - Separate arguments for protein and nucleotide gap characters?
     if key_function is None:
         key_function = lambda x: x
-
-    if hasattr(protein_alignment._alphabet, "gap_char"):
-        if not gap:
-            gap = protein_alignment._alphabet.gap_char
-        elif gap != protein_alignment._alphabet.gap_char:
-            raise ValueError("Gap %r does not match %r from protein alignment alphabet" \
-                             % (gap, protein_alignment._alphabet.gap_char))
+    if gap is None:
+        gap = "-"
 
     aligned = []
     for protein in protein_alignment:
@@ -76,7 +64,7 @@ def alignment_back_translate(protein_alignment, nucleotide_records, key_function
         except KeyError:
             raise ValueError("Could not find nucleotide sequence for protein %r" \
                              % protein.id)
-        aligned.append(_sequence_back_translate(protein, nucleotide, gap))
+        aligned.append(sequence_back_translate(protein, nucleotide, gap))
     return MultipleSeqAlignment(aligned)
 
 
