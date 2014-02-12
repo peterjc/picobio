@@ -6,8 +6,8 @@ from Bio import SeqIO
 min_run = 50
 min_bases = 100
 
-contig_fasta = sys.argv[1]
-contig_blast = sys.argv[2]
+contig_fasta = sys.argv[1] #FASTA file used as BLAST query
+contig_blast = sys.argv[2] #Tabular 12 (std) columns + optional extras
 
 def cull_runs(set_of_points, min_run):
     answer = set()
@@ -97,10 +97,10 @@ for sseqid in list(contig_mapping): #list as editing dict during loop
     if len(contig_mapping[sseqid]) < min_bases:
         del contig_mapping[sseqid]
 
-print "- Raw -"
-contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
-for sseqid, bases in contig_mapping_counts:
-    print sseqid, bases
+#print "- Raw -"
+#contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
+#for sseqid, bases in contig_mapping_counts:
+#    print sseqid, bases
 print "- Culling 1st hit -"
 while contig_mapping:
     sseqid, count = pop_most_mapped()
