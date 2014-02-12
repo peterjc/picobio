@@ -59,10 +59,14 @@ for record in SeqIO.parse(contig_fasta, "fasta"):
 # key = subject id
 # value = set of base coordinates (cummulative along all contigs) 
 contig_mapping = dict()
+
+contig_species = dict()
 for line in open(contig_blast):
     parts = line.rstrip("\n").split("\t")
     assert len(parts) > 12
     qseqid, sseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = parts[:12]
+    if len(parts) >= 14:
+        contig_species[sseqid] = parts[14]
     start = int(qstart) - 1
     end = int(qend)
     assert 0 <= start <= end <= contig_lengths[qseqid]
@@ -99,4 +103,5 @@ for sseqid, bases in contig_mapping_counts:
     print sseqid, bases
 print "- Culling 1st hit -"
 while contig_mapping:
-    print pop_most_mapped()
+    sseqid, count = pop_most_mapped()
+    print sseqid, count, contig_species.get(sseqid, "")
