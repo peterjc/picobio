@@ -3,8 +3,43 @@ import sys
 from collections import OrderedDict
 from Bio import SeqIO
 
+min_run = 50
+min_bases = 100
+
 contig_fasta = sys.argv[1]
 contig_blast = sys.argv[2]
+
+def cull_runs(set_of_points, min_run):
+    answer = set()
+    start = None
+    end = None
+    for i in sorted(set_of_points):
+        if start is None:
+            #very first run
+            start = i
+            end = i
+        elif i == end + 1:
+            #Continues run
+            end = i
+        else:
+            #End of run.
+            if end - start + 1 >= min_run:
+                answer.update(range(start, end + 1))
+            start = i
+            end = i
+    #Final run,
+    if start and end and end - start + 1 >= min_run:
+        answer.update(range(start, end + 1))
+    return answer
+
+assert cull_runs(set([1,2,3,5,6,10,11,12,13]), 5) == set()
+assert cull_runs(set([1,2,3,5,6,10,11,12,13]), 4) == set([10,11,12,13])
+assert cull_runs(set([1,2,3,5,6,10,11,12,13]), 3) == set([1,2,3,10,11,12,13])
+assert cull_runs(set([1,2,3,5,6,10,11,12,13]), 2) == set([1,2,3,5,6,10,11,12,13])
+assert cull_runs(set([1,2,3,5,6,10,11,12,13,20]), 5) == set()
+assert cull_runs(set([1,2,3,5,6,10,11,12,13,20]), 4) == set([10,11,12,13])
+assert cull_runs(set([1,2,3,5,6,10,11,12,13,20]), 3) == set([1,2,3,10,11,12,13])
+assert cull_runs(set([1,2,3,5,6,10,11,12,13,20]), 2) == set([1,2,3,5,6,10,11,12,13])
 
 # key = contig id
 # value = length of contig
@@ -46,11 +81,17 @@ def pop_most_mapped():
     del contig_mapping[most_mapped]
     for sseqid in list(contig_mapping): #list as editing dict during loop
         contig_mapping[sseqid].difference_update(taken_bases)
-        #TODO Remove isolated bases?
-        if len(contig_mapping[sseqid]) < 100:
+        contig_mapping[sseqid] = cull_runs(contig_mapping[sseqid], min_run)
+        if len(contig_mapping[sseqid]) < min_bases:
             #print("Culled %s" % sseqid)
             del contig_mapping[sseqid]
     return most_mapped, most_mapped_count
+
+
+for sseqid in list(contig_mapping): #list as editing dict during loop
+    contig_mapping[sseqid] = cull_runs(contig_mapping[sseqid], min_run)
+    if len(contig_mapping[sseqid]) < min_bases:
+        del contig_mapping[sseqid]
 
 print "- Raw -"
 contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
