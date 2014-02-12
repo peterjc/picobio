@@ -1,40 +1,61 @@
 #!/usr/bin/env python
 import sys
+from collections import OrderedDict
+from Bio import SeqIO
 
-def increment_counts(qseqid, sseqid, qstart, qend, bonus):
-    global current_query, current_counts
-    assert qseqid == current_query
-    if sseqid not in current_counts:
-        current_counts[sseqid] = set(), bonus
-    else:
-        counts, old_bonus = current_counts[sseqid]
-        new_bonus = []
-        for old, new in zip(old_bonus, bonus):
-            if old==new:
-                new_bonus.append(old)
-            else:
-                new_bonus.append(None)
-        current_counts[sseqid] =  counts, new_bonus
-    current_counts[sseqid][0].update(range(qstart - 1, qend))
+contig_fasta = sys.argv[1]
+contig_blast = sys.argv[2]
 
-def report_old():
-    #print current_query, current_counts
-    top, bases, bonus = sorted((len(c), k, b) for k, (c, b) in current_counts.items())[0]
-    print current_query, top, bases, bonus
+# key = contig id
+# value = length of contig
+contig_lengths = OrderedDict()
 
-current_query = None
-current_counts = dict()
-bonus_cols = None
-for line in sys.stdin:
+# key = contig id
+# value = length of preceeding contigs
+contig_starts = dict()
+
+offset = 0
+for record in SeqIO.parse(contig_fasta, "fasta"):
+    length = len(record)
+    contig_lengths[record.id] = length
+    contig_starts[record.id] = offset
+    offset += length
+
+# key = subject id
+# value = set of base coordinates (cummulative along all contigs) 
+contig_mapping = dict()
+for line in open(contig_blast):
     parts = line.rstrip("\n").split("\t")
     assert len(parts) > 12
     qseqid, sseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = parts[:12]
-    if qseqid != current_query:
-        if current_query:
-            report_old()
-        current_query = qseqid
-        current_counts = dict()
-        bonus_cols = None
-    increment_counts(qseqid, sseqid, int(qstart), int(qend), parts[12:])
-if current_query:
-    report_old()
+    start = int(qstart) - 1
+    end = int(qend)
+    assert 0 <= start <= end <= contig_lengths[qseqid]
+    offset = contig_starts[qseqid]
+    if sseqid not in contig_mapping:
+        contig_mapping[sseqid] = set()
+    contig_mapping[sseqid].update(range(offset + start, offset + end))
+
+def pop_most_mapped():
+    global contig_mapping
+    # Sort by most bases mapped to each subject
+    contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()))
+    most_mapped_count, most_mapped = contig_mapping_counts[-1]
+    # Now remove all those bases from consideration!
+    taken_bases = contig_mapping[most_mapped]
+    del contig_mapping[most_mapped]
+    for sseqid in list(contig_mapping): #list as editing dict during loop
+        contig_mapping[sseqid].difference_update(taken_bases)
+        #TODO Remove isolated bases?
+        if len(contig_mapping[sseqid]) < 100:
+            #print("Culled %s" % sseqid)
+            del contig_mapping[sseqid]
+    return most_mapped, most_mapped_count
+
+print "- Raw -"
+contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
+for sseqid, bases in contig_mapping_counts:
+    print sseqid, bases
+print "- Culling 1st hit -"
+while contig_mapping:
+    print pop_most_mapped()
