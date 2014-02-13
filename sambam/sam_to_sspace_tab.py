@@ -45,6 +45,8 @@ def cigar_mapped_len(cigar):
 reads = 0
 pairs = 0
 interesting = 0
+min_len = None
+max_len = None
 for line in sys.stdin:
     if line[0]=="@":
         #Header line
@@ -83,9 +85,19 @@ for line in sys.stdin:
         end2 = start2 + len2 - 1
     if rnext == "=":
         rnext = rname
-    elif rname != rnext:
+    if rname == rnext:
+        tlen = abs(int(tlen))
+        if tlen:
+            if min_len is None:
+                min_len = max_len = tlen
+            else:
+                min_len = min(min_len, tlen)
+                max_len = max(max_len, tlen)
+    else:
         interesting += 1
     sys.stdout.write("%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2))
     pairs += 1
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
+if interesting:
+    sys.stderr.write("Size range when mapped to same contig %r to %r\n" % (min_len, max_len))
