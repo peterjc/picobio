@@ -44,6 +44,7 @@ def cigar_mapped_len(cigar):
 
 reads = 0
 pairs = 0
+interesting = 0
 for line in sys.stdin:
     if line[0]=="@":
         #Header line
@@ -82,6 +83,9 @@ for line in sys.stdin:
         end2 = start2 + len2 - 1
     if rnext == "=":
         rnext = rname
+    elif rname != rnext:
+        interesting += 1
     sys.stdout.write("%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2))
     pairs += 1
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
+sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
