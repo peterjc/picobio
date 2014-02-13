@@ -165,6 +165,9 @@ def make_offset(blast_hsps, contig_len):
                                   for hsp in blast_hsps]))
     return min(max(0, offset), max_len - contig_len)
 
+#Yes, this does end up parsing the entire FASTA file :(
+contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
+
 #Sort the contigs by horizontal position on the diagram
 #(yes, this does mean parsing the entire BLAST output)
 #(and yes, also the FASTA file to get the query lengths)
@@ -172,13 +175,13 @@ blast_data = sorted(filter_blast(b, len(contigs[b.id])) \
                         for b in SearchIO.parse(blast_file, "blast-tab"))
 contigs_shown = 0
 contigs_shown_bp = 0
-contigs_not_shown_bp = 0
 contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
     #TODO - Use BLAST query length instead of parsing FASTA file?
     contig_len = len(contigs[contig_id])
     if not blast_hsps:
-        contigs_not_shown_bp += contig_len
+        #Works, but only if contig appears in BLAST output at all
+        #contigs_not_shown_bp += contig_len
         continue
 
     assert contig_len <= max_len, \
@@ -186,7 +189,7 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     offset = min(max(0, offset), max_len - contig_len)
 
     contigs_shown += 1
-    contigs_shown_bp +=contig_len
+    contigs_shown_bp += contig_len
 
     #Which track can we put this on?
     gd_track_for_contig = None
@@ -245,7 +248,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
 print "Drawing %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
-print "Ignored %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contigs_not_shown_bp)
+print "Ignored %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contig_total_bp - contigs_shown_bp)
+print "i.e. Drawing %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
 
 if not contigs_shown:
     print("Nothing to do")
