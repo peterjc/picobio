@@ -247,6 +247,10 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 print "Drawing %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
 print "Ignored %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contigs_not_shown_bp)
 
+if not contigs_shown:
+    print("Nothing to do")
+    sys.exit(0)
+
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
                 pagesize=page, start=0, end=max_len)
