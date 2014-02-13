@@ -184,41 +184,52 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         #contigs_not_shown_bp += contig_len
         continue
 
-    assert contig_len <= max_len, \
-        "Contig %s length %i, reference %i" % (contig_id, contig_len, max_len)
-    offset = min(max(0, offset), max_len - contig_len)
-
     contigs_shown += 1
     contigs_shown_bp += contig_len
 
-    #Which track can we put this on?
-    gd_track_for_contig = None
-    gd_contig_features = None
-    #print "%s needs offset %i" % (contig_id, offset)
-    for track, fs in contig_tracks:
-        #TODO - Can we calculate max of features instead of _used hack?
-        if fs._used + MIN_GAP < offset:
-            #Good, will fit in this track
-            gd_track_for_contig = track
-            gd_contig_features = fs
-            break
-    if not gd_track_for_contig:
-        #print "Have %i tracks, adding one more" % len(contig_tracks)
-        #1 = references, 2 = gap, 3+ = contigs
+    if contig_len > max_len:
+        print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
+        #Add entire track for the oversized contig...
         gd_track_for_contig = gd_diagram.new_track(3,
                                                    name=contig_id,
                                                    greytrack=False, height=0.5,
                                                    start=0, end=max_len)
         gd_contig_features = gd_track_for_contig.new_set()
-        contig_tracks.append((gd_track_for_contig, gd_contig_features))
+        contig_len = max_len
+        #Do not add track to the pool for reuse, add red feature for whole contig,
+        loc = FeatureLocation(0, max_len, strand=0)
+        gd_contig_features.add_feature(SeqFeature(loc), color=colors.red, border=colors.black,
+                                       label=True, name=contig_id)
+        offset = 0
+    else:
+        offset = min(max(0, offset), max_len - contig_len)
+        #Which track can we put this on?
+        gd_track_for_contig = None
+        gd_contig_features = None
+        #print "%s needs offset %i" % (contig_id, offset)
+        for track, fs in contig_tracks:
+            #TODO - Can we calculate max of features instead of _used hack?
+            if fs._used + MIN_GAP < offset:
+                #Good, will fit in this track
+                gd_track_for_contig = track
+                gd_contig_features = fs
+                break
+        if not gd_track_for_contig:
+            #print "Have %i tracks, adding one more" % len(contig_tracks)
+            #1 = references, 2 = gap, 3+ = contigs
+            gd_track_for_contig = gd_diagram.new_track(3,
+                                                       name=contig_id,
+                                                       greytrack=False, height=0.5,
+                                                       start=0, end=max_len)
+            gd_contig_features = gd_track_for_contig.new_set()
+            contig_tracks.append((gd_track_for_contig, gd_contig_features))
 
-
-    #Add feature for whole contig,
-    loc = FeatureLocation(offset, offset + contig_len, strand=0)
-    gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
+        #Add feature for whole contig,
+        loc = FeatureLocation(offset, offset + contig_len, strand=0)
+        gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
                                    label=True, name=contig_id)
-    gd_contig_features._used = offset +contig_len
-    #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
+        gd_contig_features._used = offset +contig_len
+        #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
     #Add cross-links,
     for hsp in blast_hsps:
