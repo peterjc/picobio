@@ -16,6 +16,10 @@ in SSPACE basic v2.0 to actually handle real SAM/BAM files where the
 paired end data is correctly encoded using the FLAG field rather than
 read name suffices.
 
+Assuming your SAM/BAM file(s) have read groups, one tab file is created
+for each read group - plus a libary file with the observed fragment
+size information (taken from the TLEN field).
+
 Simple usage with a paired-end SAM file:
 
 $ ./sam_to_sspace_tab.py < original.sam converted
@@ -25,13 +29,18 @@ Simple usage with BAM files with conversion to/from SAM via samtools:
 $ samtools view -h original.bam | ./sam_to_sspace_tab.py converted
 
 This will produce files named converted*.tab, one per read group
-using the read group ID in the filename. The -h is required with
-a BAM file in order to see the header information.
+using the read group ID in the filename, plus converted.library
+which is the main input file to give to SSPACE. Note the -h is
+required with a BAM file in order to see the header information.
+
+$ SSPACE_Basic_v2.0.pl -l converted.libraries -s original.fasta ...
 
 TODO:
 
+ * Autodetect orientation for library output
  * Actual mapped lengths (may need name sorted as in Perl original
    in order to efficiently get the partner read's mapped length)
+ * Configurable size information in the output library file?
  * Report progress to stderr
 
 Copyright Peter Cock 2014. All rights reserved. See:
@@ -140,9 +149,25 @@ for handle in rg_handles.values():
 
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
+
+handle = open(prefix + ".libary", "w")
 for rg in sorted(rg_lengths):
     lengths = rg_lengths[rg]
+    size = 0
+    error = 0.0
+    direction = "FR" #TODO
     if lengths:
         print("Read group %s length range when mapped to same contig %i to %i, count %i, mean %0.1f"
               % (rg, min(lengths), max(lengths), len(lengths),
                  float(sum(lengths)) / len(lengths)))
+        #This attempts to maximize pairings used (very inclusive)
+        #TODO - Configurable?
+        size = 0.5 * (min(lengths) + max(lengths))
+        error = (max(lengths) - size) / size
+        if error >= 1.0:
+            #Ah. Can't cover all over them since SSPACE limits error to < 1.0 times size.
+            size = float(sum(lengths)) / len(lengths) #median?
+            error = 0.99999
+    handle.write("%s TAB %s%s.tab %i %0.5f %s\n" % (rg, prefix, rg, size, error, direction))
+handle.close()
+print("Now run SSPACE with your FASTA file and %s.library" % prefix)
