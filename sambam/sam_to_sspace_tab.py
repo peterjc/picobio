@@ -150,7 +150,7 @@ for handle in rg_handles.values():
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
 
-handle = open(prefix + ".libary", "w")
+handle = open(prefix + ".library", "w")
 for rg in sorted(rg_lengths):
     lengths = rg_lengths[rg]
     size = 0
