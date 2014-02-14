@@ -58,6 +58,7 @@ interesting = 0
 min_len = None
 max_len = None
 rg_handles = dict()
+rg_lengths = dict()
 for line in sys.stdin:
     if line[0]=="@":
         #Header line
@@ -70,6 +71,7 @@ for line in sys.stdin:
             if rg is None:
                 sys_exit("Missing ID in this read group line: %r" % line)
             rg_handles[rg] = open(prefix + rg + ".tab", "w")
+            rg_lengths[rg] = dict()
         continue
     #Should be a read
     reads += 1
@@ -121,11 +123,7 @@ for line in sys.stdin:
     if rname == rnext:
         tlen = abs(int(tlen))
         if tlen:
-            if min_len is None:
-                min_len = max_len = tlen
-            else:
-                min_len = min(min_len, tlen)
-                max_len = max(max_len, tlen)
+            rg_lengths[rg][tlen] = rg_lengths[rg].get(tlen, 0) + 1
     else:
         interesting += 1
 
@@ -142,5 +140,9 @@ for handle in rg_handles.values():
 
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
-if interesting:
-    sys.stderr.write("Size range when mapped to same contig %r to %r\n" % (min_len, max_len))
+for rg in sorted(rg_lengths):
+    lengths = rg_lengths[rg]
+    if lengths:
+        print("Read group %s length range when mapped to same contig %i to %i, count %i, mean %0.1f"
+              % (rg, min(lengths), max(lengths), len(lengths),
+                 float(sum(lengths)) / len(lengths)))
