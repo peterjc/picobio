@@ -18,18 +18,20 @@ read name suffices.
 
 Simple usage with a paired-end SAM file:
 
-$ ./sam_to_sspace_tab.py < original.sam > converted.tab
+$ ./sam_to_sspace_tab.py < original.sam converted
 
 Simple usage with BAM files with conversion to/from SAM via samtools:
 
-$ samtools view original.bam | ./sam_to_sspace_tab.py > converted.tab
+$ samtools view -h original.bam | ./sam_to_sspace_tab.py converted
+
+This will produce files named converted*.tab, one per read group
+using the read group ID in the filename. The -h is required with
+a BAM file in order to see the header information.
 
 TODO:
 
  * Actual mapped lengths (may need name sorted as in Perl original
    in order to efficiently get the partner read's mapped length)
- * Separate output file for each read group (as different pair
-   lengths, should be a different line in the SSPACE input)
  * Report progress to stderr
 
 Copyright Peter Cock 2014. All rights reserved. See:
@@ -37,6 +39,14 @@ https://github.com/peterjc/picobio
 """
 
 import sys
+
+def sys_exit(msg, error=1):
+    sys.stderr.write(msg.rstrip() + "\n")
+    sys.exit(error)
+
+if len(sys.argv) != 2:
+    sys_exit("Requires one argument, prefix for output tab files.")
+prefix = sys.argv[1]
 
 def cigar_mapped_len(cigar):
     #TODO
@@ -47,13 +57,36 @@ pairs = 0
 interesting = 0
 min_len = None
 max_len = None
+rg_handles = dict()
 for line in sys.stdin:
     if line[0]=="@":
         #Header line
-        contine
+        if line[1:3]=="RG":
+            tags = line.rstrip().split("\t")
+            rg = None
+            for t in tags:
+                if t.startswith("ID:"):
+                    rg = t[3:]
+            if rg is None:
+                sys_exit("Missing ID in this read group line: %r" % line)
+            rg_handles[rg] = open(prefix + rg + ".tab", "w")
+        continue
     #Should be a read
     reads += 1
     qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
+    rg_tags = [t for t in tags.split("\t") if t[:2] == "RG"]
+    if not rg_tags:
+        rg = None
+        #Ignore this read? What about single library SAM/BAM files?
+        continue
+    elif len(rg_tags) > 1:
+        sys_exit("Multiple RG tags in this line: %r" % line)
+    else:
+        rg = rg_tags[0]
+        if not rg.startswith("RG:Z:"):
+            sys_exit("Malformed RG tag %r in this line: %r" % (rg, line))
+        rg = rg[5:]
+
     flag = int(flag)
     if (not (flag & 0x1) # Single end read
         or flag & 0x4 # Unmapped
@@ -95,8 +128,18 @@ for line in sys.stdin:
                 max_len = max(max_len, tlen)
     else:
         interesting += 1
-    sys.stdout.write("%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2))
+
+    try:
+        handle = rg_handles[rg]
+    except KeyError:
+        sys_exit("Unexpected read group identifier %r in this line: %r" % (rg, line))
+
+    handle.write("%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2))
     pairs += 1
+
+for handle in rg_handles.values():
+    handle.close()
+
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
 if interesting:
