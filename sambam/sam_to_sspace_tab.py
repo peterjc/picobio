@@ -28,7 +28,7 @@ Simple usage with BAM files with conversion to/from SAM via samtools:
 
 $ samtools view -h original.bam | ./sam_to_sspace_tab.py converted
 
-This will produce files named converted*.tab, one per read group
+This will produce files named converted_*.tab, one per read group
 using the read group ID in the filename, plus converted.library
 which is the main input file to give to SSPACE. Note the -h is
 required with a BAM file in order to see the header information.
@@ -79,7 +79,7 @@ for line in sys.stdin:
                     rg = t[3:]
             if rg is None:
                 sys_exit("Missing ID in this read group line: %r" % line)
-            rg_handles[rg] = open(prefix + rg + ".tab", "w")
+            rg_handles[rg] = open("%s_%s.tab" % (prefix, rg), "w")
             rg_lengths[rg] = dict()
         continue
     #Should be a read
@@ -168,6 +168,6 @@ for rg in sorted(rg_lengths):
             #Ah. Can't cover all over them since SSPACE limits error to < 1.0 times size.
             size = float(sum(lengths)) / len(lengths) #median?
             error = 0.99999
-    handle.write("%s TAB %s%s.tab %i %0.5f %s\n" % (rg, prefix, rg, size, error, direction))
+    handle.write("%s TAB %s_%s.tab %i %0.5f %s\n" % (rg, prefix, rg, size, error, direction))
 handle.close()
 print("Now run SSPACE with your FASTA file and %s.library" % prefix)
