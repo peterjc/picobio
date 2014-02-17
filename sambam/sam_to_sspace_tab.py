@@ -108,7 +108,7 @@ for line in sys.stdin:
                 sys_exit("Missing ID in this read group line: %r" % line)
             rg_handles[rg] = open("%s_%s.tab" % (prefix, rg), "w")
             rg_lengths[rg] = []
-            rg_dir[rg] = {"><":0, "<>":0, ">>":0}
+            rg_dir[rg] = {"FR":0, "RF":0, "FF":0}
         continue
     #Should be a read
     reads += 1
@@ -192,7 +192,7 @@ for line in sys.stdin:
         if tlen:
             rg_lengths[rg].append(tlen)
             if (flag & 0x10) and (flag & 0x20):
-                rg_dir[rg][">>"] += 1
+                rg_dir[rg]["FF"] += 1
             elif flag & 0x10:
                 assert end1 <= start1
                 assert start2 <= end2
@@ -208,9 +208,9 @@ for line in sys.stdin:
                 #Self:  end1 <---- start1
                 #Other:    start2 ----> end2 
                 if start1 < start2:
-                    rg_dir[rg]["<>"] += 1
+                    rg_dir[rg]["RF"] += 1 # 'outies' <-- -->
                 else:                
-                    rg_dir[rg]["><"] += 1
+                    rg_dir[rg]["FR"] += 1 # 'innies' --> <--
             elif flag & 0x20:
                 assert start1 <= end1
                 assert end2 <= start2
@@ -218,11 +218,11 @@ for line in sys.stdin:
                 #Self:      start1 ----> end1
                 #Other:  end2 <---- start2
                 if start2 < start1:
-                    rg_dir[rg]["><"] += 1
+                    rg_dir[rg]["RF"] += 1 # 'outies' <-- -->
                 else:
-                    rg_dir[rg]["<>"] += 1
+                    rg_dir[rg]["FR"] += 1 # 'innies' --> <--
             else:
-                rg_dir[rg][">>"] += 1
+                rg_dir[rg]["FF"] += 1
     else:
         interesting += 1
 
@@ -246,13 +246,16 @@ for rg in sorted(rg_lengths):
     lengths = rg_lengths[rg]
     size = 0
     error = 0.0
-    direction = "FR" #TODO
+    direction = "??"
     if lengths:
         print("Read group %s length range when mapped to same contig %i to %i, count %i, mean %0.1f"
               % (rg, min(lengths), max(lengths), len(lengths),
                  float(sum(lengths)) / len(lengths)))
         print(rg_dir[rg])
         assert sum(rg_dir[rg].values()) == len(lengths)
+        #Pick most common direction
+        direction = [d for d in rg_dir[rg] if rg_dir[rg][d]==max(rg_dir[rg].values())][0]
+        print("Most common pairing direction %s" % direction)
         #This attempts to maximize pairings used (very inclusive)
         #TODO - Configurable?
         size = 0.5 * (min(lengths) + max(lengths))
