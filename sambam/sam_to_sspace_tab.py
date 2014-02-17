@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Python script to convert SAM/BAM to SSPACE tab format.
 
+This is a *PROTOTYPE ONLY* which has had limited testing!
+
 Converts a SAM/BAM file containing mapped paired-end data into the
 simple tab separated format used by the assembly scaffolder SSPACE:
 
@@ -39,8 +41,7 @@ TODO:
 
  * Output to a subdirectory? Would need relative paths...
  * Autodetect orientation for library output
- * Actual mapped lengths (may need name sorted as in Perl original
-   in order to efficiently get the partner read's mapped length)
+ * Actual mapped lengths (insert CIGAR parsing code...)
  * Configurable size information in the output library file?
  * Report progress to stderr
 
