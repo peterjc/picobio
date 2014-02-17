@@ -203,7 +203,7 @@ for rg in sorted(rg_lengths):
         if error >= 1.0:
             #Ah. Can't cover all over them since SSPACE limits error to < 1.0 times size.
             size = float(sum(lengths)) / len(lengths) #median?
-            error = 0.99999
-    handle.write("%s TAB %s_%s.tab %i %0.5f %s\n" % (rg, prefix, rg, size, error, direction))
+            error = 0.999
+    handle.write("%s TAB %s_%s.tab %i %0.3f %s\n" % (rg, prefix, rg, size, error, direction))
 handle.close()
 print("Now run SSPACE with your FASTA file and %s.library" % prefix)
