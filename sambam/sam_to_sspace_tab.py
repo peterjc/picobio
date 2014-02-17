@@ -60,7 +60,8 @@ prefix = sys.argv[1]
 
 def cigar_mapped_len(cigar):
     #TODO
-    return 1
+    #Dummy value over 1 to ensure TAB file defines strand
+    return 100
 
 reads = 0
 pairs = 0
@@ -69,6 +70,9 @@ min_len = None
 max_len = None
 rg_handles = dict()
 rg_lengths = dict()
+
+
+cached = dict() #Key by read name
 for line in sys.stdin:
     if line[0]=="@":
         #Header line
@@ -103,34 +107,63 @@ for line in sys.stdin:
     if (not (flag & 0x1) # Single end read
         or flag & 0x4 # Unmapped
         or flag & 0x8 # Partner unmapped
-        or flag & 0x80 or not (flag & 0x40) #Only using read one (and the RNEXT/PNEXT information for read two)
+        or (flag & 0x40 and flag & 0x80) #Neither R1 nor R2 (i.e. more than 2 parts)
+        or not (flag & 0x40 or flag & 0x80) #Unknown fragment number
         or flag & 0x100 or flag & 0x800 #Ignore secondary or supplementary alignments
         or flag & 0x200 # failed QC
         or flag & 0x400 # PCR or optical duplicate
         ):
         #Ignore this read
         continue
-    #len1 = cigar_mapped_len(cigar)
-    len1 = len(seq) #quick approximation
-    len2 = len1 # TODO - this is a quick approximation...
+
+    if rnext == "=":
+        rnext = rname
+    if qname in cached:
+        #This is the second half of the pair (by file order)
+        other_flag, other_rname, other_pos, other_cigar = cached.pop(qname)
+        if other_rname != rnext or other_pos != pnext:
+            sys.stderr.write("Mapping position mismatch %s:%s versus %s:%s for %s\n" % (other_rname, other_pos, rnext, pnext, qname))
+            sys.stderr.write(line)
+            sys_exit("Try running samtools fixmates?")
+        if bool(flag & 0x10) != bool(other_flag & 0x20) \
+        or bool(flag & 0x20) != bool(other_flag & 0x10):
+            sys.stderr.write("FLAG strand mismatch %i versus %i for %s\n" % (other_flag, flag, qname))
+            sys.stderr.write(line)
+            sys_exit("Try running samtools fixmates?")
+    else:
+        #This is the first half of the pair (by file order), cache it
+        cached[qname] = flag, rname, pos, cigar
+        continue
+
+    if flag & 0x40:
+        #This is R1, other is R2
+        assert other_flag & 0x80
+        pass
+    elif flag & 0x80:
+        #This is R2, other is R1
+        assert other_flag & 0x40
+    else:
+        assert False, "Bad FLAGs for %s (%i and %i)" % (qname, flag, other_flag)
+
+
+    len1 = cigar_mapped_len(cigar)
+    len2 = cigar_mapped_len(other_cigar)
     if flag & 0x10:
-        # Read one is on the reverse strand
+        # Read is on the reverse strand
         end1 = int(pos)
         start1 = end1 - len1 + 1
     else:
-        # Read one is on the forward strand
+        # Read is on the forward strand
         start1 = int(pos)
         end1 = start1 + len1 - 1
     if flag & 0x20:
-        # Partner (read two) is on the reverse strand
+        # Partner (other read) is on the reverse strand
         end2 = int(pnext)
         start2 = end2 - len2 + 1
     else:
-        # Partner (read two) is on the forward strand
+        # Partner (other read) is on the forward strand
         start2 = int(pnext)
         end2 = start2 + len2 - 1
-    if rnext == "=":
-        rnext = rname
     if rname == rnext:
         tlen = abs(int(tlen))
         if tlen:
@@ -151,6 +184,7 @@ for handle in rg_handles.values():
 
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
 sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
+assert not cached, cached
 
 handle = open(prefix + ".library", "w")
 for rg in sorted(rg_lengths):
