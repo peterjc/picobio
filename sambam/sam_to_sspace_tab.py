@@ -113,7 +113,7 @@ for line in sys.stdin:
     #len1 = cigar_mapped_len(cigar)
     len1 = len(seq) #quick approximation
     len2 = len1 # TODO - this is a quick approximation...
-    if flag & 0x16:
+    if flag & 0x10:
         # Read one is on the reverse strand
         end1 = int(pos)
         start1 = end1 - len1 + 1
