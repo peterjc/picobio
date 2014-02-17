@@ -37,6 +37,7 @@ $ SSPACE_Basic_v2.0.pl -l converted.libraries -s original.fasta ...
 
 TODO:
 
+ * Output to a subdirectory? Would need relative paths...
  * Autodetect orientation for library output
  * Actual mapped lengths (may need name sorted as in Perl original
    in order to efficiently get the partner read's mapped length)
@@ -109,7 +110,8 @@ for line in sys.stdin:
         ):
         #Ignore this read
         continue
-    len1 = cigar_mapped_len(cigar)
+    #len1 = cigar_mapped_len(cigar)
+    len1 = len(seq) #quick approximation
     len2 = len1 # TODO - this is a quick approximation...
     if flag & 0x16:
         # Read one is on the reverse strand
