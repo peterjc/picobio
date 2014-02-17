@@ -42,7 +42,6 @@ TODO:
  * Output to a subdirectory? Would need relative paths...
  * Autodetect orientation for library output
  * Configurable size information in the output library file?
- * Report progress to stderr
 
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
@@ -111,6 +110,8 @@ for line in sys.stdin:
             rg_dir[rg] = {"FR":0, "RF":0, "FF":0}
         continue
     #Should be a read
+    if reads % 500000 == 0:
+        sys.stderr.write("Processed %i reads, %i pairs so far...\n" % (reads, pairs))
     reads += 1
     qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
     rg_tags = [t for t in tags.split("\t") if t[:2] == "RG"]
