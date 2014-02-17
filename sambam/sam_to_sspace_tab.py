@@ -87,8 +87,6 @@ def cigar_mapped_len(cigar):
 reads = 0
 pairs = 0
 interesting = 0
-min_len = None
-max_len = None
 rg_handles = dict()
 rg_lengths = dict()
 rg_dir = dict()
