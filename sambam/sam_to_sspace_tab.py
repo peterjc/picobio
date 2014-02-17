@@ -92,7 +92,7 @@ min_len = None
 max_len = None
 rg_handles = dict()
 rg_lengths = dict()
-
+rg_dir = dict()
 
 cached = dict() #Key by read name
 for line in sys.stdin:
@@ -107,7 +107,8 @@ for line in sys.stdin:
             if rg is None:
                 sys_exit("Missing ID in this read group line: %r" % line)
             rg_handles[rg] = open("%s_%s.tab" % (prefix, rg), "w")
-            rg_lengths[rg] = dict()
+            rg_lengths[rg] = []
+            rg_dir[rg] = {"><":0, "<>":0, ">>":0}
         continue
     #Should be a read
     reads += 1
@@ -173,7 +174,7 @@ for line in sys.stdin:
     if flag & 0x10:
         # Read is on the reverse strand
         end1 = int(pos)
-        start1 = end1 - len1 + 1
+        start1 = end1 + len1 + 1
     else:
         # Read is on the forward strand
         start1 = int(pos)
@@ -181,7 +182,7 @@ for line in sys.stdin:
     if flag & 0x20:
         # Partner (other read) is on the reverse strand
         end2 = int(pnext)
-        start2 = end2 - len2 + 1
+        start2 = end2 + len2 + 1
     else:
         # Partner (other read) is on the forward strand
         start2 = int(pnext)
@@ -189,7 +190,39 @@ for line in sys.stdin:
     if rname == rnext:
         tlen = abs(int(tlen))
         if tlen:
-            rg_lengths[rg][tlen] = rg_lengths[rg].get(tlen, 0) + 1
+            rg_lengths[rg].append(tlen)
+            if (flag & 0x10) and (flag & 0x20):
+                rg_dir[rg][">>"] += 1
+            elif flag & 0x10:
+                assert end1 <= start1
+                assert start2 <= end2
+                #These are 'innies' --> <--,
+                #Self:          end1 <---- start1
+                #Other: start2 ----> end2
+                #
+                #Also consider overlapping reads as 'innies' --> <--
+                #Self:      end1 <---- start1
+                #Other: start2 ----> end2
+                #
+                #But these are 'outies' <-- -->
+                #Self:  end1 <---- start1
+                #Other:    start2 ----> end2 
+                if start1 < start2:
+                    rg_dir[rg]["<>"] += 1
+                else:                
+                    rg_dir[rg]["><"] += 1
+            elif flag & 0x20:
+                assert start1 <= end1
+                assert end2 <= start2
+                #Likewise, these are 'outies' <-- -->
+                #Self:      start1 ----> end1
+                #Other:  end2 <---- start2
+                if start2 < start1:
+                    rg_dir[rg]["><"] += 1
+                else:
+                    rg_dir[rg]["<>"] += 1
+            else:
+                rg_dir[rg][">>"] += 1
     else:
         interesting += 1
 
@@ -218,6 +251,8 @@ for rg in sorted(rg_lengths):
         print("Read group %s length range when mapped to same contig %i to %i, count %i, mean %0.1f"
               % (rg, min(lengths), max(lengths), len(lengths),
                  float(sum(lengths)) / len(lengths)))
+        print(rg_dir[rg])
+        assert sum(rg_dir[rg].values()) == len(lengths)
         #This attempts to maximize pairings used (very inclusive)
         #TODO - Configurable?
         size = 0.5 * (min(lengths) + max(lengths))
