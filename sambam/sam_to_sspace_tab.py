@@ -41,7 +41,6 @@ TODO:
 
  * Output to a subdirectory? Would need relative paths...
  * Autodetect orientation for library output
- * Actual mapped lengths (insert CIGAR parsing code...)
  * Configurable size information in the output library file?
  * Report progress to stderr
 
@@ -59,10 +58,32 @@ if len(sys.argv) != 2:
     sys_exit("Requires one argument, prefix for output tab files.")
 prefix = sys.argv[1]
 
+
+def decode_cigar(cigar):
+    """Returns a list of 2-tuples, integer count and operator char."""
+    count = ""
+    answer = []
+    for letter in cigar:
+        if letter.isdigit():
+            count += letter #string addition
+        elif letter in "MIDNSHP=X":
+            answer.append((int(count), letter))
+            count = ""
+        else:
+            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
+    return answer
+
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
+
 def cigar_mapped_len(cigar):
-    #TODO
-    #Dummy value over 1 to ensure TAB file defines strand
-    return 100
+    """The aligned length is given by the sum of the CIGAR M/=/X/D/N operations."""
+    if not cigar or cigar=="*":
+        return 1 #Dummy value
+    length = 0
+    for op_length, op_code in decode_cigar(cigar):
+        if op_code in "M=XDN":
+            length += op_length
+    return length
 
 reads = 0
 pairs = 0
