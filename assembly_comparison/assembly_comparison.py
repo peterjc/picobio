@@ -258,9 +258,52 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
-print "Drawing %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
-print "Ignored %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contig_total_bp - contigs_shown_bp)
-print "i.e. Drawing %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
+#Now add the unmatched contigs on outside
+position = 0
+gd_contig_features = None
+for offset, contig_id, blast_hsps, flipped in blast_data:
+    contig_len = len(contigs[contig_id])
+    if blast_hsps:
+        continue
+    #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+    if contig_len > max_len:
+        print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
+        #Add entire track for the oversized contig...
+        gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
+                                                   name=contig_id,
+                                                   greytrack=False, height=0.5,
+                                                   start=0, end=max_len)
+        gd_contig_features = gd_track_for_contig.new_set()
+        contig_len = max_len
+        #Do not add track to the pool for reuse, add red feature for whole contig,
+        loc = FeatureLocation(0, max_len, strand=0)
+        gd_contig_features.add_feature(SeqFeature(loc), color=colors.red, border=colors.black,
+                                       label=True, name=contig_id)
+    else:
+        #Which track can we put this on?
+        if gd_contig_features is not None \
+        and position + MIN_GAP + contig_len < max_len:
+            #Good, will fit on current
+            position += MIN_GAP
+        else:
+            #print("Having to add another track for %s (len %i bp)" % (contig_id, contig_len))
+            gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
+                                                       name=contig_id,
+                                                       greytrack=False, height=0.5,
+                                                       start=0, end=max_len)
+            gd_contig_features = gd_track_for_contig.new_set()
+            position = 0
+
+        #Add feature for whole contig,
+        loc = FeatureLocation(position, position + contig_len, strand=0)
+        gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
+                                   label=True, name=contig_id)
+        position += contig_len
+
+
+print "Placed: %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
+print "Unplaced: %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contig_total_bp - contigs_shown_bp)
+print "i.e. Placed %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
 
 if not contigs_shown:
     print("Nothing to do")
