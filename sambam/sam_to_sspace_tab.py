@@ -16,7 +16,7 @@ e.g.
 Essentially this is a rewrite of tools/sam_bam2Tab.pl script included
 in SSPACE basic v2.0 to actually handle real SAM/BAM files where the
 paired end data is correctly encoded using the FLAG field rather than
-read name suffices.
+read name suffices. It also generates a library file to use with this.
 
 Assuming your SAM/BAM file(s) have read groups, one tab file is created
 for each read group - plus a libary file with the observed fragment
@@ -26,22 +26,25 @@ Simple usage with a paired-end SAM file:
 
 $ ./sam_to_sspace_tab.py < original.sam converted
 
-Simple usage with BAM files with conversion to/from SAM via samtools:
+Simple usage with BAM files with conversion to SAM via samtools:
 
 $ samtools view -h original.bam | ./sam_to_sspace_tab.py converted
 
+Note the -h is required with a BAM file in order to see the header
+information. 
+
 This will produce files named converted_*.tab, one per read group
 using the read group ID in the filename, plus converted.library
-which is the main input file to give to SSPACE. Note the -h is
-required with a BAM file in order to see the header information.
+which is the main input file to give to SSPACE. This will attempt
+to generate sensible values for the paired end insert size and
+orientation, but you should check this and then run SSPACE:
 
 $ SSPACE_Basic_v2.0.pl -l converted.libraries -s original.fasta ...
 
 TODO:
 
+ * Accept library information (size, orienation) via command line?
  * Output to a subdirectory? Would need relative paths...
- * Autodetect orientation for library output
- * Configurable size information in the output library file?
 
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
