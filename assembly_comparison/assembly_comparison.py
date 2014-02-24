@@ -25,7 +25,7 @@ from Bio.Graphics.GenomeDiagram import CrossLink
 MIN_HIT = 5000
 MIN_GAP = 20000
 
-usage = """Usage: do_comparison.py assembly.fasta reference.fasta
+usage = """Usage: do_comparison.py assembly.fasta reference.fasta [ordered.fasta]
 
 If a reference GenBank file exists next to the reference FASTA file but
 with the extension *.gbk, that will be loaded to draw any annotated genes.
@@ -37,6 +37,9 @@ reference.fasta when calling blastn:
 
 $ makeblastdb -in reference.fasta -dbtype nucl
 
+The optional output filename is if you wish the tool to produce a copy of
+the input assembly with the contigs reordered and in some cases reverse
+complemented to match the mapping.
 """
 
 def stop_err(msg, error_level=1):
@@ -45,9 +48,13 @@ def stop_err(msg, error_level=1):
     sys.exit(error_level)
 
 #TODO - Use argparse if API becomes non-trivial.
-if len(sys.argv) != 3:
+if len(sys.argv) == 3:
+    assembly_fasta, reference_fasta = sys.argv[1:]
+    output_fasta = None
+elif len(sys.argv) == 4:
+    assembly_fasta, reference_fasta, output_fasta = sys.argv[1:]
+else:
     stop_err(usage)
-assembly_fasta, reference_fasta = sys.argv[1:]
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
 output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
@@ -89,6 +96,9 @@ if os.path.isfile(reference_genbank):
 else:
     record = SeqIO.read(reference_fasta, "fasta")
 max_len = len(record)
+
+if output_fasta:
+    fasta_handle = open(output_fasta, "w")
 
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 gd_track_for_features = gd_diagram.new_track(1,
@@ -186,6 +196,14 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 
     contigs_shown += 1
     contigs_shown_bp += contig_len
+    if output_fasta:
+        if flipped:
+            SeqIO.write(contigs[contig_id].reverse_complement(id=True, name=True,
+                                                              description="reversed"),
+                        fasta_handle, "fasta")
+        else:
+            #Fast provided don't need to take reverse complement
+            fasta_handle.write(contigs.get_raw(contig_id))
 
     if contig_len > max_len:
         print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
@@ -266,6 +284,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     if blast_hsps:
         continue
     #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+    if output_fasta:
+        fasta_handle.write(contigs.get_raw(contig_id))
     if contig_len > max_len:
         print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
         #Add entire track for the oversized contig...
@@ -309,8 +329,13 @@ if not contigs_shown:
     print("Nothing to do")
     sys.exit(0)
 
+if output_fasta:
+    print("Wrote %r" % output_fasta)
+    fasta_handle.close()
+
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
                 pagesize=page, start=0, end=max_len)
 gd_diagram.write(diagram_pdf, "PDF")
-print "Saved %r" % diagram_pdf
+print("Saved %r" % diagram_pdf)
+
