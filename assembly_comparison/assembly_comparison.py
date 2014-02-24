@@ -52,11 +52,15 @@ def stop_err(msg, error_level=1):
 
 parser = OptionParser(usage=usage)
 parser.add_option("-f", "--fasta", dest="fasta_filename",
-                  help="Write ordered FASTA file to FILE",
+                  help="Write ordered FASTA file to FILE (default is off)",
                   default=None,
                   metavar="FILE")
 parser.add_option("-o", "--output", dest="pdf_filename",
-                  help="Write PDF diagram to FILE",
+                  help="Write PDF diagram to FILE (default automatic)",
+                  default=None,
+                  metavar="FILE")
+parser.add_option("-b", "--blast", dest="blast_filename",
+                  help="Use/write BLAST tabular output to FILE (default automatic)",
                   default=None,
                   metavar="FILE")
 (options, args) = parser.parse_args()
@@ -65,12 +69,14 @@ if len(args) != 2:
     stop_err("Requires two arguments!\n\n" + usage)
 assembly_fasta, reference_fasta = args
 output_fasta = options.fasta_filename
+blast_file = options.blast_filename
 diagram_pdf = options.pdf_filename
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
 output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
-blast_file = output_stem + ".blast.tsv"
+if not blast_file:
+    blast_file = output_stem + ".blast.tsv"
 if not diagram_pdf:
     diagram_pdf = output_stem + ".blast.pdf"
 
