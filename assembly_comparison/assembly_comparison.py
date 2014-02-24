@@ -202,7 +202,7 @@ contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 #(and yes, also the FASTA file to get the query lengths)
 blast_data = sorted(filter_blast(b, len(contigs[b.id])) \
                         for b in SearchIO.parse(blast_file, "blast-tab"))
-contigs_shown = 0
+contigs_shown = set()
 contigs_shown_bp = 0
 contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
@@ -213,7 +213,7 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         #contigs_not_shown_bp += contig_len
         continue
 
-    contigs_shown += 1
+    contigs_shown.add(contig_id)
     contigs_shown_bp += contig_len
     if output_fasta:
         if flipped:
@@ -300,15 +300,16 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 position = 0
 gd_contig_features = None
 unplaced = 0
-for offset, contig_id, blast_hsps, flipped in blast_data:
-    contig_len = len(contigs[contig_id])
-    if blast_hsps:
+for contig in SeqIO.parse(assembly_fasta, "fasta"):
+    contig_id = contig.id
+    if contig_id in contigs_shown:
         continue
     #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
     unplaced += 1
     if output_fasta:
         fasta_handle.write(contigs.get_raw(contig_id))
         fasta_saved_count += 1
+    contig_len = len(contig)
     if contig_len > max_len:
         print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
         #Add entire track for the oversized contig...
@@ -343,11 +344,14 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
                                    label=True, name=contig_id)
         position += contig_len
 
-assert unplaced == len(contigs) - contigs_shown, \
-    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - contigs_shown)
-print "Placed: %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
-print "Unplaced: %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contig_total_bp - contigs_shown_bp)
-print "i.e. Placed %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
+assert unplaced == len(contigs) - len(contigs_shown), \
+    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
+print("Placed: %i of the %i contigs/scaffolds, %i bp"
+      % (len(contigs_shown), len(contigs), contigs_shown_bp))
+print("Unplaced: %i contigs/scaffolds, %i bp"
+      % (len(contigs) - len(contigs_shown), contig_total_bp - contigs_shown_bp))
+print("i.e. Placed %0.f%% of the assembly"
+      % (contigs_shown_bp * 100.0 / contig_total_bp))
 
 if output_fasta:
     print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
