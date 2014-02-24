@@ -5,6 +5,7 @@
 import os
 import sys
 import warnings
+from optparse import OptionParser
 
 from Bio import BiopythonExperimentalWarning
 with warnings.catch_warnings():
@@ -22,10 +23,12 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
+
 MIN_HIT = 5000
 MIN_GAP = 20000
 
-usage = """Usage: do_comparison.py assembly.fasta reference.fasta [ordered.fasta]
+
+usage = """Basic usage: do_comparison.py assembly.fasta reference.fasta
 
 If a reference GenBank file exists next to the reference FASTA file but
 with the extension *.gbk, that will be loaded to draw any annotated genes.
@@ -47,20 +50,29 @@ def stop_err(msg, error_level=1):
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
 
-#TODO - Use argparse if API becomes non-trivial.
-if len(sys.argv) == 3:
-    assembly_fasta, reference_fasta = sys.argv[1:]
-    output_fasta = None
-elif len(sys.argv) == 4:
-    assembly_fasta, reference_fasta, output_fasta = sys.argv[1:]
-else:
-    stop_err(usage)
+parser = OptionParser(usage=usage)
+parser.add_option("-f", "--fasta", dest="fasta_filename",
+                  help="Write ordered FASTA file to FILE",
+                  default=None,
+                  metavar="FILE")
+parser.add_option("-o", "--output", dest="pdf_filename",
+                  help="Write PDF diagram to FILE",
+                  default=None,
+                  metavar="FILE")
+(options, args) = parser.parse_args()
+
+if len(args) != 2:
+    stop_err("Requires two arguments!\n\n" + usage)
+assembly_fasta, reference_fasta = args
+output_fasta = options.fasta_filename
+diagram_pdf = options.pdf_filename
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
 output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
 blast_file = output_stem + ".blast.tsv"
-diagram_pdf = output_stem + ".blast.pdf"
+if not diagram_pdf:
+    diagram_pdf = output_stem + ".blast.pdf"
 
 if not os.path.isfile(assembly_fasta):
     stop_err("Assemlby FASTA file not found: %r" % assembly_fasta)
