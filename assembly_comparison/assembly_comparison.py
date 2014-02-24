@@ -117,6 +117,7 @@ max_len = len(record)
 
 if output_fasta:
     fasta_handle = open(output_fasta, "w")
+    fasta_saved_count = 0
 
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 gd_track_for_features = gd_diagram.new_track(1,
@@ -222,6 +223,7 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         else:
             #Fast provided don't need to take reverse complement
             fasta_handle.write(contigs.get_raw(contig_id))
+        fasta_saved_count += 1
 
     if contig_len > max_len:
         print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
@@ -297,13 +299,16 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 #Now add the unmatched contigs on outside
 position = 0
 gd_contig_features = None
+unplaced = 0
 for offset, contig_id, blast_hsps, flipped in blast_data:
     contig_len = len(contigs[contig_id])
     if blast_hsps:
         continue
     #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+    unplaced += 1
     if output_fasta:
         fasta_handle.write(contigs.get_raw(contig_id))
+        fasta_saved_count += 1
     if contig_len > max_len:
         print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
         #Add entire track for the oversized contig...
@@ -338,18 +343,21 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
                                    label=True, name=contig_id)
         position += contig_len
 
-
+assert unplaced == len(contigs) - contigs_shown, \
+    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - contigs_shown)
 print "Placed: %i of the %i contigs/scaffolds, %i bp" % (contigs_shown, len(contigs), contigs_shown_bp)
 print "Unplaced: %i contigs/scaffolds, %i bp" % (len(contigs) - contigs_shown, contig_total_bp - contigs_shown_bp)
 print "i.e. Placed %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
 
-if not contigs_shown:
-    print("Nothing to do")
-    sys.exit(0)
-
 if output_fasta:
-    print("Wrote %r" % output_fasta)
+    print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
     fasta_handle.close()
+    if fasta_saved_count != len(contigs):
+        stop_err("Should have written %i record!" % len(contigs))
+
+if not contigs_shown:
+    print("Nothing to do for PDF")
+    sys.exit(0)
 
 page = (100*cm, 100*cm)
 gd_diagram.draw(format="circular", circular=True, circle_core=0.5,
