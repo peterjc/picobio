@@ -85,7 +85,7 @@ if not diagram_pdf:
     diagram_pdf = output_stem + ".blast.pdf"
 
 if not os.path.isfile(assembly_fasta):
-    stop_err("Assemlby FASTA file not found: %r" % assembly_fasta)
+    stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
 
 if not os.path.isfile(reference_fasta):
     stop_err("Reference FASTA file not found: %r" % reference_fasta)
