@@ -90,9 +90,6 @@ if not os.path.isfile(assembly_fasta):
 if not os.path.isfile(reference_fasta):
     stop_err("Reference FASTA file not found: %r" % reference_fasta)
 
-if not os.path.isfile(reference_genbank):
-    stop_err("Reference GenBank file not found: %r" % reference_genbank)
-
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
     assert os.path.isfile(db_fasta)
