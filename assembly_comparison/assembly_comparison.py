@@ -23,6 +23,7 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
+MIN_GAP_JAGGY = 1000 # Sigils
 
 MIN_HIT = 5000
 MIN_GAP = 20000
@@ -63,6 +64,8 @@ parser.add_option("-b", "--blast", dest="blast_filename",
                   help="Use/write BLAST tabular output to FILE (default automatic)",
                   default=None,
                   metavar="FILE")
+parser.add_option("-u", "--unmapped", dest="unmapped",
+                  action="store_true")
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
@@ -194,6 +197,25 @@ def make_offset(blast_hsps, contig_len):
                                   for hsp in blast_hsps]))
     return min(max(0, offset), max_len - contig_len)
 
+def add_jaggies(contig_seq, offset, gd_contig_features):
+    """Add JAGGY features for any run of NNNN in sequence."""
+    i = 0
+    j = 0
+    NNN = "N" * MIN_GAP_JAGGY
+    while i < len(contig_seq):
+        i = contig_seq.find(NNN, start=i)
+        if i == -1:
+            return
+        j = i
+        while j < len(contig_seq) and contig_seq[j] == "N":
+            j += 1
+        #print("Adding jaggy")
+        gd_contig_features.add_feature(SeqFeature(FeatureLocation(offset+i, offset+j)),
+                                       sigil="JAGGY",
+                                       color=colors.slategrey, border=colors.black)
+        i = j + 1
+
+
 #Yes, this does end up parsing the entire FASTA file :(
 contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 
@@ -207,7 +229,8 @@ contigs_shown_bp = 0
 contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
     #TODO - Use BLAST query length instead of parsing FASTA file?
-    contig_len = len(contigs[contig_id])
+    contig = contigs[contig_id]
+    contig_len = len(contig)
     if not blast_hsps:
         #Works, but only if contig appears in BLAST output at all
         #contigs_not_shown_bp += contig_len
@@ -267,6 +290,10 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
                                    label=True, name=contig_id)
         gd_contig_features._used = offset +contig_len
+        if flipped:
+            add_jaggies(contig.seq.reverse_complement(), offset, gd_contig_features)
+        else:
+            add_jaggies(contig.seq, offset, gd_contig_features)
         #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
     #Add cross-links,
@@ -300,52 +327,61 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 position = 0
 gd_contig_features = None
 unplaced = 0
-for contig in SeqIO.parse(assembly_fasta, "fasta"):
-    contig_id = contig.id
-    if contig_id in contigs_shown:
-        continue
-    #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
-    unplaced += 1
-    if output_fasta:
-        fasta_handle.write(contigs.get_raw(contig_id))
-        fasta_saved_count += 1
-    contig_len = len(contig)
-    if contig_len > max_len:
-        print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
-        #Add entire track for the oversized contig...
-        gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
-                                                   name=contig_id,
-                                                   greytrack=False, height=0.5,
-                                                   start=0, end=max_len)
-        gd_contig_features = gd_track_for_contig.new_set()
-        contig_len = max_len
-        #Do not add track to the pool for reuse, add red feature for whole contig,
-        loc = FeatureLocation(0, max_len, strand=0)
-        gd_contig_features.add_feature(SeqFeature(loc), color=colors.red, border=colors.black,
-                                       label=True, name=contig_id)
-    else:
-        #Which track can we put this on?
-        if gd_contig_features is not None \
-        and position + MIN_GAP + contig_len < max_len:
-            #Good, will fit on current
-            position += MIN_GAP
-        else:
-            #print("Having to add another track for %s (len %i bp)" % (contig_id, contig_len))
+if options.unmapped:
+    print("Drawing unmapped contigs round the outside")
+    for contig in SeqIO.parse(assembly_fasta, "fasta"):
+        contig_id = contig.id
+        if contig_id in contigs_shown:
+            continue
+        #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+        unplaced += 1
+        if output_fasta:
+            fasta_handle.write(contigs.get_raw(contig_id))
+            fasta_saved_count += 1
+        contig_len = len(contig)
+        if contig_len > max_len:
+            print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
+            #Add entire track for the oversized contig...
             gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
                                                        name=contig_id,
                                                        greytrack=False, height=0.5,
                                                        start=0, end=max_len)
             gd_contig_features = gd_track_for_contig.new_set()
-            position = 0
+            contig_len = max_len
+            #Do not add track to the pool for reuse, add red feature for whole contig,
+            loc = FeatureLocation(0, max_len, strand=0)
+            gd_contig_features.add_feature(SeqFeature(loc), color=colors.red, border=colors.black,
+                                           label=True, name=contig_id)
+        else:
+            #Which track can we put this on?
+            if gd_contig_features is not None \
+            and position + MIN_GAP + contig_len < max_len:
+                #Good, will fit on current
+                position += MIN_GAP
+            else:
+                #print("Having to add another track for %s (len %i bp)" % (contig_id, contig_len))
+                gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
+                                                           name=contig_id,
+                                                           greytrack=False, height=0.5,
+                                                           start=0, end=max_len)
+                gd_contig_features = gd_track_for_contig.new_set()
+                position = 0
 
-        #Add feature for whole contig,
-        loc = FeatureLocation(position, position + contig_len, strand=0)
-        gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
-                                   label=True, name=contig_id)
-        position += contig_len
+            #Add feature for whole contig,
+            loc = FeatureLocation(position, position + contig_len, strand=0)
+            gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
+                                           label=True, name=contig_id)
+            #Add jaggy sigils for any gaps
+            add_jaggies(contig.seq, position, gd_contig_features)
+            position += contig_len
 
-assert unplaced == len(contigs) - len(contigs_shown), \
-    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
+    assert unplaced == len(contigs) - len(contigs_shown), \
+        "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
+else:
+    #Don't draw the unplaced contigs (default)
+    print("Not drawing unplaced contigs")
+    unplaced = len(contigs) - len(contigs_shown)
+
 print("Placed: %i of the %i contigs/scaffolds, %i bp"
       % (len(contigs_shown), len(contigs), contigs_shown_bp))
 print("Unplaced: %i contigs/scaffolds, %i bp"
