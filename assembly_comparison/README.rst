@@ -197,9 +197,6 @@ main chromosome (I presume the other four sequences are plasmids).
 TODO
 ====
 
-* Proper command line API including specification of output PDF filename
-  and the tabular BLAST results.
-
 * Auto-generate reference FASTA file if given just GenBank/EMBL file?
 
 * Control over sequence similarity thresholds.
