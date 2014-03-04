@@ -65,6 +65,7 @@ parser.add_option("-b", "--blast", dest="blast_filename",
                   default=None,
                   metavar="FILE")
 parser.add_option("-u", "--unmapped", dest="unmapped",
+                  help="Show unmapped contigs on the outer tracks",
                   action="store_true")
 (options, args) = parser.parse_args()
 
