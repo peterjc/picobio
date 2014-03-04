@@ -328,17 +328,16 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
 position = 0
 gd_contig_features = None
 unplaced = 0
-if options.unmapped:
-    print("Drawing unmapped contigs round the outside")
-    for contig in SeqIO.parse(assembly_fasta, "fasta"):
-        contig_id = contig.id
-        if contig_id in contigs_shown:
-            continue
-        #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
-        unplaced += 1
-        if output_fasta:
-            fasta_handle.write(contigs.get_raw(contig_id))
-            fasta_saved_count += 1
+for contig in SeqIO.parse(assembly_fasta, "fasta"):
+    contig_id = contig.id
+    if contig_id in contigs_shown:
+        continue
+    #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+    unplaced += 1
+    if output_fasta:
+        fasta_handle.write(contigs.get_raw(contig_id))
+        fasta_saved_count += 1
+    if options.unmapped:
         contig_len = len(contig)
         if contig_len > max_len:
             print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
@@ -376,12 +375,8 @@ if options.unmapped:
             add_jaggies(contig.seq, position, gd_contig_features)
             position += contig_len
 
-    assert unplaced == len(contigs) - len(contigs_shown), \
-        "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
-else:
-    #Don't draw the unplaced contigs (default)
-    print("Not drawing unplaced contigs")
-    unplaced = len(contigs) - len(contigs_shown)
+assert unplaced == len(contigs) - len(contigs_shown), \
+    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
 
 print("Placed: %i of the %i contigs/scaffolds, %i bp"
       % (len(contigs_shown), len(contigs), contigs_shown_bp))
