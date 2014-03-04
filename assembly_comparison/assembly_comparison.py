@@ -29,7 +29,7 @@ MIN_HIT = 5000
 MIN_GAP = 20000
 
 
-usage = """Basic usage: do_comparison.py assembly.fasta reference.fasta
+usage = """Basic usage: assembly_comparison.py assembly.fasta reference.fasta
 
 If a reference GenBank file exists next to the reference FASTA file but
 with the extension *.gbk, that will be loaded to draw any annotated genes.
