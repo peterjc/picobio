@@ -31,10 +31,10 @@ MIN_HIT = 5000
 MIN_GAP = 20000
 
 
-usage = """Basic usage: multi_vs_reference.py reference.fasta assembly1.fasta assembly2.fasta -o figure.pdf
+usage = """Basic usage: multi_comparison.py reference.fasta assembly1.fasta assembly2.fasta -o figure.pdf
 
-If a reference GenBank file exists next to the reference FASTA file but
-with the extension *.gbk, that will be loaded to draw any annotated genes.
+If a GenBank file exists next to FASTA file but with the extension *.gbk,
+that will be loaded to draw any annotated genes.
 
 There should be a (nucleotide) BLAST database next to the reference FASTA
 file, created with some thing like this such that the BLAST database files
