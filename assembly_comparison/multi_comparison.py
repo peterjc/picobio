@@ -144,7 +144,7 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
                                        color=colors.slategrey, border=colors.black)
         i = j + 1
 
-for assembly_fasta in assemblies_fasta:
+for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
         stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
 
@@ -162,7 +162,7 @@ for assembly_fasta in assemblies_fasta:
 
     blast_results = SearchIO.index(blast_file, "blast-tab")
 
-    gd_track = gd_diagram.new_track(3,
+    gd_track = gd_diagram.new_track(1 + 2 * (i+1),
                                     name=assembly_fasta,
                                     greytrack=False, height=0.5,
                                     start=0, end=track_len)
@@ -211,7 +211,7 @@ for assembly_fasta in assemblies_fasta:
     h.close()
 
 #Set size based on max track length?
-page = (30*cm, 100*cm*max_len/5000000)
+page = (2*cm + 5*cm*len(args), 100*cm*max_len/5000000)
 gd_diagram.draw(format="linear", fragments=1,
                 pagesize=page, start=0, end=max_len)
 gd_diagram.write(diagram_pdf, "PDF")
