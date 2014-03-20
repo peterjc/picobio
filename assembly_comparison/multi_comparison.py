@@ -120,61 +120,11 @@ for feature in record.features:
 gd_record_features = gd_track_for_features.new_set()
 
 
-def reverse_complement_hsp_fragment(frag, query_length):
-    rev = SearchIO.HSPFragment(hit_id=frag.hit_id, query_id=frag.query_id)
-    rev.query_start = query_length - frag.query_end
-    rev.query_end = query_length - frag.query_start
-    rev.hit_start = frag.hit_start
-    rev.hit_end = frag.hit_end
-    if frag.hit_strand == -1:
-        rev.hit_strand = +1
-    elif frag.hit_strand == +1:
-        rev.hit_strand = -1
-    else:
-        #O or None,
-        rev.hit_strand = frag.hit_strand
-    return rev
-
-def reverse_complement_hsp(hsp, query_length):
-    rev = SearchIO.HSP(fragments = [reverse_complement_hsp_fragment(frag, query_length) \
-                                    for frag in hsp.fragments[::-1]])
-    rev.ident_pct = hsp.ident_pct
-    return rev
-
 def filter_blast(blast_result, query_length):
     hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= MIN_HIT]
     hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
-    plus = 0
-    minus = 0
-    flipped = False
-    for hsp in hsps:
-        if hsp.hit_strand == -1:
-            minus += hsp.hit_end - hsp.hit_start
-        else:
-            plus += hsp.hit_end - hsp.hit_start
-    if minus > plus:
-        #Reverse the contig
-        flipped = True
-        hsps = [reverse_complement_hsp(hsp, query_length) for hsp in hsps]
-        hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
-    return make_offset(hsps, query_length), blast_result.id, hsps, flipped
+    return blast_result.id, hsps
 
-
-def weighted_median(values_and_weights):
-    """Median of values with integer weights."""
-    x = []
-    count = sum(w for v, w in values_and_weights)
-    map(x.extend,([v]*w for v, w in values_and_weights))
-    return (x[count/2]+x[(count-1)/2])/2.
-
-
-def make_offset(blast_hsps, contig_len):
-    if not blast_hsps:
-        return 0
-    offset = int(weighted_median([(hsp.hit_start - hsp.query_start,
-                                  hsp.hit_end - hsp.hit_start)
-                                  for hsp in blast_hsps]))
-    return min(max(0, offset), max_len - contig_len)
 
 def add_jaggies(contig_seq, offset, gd_contig_features):
     """Add JAGGY features for any run of NNNN in sequence."""
@@ -235,27 +185,19 @@ for assembly_fasta in assemblies_fasta:
         if contig_id not in blast_data:
             offset += SPACER + contig_len
             continue
-        xxx_offset, contig_id, blast_hsps, flipped = filter_blast(blast_data[contig_id], contig_len)
+        contig_id, blast_hsps = filter_blast(blast_data[contig_id], contig_len)
         if not blast_hsps:
             offset += SPACER + contig_len
             continue
 
         #Add cross-links,
         for hsp in blast_hsps:
-            if flipped:
-                if hsp.hit_strand == -1:
-                    flip = True
-                    color = colors.darkgreen
-                else:
-                    flip = False
-                    color = colors.purple
+            if hsp.hit_strand == -1:
+                flip = True
+                color = colors.blue
             else:
-                if hsp.hit_strand == -1:
-                    flip = True
-                    color = colors.blue
-                else:
-                    flip = False
-                    color = colors.firebrick
+                flip = False
+                color = colors.firebrick
             border = colors.lightgrey
             #Fade the colour based on percentage identify, 100% identity = 50% transparent
             color = colors.Color(color.red, color.green, color.blue, alpha=(hsp.ident_pct/200.0))
