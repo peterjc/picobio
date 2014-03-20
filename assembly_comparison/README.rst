@@ -24,9 +24,13 @@ TODO list at the end.
 Explanation
 ===========
 
-This script produces a GenomeDiagram using ReportLab, defaulting to circular
-figures suitable for most bacterial genomes or plasmids, but linear diagrams
-are also possible.
+Single Comparison
+-----------------
+
+The ``assembly_comparison.py`` script compares an assembly to a single
+reference sequence. It produces a GenomeDiagram using ReportLab, defaulting
+to circular figures suitable for most bacterial genomes or plasmids, but
+linear diagrams are also possible.
 
 The central track is the reference genome drawn as a full circle in
 dark grey, with any annotated genes shown in pale blue.
@@ -53,6 +57,13 @@ central track as dark grey (with pale blue genes) with no cross-links.
 Regions of the assembly not represented in the reference genome are visible
 on the contigs as dark grey regions (often at either end of a contig).
 
+Multiple Comparison
+-------------------
+
+The script ``multi_comparison.py`` comparing several assemblies/references.
+It produces output a bit like Mauve, showing several genomes - each drawn
+as a linear track - with cross-links between them for similiar regions.
+
 
 Dependencies
 ============
@@ -63,9 +74,11 @@ Dependencies
 * NCBI BLAST+, tested with BLAST 2.2.27+, available from
   ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 
+Sample Data
+===========
 
-Sample Data - Example One
-=========================
+Example One
+-----------
 
 As an example, we will use the first public assembly of the 2011 Shiga-toxin
 producing *Escherichia coli* O104:H4 outbreak in Germany. This was part of the
@@ -125,8 +138,8 @@ All these contigs are very small, but the figure shows matches all the way round
 the genome which is a good sign.
 
 
-Sample Data - Example Two
-=========================
+Example Two
+-----------
 
 Continuing this *E. coli* TY-2482 example, lets look at a later assembly from
 the same strain - using the same reference genome downloaded and turned into
@@ -161,9 +174,8 @@ intermediate version and the figure shows it covers almost all of the full
 genome in reasonably sized contigs - comparing the figures by eye we can see
 this is a big improvement over the first assembly (the previous example).
 
-
-Sample Data - Example Three
-===========================
+Example Three
+-------------
 
 This is yet another *E. coli* assembly listed on that same wiki page, again download it:
 
@@ -194,6 +206,18 @@ This time the figure shows six sequences mapping very nicely onto the reference 
 main chromosome (I presume the other four sequences are plasmids).
 
 
+Example Four
+------------
+
+We now switch to a multi-genome comparison, using some of the previous *E. coli*
+genomes once again.
+
+.. sourcecode:: console
+
+    $ python multi_comparison.py NC_018658.fna EHEC_H112180280_HPA_scaffolds_reordered_vs_55989.fasta Escherichia_coli_TY-2482.scaffold.20110610.fa -o e_coli.pdf
+    Saved 'e_coli.pdf'
+
+
 TODO
 ====
 
@@ -213,4 +237,3 @@ TODO
 * Galaxy wrapper?
 
 * etc
-
