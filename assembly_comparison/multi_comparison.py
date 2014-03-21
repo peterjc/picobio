@@ -160,8 +160,6 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
     #TODO - Configurable offset to visually align tracks?
     max_len = max(max_len, track_len)
 
-    blast_results = SearchIO.index(blast_file, "blast-tab")
-
     gd_track = gd_diagram.new_track(1 + 2 * (i+1),
                                     name=assembly_fasta,
                                     greytrack=False, height=0.5,
