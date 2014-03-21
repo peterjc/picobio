@@ -107,6 +107,7 @@ gd_track_for_features = gd_diagram.new_track(1,
                                              greytrack=False, height=0.5,
                                              start=0, end=len(record))
 gd_feature_set = gd_track_for_features.new_set()
+
 #Add a dark grey background
 gd_feature_set.add_feature(SeqFeature(FeatureLocation(0, len(record))),
                            sigil="BOX", color="grey", label=False),
@@ -147,6 +148,7 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
 for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
         stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+    assembly_genbank = os.path.splitext(assembly_fasta)[0] + ".gbk"
 
     output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
@@ -168,16 +170,32 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
     
     offset = 0
     blast_data = SearchIO.index(blast_file, "blast-tab")
-    h = open(assembly_fasta)
-    for title, seq in SimpleFastaParser(h):
-        contig_id = title.split(None,1)[0]
-        contig_len = len(seq)
+
+    if os.path.isfile(assembly_genbank):
+        print("Using %s" % assembly_genbank)
+        contigs = SeqIO.parse(assembly_genbank, "genbank")
+    else:
+        contigs = SeqIO.parse(assembly_fasta, "fasta")
+    for contig in contigs:
+        contig_id = contig.id
+        contig_len = len(contig)
 
         #Add feature for whole contig,
         loc = FeatureLocation(offset, offset + contig_len, strand=0)
         gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
                                    label=True, name=contig_id)
-        add_jaggies(seq, offset, gd_contig_features)
+        #Mark any NNNN regions,
+        add_jaggies(str(contig.seq), offset, gd_contig_features)
+        #Mark any genes (if using GenBank file),
+        for feature in contig.features:
+            if feature.type != "gene":
+                continue
+            feature.location += offset
+            gd_contig_features.add_feature(feature, sigil="BOX",
+                                           color="lightblue", label=True,
+                                           label_position="start",
+                                           label_size=6, label_angle=0)
+
         #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
         if contig_id not in blast_data:
@@ -206,7 +224,6 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             gd_diagram.cross_track_links.append(CrossLink(query, hit, color, border, flip))
 
         offset += SPACER + contig_len
-    h.close()
 
 #Set size based on max track length?
 page = (2*cm + 5*cm*len(args), 100*cm*max_len/5000000)
