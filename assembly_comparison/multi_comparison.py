@@ -48,6 +48,17 @@ will each be drawn on one track with the contigs end to end (with a
 spacer).
 """
 
+def hack_ncbi_fasta_name(pipe_name):
+    """Turn 'gi|445210138|gb|CP003959.1|' into 'CP003959.1' etc.
+
+    For use with NCBI provided FASTA and GenBank files to ensure
+    contig names match up.
+    """
+    if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
+        return pipe_name.split("|")[3]
+    else:
+        return pipe_name
+
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
@@ -120,12 +131,15 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
     assembly_genbank = os.path.splitext(assembly_fasta)[0] + ".gbk"
 
     contig_offsets = dict()
+    contig_lengths = dict()
     track_len = -SPACER
     with open(assembly_fasta) as h:
         for title, seq in SimpleFastaParser(h):
+            contig_id = hack_ncbi_fasta_name(title.split(None, 1)[0])
             track_len += SPACER
-            contig_offsets[title.split(None, 1)[0]] = track_len
+            contig_offsets[contig_id] = track_len
             track_len += len(seq)
+            contig_lengths[contig_id] = len(seq)
     #TODO - Configurable offset to visually align tracks?
     max_len = max(max_len, track_len)
 
@@ -135,7 +149,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                                     start=0, end=track_len)
     gd_contig_features = gd_track.new_set()
 
-
+    blast_data = dict()
     if reference_fasta:
         output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
                                     os.path.splitext(os.path.basename(reference_fasta))[0])
@@ -143,17 +157,22 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
 
         if not os.path.isfile(blast_file):
             do_blast(assembly_fasta, reference_fasta, blast_file)
-        blast_data = SearchIO.index(blast_file, "blast-tab")
+        print("Loading %s" % blast_file)
+        for blast_result in SearchIO.parse(blast_file, "blast-tab"):
+            blast_result.id = hack_ncbi_fasta_name(blast_result.id)
+            contig_id, hits = filter_blast(blast_result, contig_lengths[blast_result.id])
+            blast_data[contig_id] = hits
+            print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
     else:
         assert i == 0
-        blast_data = dict()
 
     
     offset = 0
     if os.path.isfile(assembly_genbank):
-        print("Using %s" % assembly_genbank)
+        print("Drawing %s" % assembly_genbank)
         contigs = SeqIO.parse(assembly_genbank, "genbank")
     else:
+        print("Drawing %s" % assembly_fasta)
         contigs = SeqIO.parse(assembly_fasta, "fasta")
     for contig in contigs:
         contig_id = contig.id
@@ -178,12 +197,15 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
         #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
         if contig_id not in blast_data:
+            #print("No BLAST matches for contig %s" % contig_id)
             offset += SPACER + contig_len
             continue
-        contig_id, blast_hsps = filter_blast(blast_data[contig_id], contig_len)
+        blast_hsps = blast_data[contig_id]
         if not blast_hsps:
+            #print("No BLAST matches for contig %s" % contig_id)
             offset += SPACER + contig_len
             continue
+        #print("%i BLAST matches for contig %s" % (len(blast_hsps), contig_id))
 
         #Add cross-links,
         for hsp in blast_hsps:
@@ -196,10 +218,10 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             border = colors.lightgrey
             #Fade the colour based on percentage identify, 100% identity = 50% transparent
             color = colors.Color(color.red, color.green, color.blue, alpha=(hsp.ident_pct/200.0))
-            assert offset == contig_offsets[hsp.query_id]
+            assert offset == contig_offsets[hack_ncbi_fasta_name(hsp.query_id)]
             loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
             query = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
-            r_offset = ref_offsets[hsp.hit_id]
+            r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
             loc = FeatureLocation(r_offset + hsp.hit_start, r_offset + hsp.hit_end, strand=0)
             hit = gd_ref_features.add_feature(SeqFeature(loc), color=color, border=border)
             gd_diagram.cross_track_links.append(CrossLink(query, hit, color, border, flip))
