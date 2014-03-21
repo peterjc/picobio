@@ -24,9 +24,9 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
-SPACER = 10000
-MIN_GAP_JAGGY = 1000 # Sigils
+SPACER = 20000
 
+MIN_GAP_JAGGY = 1000 # Sigils
 MIN_HIT = 5000
 MIN_GAP = 20000
 
