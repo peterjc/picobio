@@ -36,12 +36,12 @@ usage = """Basic usage: multi_comparison.py assembly1.fasta assembly2.fasta asse
 If a GenBank file exists next to FASTA file but with the extension *.gbk,
 that will be loaded to draw any annotated genes. e.g. reference genome.
 
-There should be a (nucleotide) BLAST database next to the reference FASTA
+There should be a (nucleotide) BLAST database next to each FASTA
 file, created with some thing like this such that the BLAST database files
 are named reference.fasta.n* and the database is referenced simply as
 reference.fasta when calling blastn:
 
-$ makeblastdb -in reference.fasta -dbtype nucl
+$ makeblastdb -dbtype nucl -in assembly.fasta
 
 The assembly FASTA files are expected to already be preordered, and
 will each be drawn on one track with the contigs end to end (with a

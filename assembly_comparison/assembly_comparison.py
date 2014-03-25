@@ -39,7 +39,7 @@ file, created with some thing like this such that the BLAST database files
 are named reference.fasta.n* and the database is referenced simply as
 reference.fasta when calling blastn:
 
-$ makeblastdb -in reference.fasta -dbtype nucl
+$ makeblastdb -dbtype nucl -in reference.fasta
 
 The optional output filename is if you wish the tool to produce a copy of
 the input assembly with the contigs reordered and in some cases reverse
