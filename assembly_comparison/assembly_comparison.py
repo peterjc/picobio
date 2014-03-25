@@ -196,12 +196,13 @@ def make_offset(blast_hsps, contig_len):
     return min(max(0, offset), max_len - contig_len)
 
 def add_jaggies(contig_seq, offset, gd_contig_features):
-    """Add JAGGY features for any run of NNNN in sequence."""
+    """Add JAGGY features for any run of NNNN or XXXX in sequence."""
+    contig_seq = str(contig_seq).upper().replace("X", "N")
     i = 0
     j = 0
     NNN = "N" * MIN_GAP_JAGGY
     while i < len(contig_seq):
-        i = contig_seq.find(NNN, start=i)
+        i = contig_seq.find(NNN, i)
         if i == -1:
             return
         j = i

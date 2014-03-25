@@ -104,7 +104,8 @@ def filter_blast(blast_result, query_length):
 
 
 def add_jaggies(contig_seq, offset, gd_contig_features):
-    """Add JAGGY features for any run of NNNN in sequence."""
+    """Add JAGGY features for any run of NNNN or XXXX in sequence."""
+    contig_seq = contig_seq.upper().replace("X", "N")
     i = 0
     j = 0
     NNN = "N" * MIN_GAP_JAGGY
@@ -115,7 +116,7 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
         j = i
         while j < len(contig_seq) and contig_seq[j] == "N":
             j += 1
-        #print("Adding jaggy")
+        print("Adding jaggy")
         gd_contig_features.add_feature(SeqFeature(FeatureLocation(offset+i, offset+j)),
                                        sigil="JAGGY",
                                        color=colors.slategrey, border=colors.black)
@@ -162,7 +163,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             blast_result.id = hack_ncbi_fasta_name(blast_result.id)
             contig_id, hits = filter_blast(blast_result, contig_lengths[blast_result.id])
             blast_data[contig_id] = hits
-            print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
+            #print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
     else:
         assert i == 0
 
