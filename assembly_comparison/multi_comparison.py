@@ -222,7 +222,15 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             assert offset == contig_offsets[hack_ncbi_fasta_name(hsp.query_id)]
             loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
             query = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
-            r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
+            try:
+                r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
+            except KeyError:
+                if hack_ncbi_fasta_name(hsp.hit_id) != hsp.hit_id:
+                    stop_err("Could not find offset key %r for hit %r in dict (query id %r)"
+                             % (hack_ncbi_fasta_name(hsp.hit_id), hsp.hit_id, hsp.query_id))
+                else:
+                    stop_err("Could not find offset for hit %r in dict (query id %r)"
+                             % (hsp.hit_id, hsp.query_id))
             loc = FeatureLocation(r_offset + hsp.hit_start, r_offset + hsp.hit_end, strand=0)
             hit = gd_ref_features.add_feature(SeqFeature(loc), color=color, border=border)
             gd_diagram.cross_track_links.append(CrossLink(query, hit, color, border, flip))
