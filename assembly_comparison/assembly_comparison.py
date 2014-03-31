@@ -23,6 +23,8 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
+SPACER = 10000
+
 MIN_GAP_JAGGY = 1000 # Sigils
 
 MIN_HIT = 5000
@@ -45,6 +47,17 @@ The optional output filename is if you wish the tool to produce a copy of
 the input assembly with the contigs reordered and in some cases reverse
 complemented to match the mapping.
 """
+
+def hack_ncbi_fasta_name(pipe_name):
+    """Turn 'gi|445210138|gb|CP003959.1|' into 'CP003959.1' etc.
+
+    For use with NCBI provided FASTA and GenBank files to ensure
+    contig names match up.
+    """
+    if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
+        return pipe_name.split("|")[3]
+    else:
+        return pipe_name
 
 def stop_err(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -109,12 +122,19 @@ if not os.path.isfile(blast_file):
 contigs = SeqIO.index(assembly_fasta, "fasta")
 blast_results = SearchIO.index(blast_file, "blast-tab")
 
-#TODO - Multiple references (e.g. with plasmids)
+#TODO - Tidy this up...
 if os.path.isfile(reference_genbank):
-    record = SeqIO.read(reference_genbank, "genbank")
+    reference_parser = SeqIO.parse(reference_genbank, "genbank")
 else:
-    record = SeqIO.read(reference_fasta, "fasta")
-max_len = len(record)
+    reference_parser = SeqIO.parse(reference_fasta, "fasta")
+max_len = 0
+for record in reference_parser:
+    max_len += SPACER + len(record)
+max_len -= SPACER
+if os.path.isfile(reference_genbank):
+    reference_parser = SeqIO.parse(reference_genbank, "genbank")
+else:
+    reference_parser = SeqIO.parse(reference_fasta, "fasta")
 
 if output_fasta:
     fasta_handle = open(output_fasta, "w")
@@ -122,20 +142,41 @@ if output_fasta:
 
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 gd_track_for_features = gd_diagram.new_track(1,
-                                             name=record.name,
+                                             name="reference",
                                              greytrack=False, height=0.5,
-                                             start=0, end=len(record))
+                                             start=0, end=max_len)
 gd_feature_set = gd_track_for_features.new_set()
 #Add a dark grey background
 gd_feature_set.add_feature(SeqFeature(FeatureLocation(0, len(record))),
                            sigil="BOX", color="grey", label=False),
-for feature in record.features:
-    if feature.type != "gene":
-        continue
-    gd_feature_set.add_feature(feature, sigil="BOX",
-                               color="lightblue", label=True,
-                               label_position="start",
-                               label_size=6, label_angle=0)
+
+offset = 0
+ref_offsets = dict()
+for record in reference_parser:
+    if offset > 0:
+        #Add Jaggy
+        #print("Adding jaggy from %i to %i" % (offset, offset+SPACER))
+        gd_feature_set.add_feature(SeqFeature(FeatureLocation(offset, offset+SPACER)),
+                                   sigil="JAGGY",
+                                   color=colors.slategrey, border=colors.black)
+        offset += SPACER
+    ref_offsets[hack_ncbi_fasta_name(record.id)] = offset
+    #print("Adding %s to inner reference track at offset %i" % (record.id, offset))
+    #Add feature for whole contig,
+    loc = FeatureLocation(offset, offset + len(record), strand=0)
+    gd_feature_set.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
+                               label=True, name=record.id)
+    for feature in record.features:
+        if feature.type != "gene":
+            continue
+        feature.location += offset
+        gd_feature_set.add_feature(feature, sigil="BOX",
+                                   color="lightblue", label=True,
+                                   label_position="start",
+                                   label_size=6, label_angle=0)
+    offset += len(record)
+assert max_len == offset, "%r vs %r" % (max_len, offset)
+
 gd_record_features = gd_track_for_features.new_set()
 
 
@@ -190,7 +231,8 @@ def weighted_median(values_and_weights):
 def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
-    offset = int(weighted_median([(hsp.hit_start - hsp.query_start,
+    #Weighted by the HSP length:
+    offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start - hsp.query_start,
                                   hsp.hit_end - hsp.hit_start)
                                   for hsp in blast_hsps]))
     return min(max(0, offset), max_len - contig_len)
@@ -318,7 +360,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
         color = colors.Color(color.red, color.green, color.blue, alpha=(hsp.ident_pct/200.0))
         loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
         q = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
-        loc = FeatureLocation(hsp.hit_start, hsp.hit_end, strand=0)
+        r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
+        loc = FeatureLocation(r_offset + hsp.hit_start, r_offset + hsp.hit_end, strand=0)
         h = gd_record_features.add_feature(SeqFeature(loc), color=color, border=border)
         gd_diagram.cross_track_links.append(CrossLink(q, h, color, border, flip))
 
