@@ -53,9 +53,14 @@ def hack_ncbi_fasta_name(pipe_name):
 
     For use with NCBI provided FASTA and GenBank files to ensure
     contig names match up.
+
+    Or Prokka's *.fna and *.gbk files, turning 'gnl|Prokka|contig000001'
+    into 'contig000001'
     """
     if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
         return pipe_name.split("|")[3]
+    elif pipe_name.startswith("gnl|Prokka|"):
+        return pipe_name.split("|")[2]
     else:
         return pipe_name
 
@@ -176,7 +181,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
         print("Drawing %s" % assembly_fasta)
         contigs = SeqIO.parse(assembly_fasta, "fasta")
     for contig in contigs:
-        contig_id = contig.id
+        contig_id = hack_ncbi_fasta_name(contig.id)
         contig_len = len(contig)
 
         #Add feature for whole contig,
