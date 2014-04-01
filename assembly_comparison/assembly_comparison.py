@@ -122,13 +122,8 @@ if not os.path.isfile(blast_file):
 contigs = SeqIO.index(assembly_fasta, "fasta")
 blast_results = SearchIO.index(blast_file, "blast-tab")
 
-#TODO - Tidy this up...
-if os.path.isfile(reference_genbank):
-    reference_parser = SeqIO.parse(reference_genbank, "genbank")
-else:
-    reference_parser = SeqIO.parse(reference_fasta, "fasta")
 max_len = 0
-for record in reference_parser:
+for record in SeqIO.parse(reference_fasta, "fasta"):
     max_len += SPACER + len(record)
 max_len -= SPACER
 if os.path.isfile(reference_genbank):
