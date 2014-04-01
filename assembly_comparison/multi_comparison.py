@@ -59,7 +59,7 @@ def hack_ncbi_fasta_name(pipe_name):
     """
     if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
         return pipe_name.split("|")[3]
-    elif pipe_name.startswith("gnl|Prokka|"):
+    elif pipe_name.startswith("gnl|") and pipe_name.count("|")==2:
         return pipe_name.split("|")[2]
     else:
         return pipe_name
