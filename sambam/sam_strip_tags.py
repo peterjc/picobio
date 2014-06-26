@@ -3,14 +3,8 @@
 
 This script is designed to be used as part of a Unix pipeline. It
 takes as optional command line arguments a white list of tags to
-preserve (or a black list). It reads SAM format data from stdin,
-and writes SAM format data to stdout.
-
-The only change made to the SAM reads is in the SEQ field of mapped
-reads. Any bases matching the reference are replaced with equals
-signs. This makes the files much easier to compress, which can be
-demonstrated by comparing a gzipped version of the SAM files with
-and without the equals, or their BAM equivalents.
+preserve (or a black list of tags to remove). It reads SAM format
+data from stdin, and writes SAM format data to stdout.
 
 Simple usage with SAM files, keeping only read-group tags:
 
