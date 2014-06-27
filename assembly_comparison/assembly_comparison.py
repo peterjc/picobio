@@ -111,9 +111,10 @@ if not os.path.isfile(reference_fasta):
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
     assert os.path.isfile(db_fasta)
-    assert os.path.isfile(db_fasta + ".nhr")
-    assert os.path.isfile(db_fasta + ".nin")
-    assert os.path.isfile(db_fasta + ".nsq")
+    if not (os.path.isfile(db_fasta + ".nhr") and \
+            os.path.isfile(db_fasta + ".nin") and \
+            os.path.isfile(db_fasta + ".nsq")):
+        stop_err("Missing BLAST database for %s" % db_fasta)
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
                                 out=blast_file, outfmt=6,
                                 evalue=1e-5)
