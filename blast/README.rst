@@ -22,8 +22,8 @@ is required via ``$HOME/ncbi_blast/blast_sync.py'', and then runs
 the real NCBI BLAST+ binary named ``$HOME/bin/ncbi_blast/blastp``.
 
 
-Converting wwwblast BLAST DB list to Galaxy *.loc file
-======================================================
+Converting wwwblast BLAST DB list to Galaxy loc files
+=====================================================
 
 We used to run a ``wwwblast`` server with a collection of
 local BLAST databases, but transitioned to using BLAST+ via
