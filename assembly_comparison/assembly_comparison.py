@@ -74,6 +74,9 @@ parser.add_option("-f", "--fasta", dest="fasta_filename",
                   help="Write ordered FASTA file to FILE (default is off)",
                   default=None,
                   metavar="FILE")
+parser.add_option("-m", "--min-len", dest="min_len", type="int",
+                  help="Minimum contig length for FASTA output (if no BLAST hit)",
+                  default=0)
 parser.add_option("-o", "--output", dest="pdf_filename",
                   help="Write PDF diagram to FILE (default automatic)",
                   default=None,
@@ -93,6 +96,7 @@ assembly_fasta, reference_fasta = args
 output_fasta = options.fasta_filename
 blast_file = options.blast_filename
 diagram_pdf = options.pdf_filename
+min_len = int(options.min_len)
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
 output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
@@ -140,6 +144,7 @@ else:
 if output_fasta:
     fasta_handle = open(output_fasta, "w")
     fasta_saved_count = 0
+    fasta_short_dropped = 0
 
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 gd_track_for_features = gd_diagram.new_track(1,
@@ -281,6 +286,8 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     contigs_shown.add(contig_id)
     contigs_shown_bp += contig_len
     if output_fasta:
+        if contig_len < min_len:
+            print("Note %s had BLAST hit but was only length %i" % (contig_id, contig_len))
         if flipped:
             SeqIO.write(contigs[contig_id].reverse_complement(id=True, name=True,
                                                               description="reversed"),
@@ -376,11 +383,14 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
         continue
     #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
     unplaced += 1
+    contig_len = len(contig)
     if output_fasta:
-        fasta_handle.write(contigs.get_raw(contig_id))
-        fasta_saved_count += 1
+        if min_len <= contig_len:
+            fasta_handle.write(contigs.get_raw(contig_id))
+            fasta_saved_count += 1
+        else:
+            fasta_short_dropped += 1
     if options.unmapped:
-        contig_len = len(contig)
         if contig_len > max_len:
             print("WARNING: Contig %s length %i, reference %i" % (contig_id, contig_len, max_len))
             #Add entire track for the oversized contig...
@@ -429,9 +439,10 @@ print("i.e. Placed %0.f%% of the assembly"
 
 if output_fasta:
     print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
+    print("Dropped %i short records" % fasta_short_dropped)
     fasta_handle.close()
-    if fasta_saved_count != len(contigs):
-        stop_err("Should have written %i record!" % len(contigs))
+    if fasta_saved_count + fasta_short_dropped != len(contigs):
+        stop_err("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
 
 if not contigs_shown:
     print("Nothing to do for PDF")
