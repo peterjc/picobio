@@ -99,7 +99,8 @@ diagram_pdf = options.pdf_filename
 min_len = int(options.min_len)
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
-output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
+#i.e. default is now in current working directory!
+output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
 if not blast_file:
     blast_file = output_stem + ".blast.tsv"

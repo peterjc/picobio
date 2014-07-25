@@ -157,7 +157,8 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
 
     blast_data = dict()
     if reference_fasta:
-        output_stem = "%s_vs_%s" % (os.path.splitext(assembly_fasta)[0],
+        #i.e. default is now in current working directory!
+        output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
                                     os.path.splitext(os.path.basename(reference_fasta))[0])
         blast_file = output_stem + ".blast.tsv"
 
