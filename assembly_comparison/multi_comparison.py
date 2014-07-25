@@ -80,9 +80,9 @@ if len(args) < 2:
     stop_err("Requires two or more arguments!\n\n" + usage)
 assemblies_fasta = args[:]
 diagram_pdf = options.pdf_filename
-
 if not diagram_pdf:
     stop_err("Requires output PDF file to be specified!\n\n" + usage)
+output_directory = os.path.dirname(diagram_pdf)
 
 for assembly_fasta in assemblies_fasta:
     if not os.path.isfile(assembly_fasta):
@@ -157,9 +157,9 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
 
     blast_data = dict()
     if reference_fasta:
-        #i.e. default is now in current working directory!
         output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
                                     os.path.splitext(os.path.basename(reference_fasta))[0])
+        output_stem = os.path.join(output_directory, output_stem)
         blast_file = output_stem + ".blast.tsv"
 
         if not os.path.isfile(blast_file):

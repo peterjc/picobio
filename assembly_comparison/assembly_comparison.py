@@ -99,9 +99,18 @@ diagram_pdf = options.pdf_filename
 min_len = int(options.min_len)
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
-#i.e. default is now in current working directory!
 output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
+if diagram_pdf:
+    output_stem = os.path.join(os.path.dirname(diagram_pdf), output_stem)
+elif blast_file:
+    output_stem = os.path.join(os.path.dirname(blast_file), output_stem)
+elif output_fasta:
+    output_stem = os.path.join(os.path.dirname(output_fasta), output_stem)
+else:
+    #Default to current directory
+    pass
+
 if not blast_file:
     blast_file = output_stem + ".blast.tsv"
 if not diagram_pdf:
