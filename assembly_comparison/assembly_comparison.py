@@ -155,6 +155,7 @@ else:
     reference_parser = SeqIO.parse(reference_fasta, "fasta")
 
 if output_fasta:
+    sys.stderr.write("WARNING - Consider using order_assembly.py instead for FASTA output\n")
     fasta_handle = open(output_fasta, "w")
     fasta_saved_count = 0
     fasta_short_dropped = 0
