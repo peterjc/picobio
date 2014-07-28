@@ -172,7 +172,7 @@ def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
     #Weighted by the HSP length:
-    offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start - hsp.query_start,
+    offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start,
                                   hsp.hit_end - hsp.hit_start)
                                   for hsp in blast_hsps]))
     return offset
