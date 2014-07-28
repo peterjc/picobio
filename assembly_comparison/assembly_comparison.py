@@ -23,13 +23,11 @@ from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
 
+#TODO - make into command line options
 SPACER = 10000
-
 MIN_GAP_JAGGY = 1000 # Sigils
-
 MIN_HIT = 5000
 MIN_GAP = 20000
-
 
 usage = """Basic usage: assembly_comparison.py assembly.fasta reference.fasta
 

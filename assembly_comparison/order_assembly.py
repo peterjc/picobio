@@ -16,9 +16,8 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Blast.Applications import NcbiblastnCommandline
 
+#TODO - make into command line options
 MIN_HIT = 5000
-MIN_GAP = 20000
-
 
 usage = """Basic usage: order_assembly.py assembly.fasta reference.fasta output.fasta
 
