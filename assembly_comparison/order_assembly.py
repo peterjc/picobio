@@ -32,7 +32,9 @@ Produces output.fasta based on the contigs in assembly.fasta which will
 be reordered and/or reverse complemented to best match reference.fasta
 
 Small repeat contigs which may match the reference in multiple locations
-will hopefully be placed near one of these positions (typically the first).
+will be placed near one of these positions (using a weighted median
+approach restricted to avoid phantom positioning with a mean of tied
+values).
 """
 
 def hack_ncbi_fasta_name(pipe_name):
@@ -160,13 +162,20 @@ def filter_blast(blast_result, query_length):
     return make_offset(hsps, query_length), blast_result.id, hsps, flipped
 
 
-def weighted_median(values_and_weights):
+def weighted_median(values_and_weights, tie_break=True):
     """Median of values with integer weights."""
     x = []
     count = sum(w for v, w in values_and_weights)
     map(x.extend,([v]*w for v, w in values_and_weights))
-    return (x[count/2]+x[(count-1)/2])/2.
-
+    if tie_break:
+        # This can give the mean of the mid-points,
+        # with side effect of sometimes using an artifical
+        # offset not present in the data
+        return (x[count/2]+x[(count-1)/2])/2.
+    else:
+        # Approximiately the median - avoids mean of
+        # mid two values by taking the lower.
+        return x[count/2]
 
 def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
@@ -174,7 +183,7 @@ def make_offset(blast_hsps, contig_len):
     #Weighted by the HSP length:
     offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start,
                                   hsp.hit_end - hsp.hit_start)
-                                  for hsp in blast_hsps]))
+                                  for hsp in blast_hsps], tie_break=False))
     return offset
 
 

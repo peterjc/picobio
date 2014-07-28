@@ -45,8 +45,7 @@ The optional output filename is if you wish the tool to produce a copy of
 the input assembly with the contigs reordered and in some cases reverse
 complemented to match the mapping. WARNING - while generally the ordering
 matches what you might expect for biologically meaningful output, corner
-cases will not. Problems include repeat regions mapping to two locations
-being drawn at the mid point, rather than at either mapped location.
+cases will not.
 """
 
 def hack_ncbi_fasta_name(pipe_name):
@@ -238,12 +237,20 @@ def filter_blast(blast_result, query_length):
     return make_offset(hsps, query_length), blast_result.id, hsps, flipped
 
 
-def weighted_median(values_and_weights):
+def weighted_median(values_and_weights, tie_break=True):
     """Median of values with integer weights."""
     x = []
     count = sum(w for v, w in values_and_weights)
     map(x.extend,([v]*w for v, w in values_and_weights))
-    return (x[count/2]+x[(count-1)/2])/2.
+    if tie_break:
+        # This can give the mean of the mid-points,
+        # with side effect of sometimes using an artifical
+        # offset not present in the data
+        return (x[count/2]+x[(count-1)/2])/2.
+    else:
+        # Approximiately the median - avoids mean of
+        # mid two values by taking the lower.
+        return x[count/2]
 
 
 def make_offset(blast_hsps, contig_len):
@@ -252,7 +259,7 @@ def make_offset(blast_hsps, contig_len):
     #Weighted by the HSP length:
     offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start - hsp.query_start,
                                   hsp.hit_end - hsp.hit_start)
-                                  for hsp in blast_hsps]))
+                                  for hsp in blast_hsps], tie_break=False))
     return min(max(0, offset), max_len - contig_len)
 
 def add_jaggies(contig_seq, offset, gd_contig_features):
