@@ -45,7 +45,10 @@ $ makeblastdb -dbtype nucl -in reference.fasta
 
 The optional output filename is if you wish the tool to produce a copy of
 the input assembly with the contigs reordered and in some cases reverse
-complemented to match the mapping.
+complemented to match the mapping. WARNING - while generally the ordering
+matches what you might expect for biologically meaningful output, corner
+cases will not. Problems include repeat regions mapping to two locations
+being drawn at the mid point, rather than at either mapped location.
 """
 
 def hack_ncbi_fasta_name(pipe_name):
