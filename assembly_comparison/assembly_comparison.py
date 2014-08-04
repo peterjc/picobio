@@ -26,7 +26,6 @@ from Bio.Graphics.GenomeDiagram import CrossLink
 #TODO - make into command line options
 SPACER = 10000
 MIN_GAP_JAGGY = 1000 # Sigils
-MIN_HIT = 5000
 MIN_GAP = 20000
 
 usage = """Basic usage: assembly_comparison.py assembly.fasta reference.fasta
@@ -74,9 +73,12 @@ parser.add_option("-f", "--fasta", dest="fasta_filename",
                   help="Write ordered FASTA file to FILE (default is off)",
                   default=None,
                   metavar="FILE")
-parser.add_option("-m", "--min-len", dest="min_len", type="int",
+parser.add_option("-m", "--min-contig-len", dest="min_len", type="int",
                   help="Minimum contig length for FASTA output (if no BLAST hit)",
                   default=0)
+parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
+                  help="Minimum BLAST hit length to consider",
+                  default=5000)
 parser.add_option("-o", "--output", dest="pdf_filename",
                   help="Write PDF diagram to FILE (default automatic)",
                   default=None,
@@ -97,6 +99,7 @@ output_fasta = options.fasta_filename
 blast_file = options.blast_filename
 diagram_pdf = options.pdf_filename
 min_len = int(options.min_len)
+min_hit = int(options.min_hit)
 
 reference_genbank = os.path.splitext(reference_fasta)[0] + ".gbk"
 output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
@@ -219,7 +222,7 @@ def reverse_complement_hsp(hsp, query_length):
     return rev
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= MIN_HIT]
+    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit]
     hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
     plus = 0
     minus = 0

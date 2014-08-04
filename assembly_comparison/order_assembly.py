@@ -16,9 +16,6 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Blast.Applications import NcbiblastnCommandline
 
-#TODO - make into command line options
-MIN_HIT = 5000
-
 usage = """Basic usage: order_assembly.py assembly.fasta reference.fasta output.fasta
 
 There should be a (nucleotide) BLAST database next to the reference FASTA
@@ -66,6 +63,9 @@ parser.add_option("-b", "--blast", dest="blast_filename",
 parser.add_option("-m", "--min-len", dest="min_len", type="int",
                   help="Minimum contig length for FASTA output (if no BLAST hit)",
                   default=0)
+parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
+                  help="Minimum BLAST hit length to consider",
+                  default=5000)
 #parser.add_option("-u", "--unmapped", dest="unmapped",
 #                  help="Included unmapped contigs at the end",
 #                  action="store_true")
@@ -76,6 +76,7 @@ if len(args) != 3:
 assembly_fasta, reference_fasta, output_fasta = args
 blast_file = options.blast_filename
 min_len = int(options.min_len)
+min_hit = int(options.min_hit)
 
 output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
                             os.path.splitext(os.path.basename(reference_fasta))[0])
@@ -144,7 +145,7 @@ def reverse_complement_hsp(hsp, query_length):
     return rev
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= MIN_HIT]
+    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit]
     hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
     plus = 0
     minus = 0

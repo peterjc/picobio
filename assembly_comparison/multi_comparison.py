@@ -27,7 +27,6 @@ from Bio.Graphics.GenomeDiagram import CrossLink
 SPACER = 20000
 
 MIN_GAP_JAGGY = 1000 # Sigils
-MIN_HIT = 5000
 MIN_GAP = 20000
 
 
@@ -70,11 +69,15 @@ def stop_err(msg, error_level=1):
     sys.exit(error_level)
 
 parser = OptionParser(usage=usage)
+parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
+                  help="Minimum BLAST hit length to consider",
+                  default=5000)
 parser.add_option("-o", "--output", dest="pdf_filename",
                   help="Write PDF diagram to FILE (default automatic)",
                   default=None,
                   metavar="FILE")
 (options, args) = parser.parse_args()
+min_hit = int(options.min_hit)
 
 if len(args) < 2:
     stop_err("Requires two or more arguments!\n\n" + usage)
@@ -103,7 +106,7 @@ def do_blast(query_fasta, db_fasta, blast_file):
 
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= MIN_HIT]
+    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit]
     hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
     return blast_result.id, hsps
 
