@@ -178,7 +178,7 @@ for r in SeqIO.parse(assembly_fasta, "fasta"):
 print("Input %i contigs, total length %i bp, in %s" % (count, total, assembly_fasta))
 count = 0
 total = 0
-for r in SeqIO.parse(assembly_fasta, "fasta"):
+for r in SeqIO.parse(sorted_fasta, "fasta"):
     count += 1
     total += len(r)
 print("Min length gives %i contigs, total length %i bp, in %s" % (count, total, sorted_fasta))
