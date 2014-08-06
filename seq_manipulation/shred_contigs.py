@@ -12,9 +12,14 @@ import shutil
 from optparse import OptionParser
 from Bio import SeqIO
 
-usage = """Basic usage: shred_contigs.py assembly.fasta -o dedup_output.fasta
+usage = """Basic usage: python shred_contigs.py assembly.fasta -o shredded.fasta
 
 Multiple input FASTA files are accepted, see -h for more details.
+
+Using Roche 454 Newbler, non-SFF input reads are limited to 1999 bp, thus
+you might wish to use something like this on an Illumina assembly:
+
+$ python shred_contigs.py other_assemby.fasta -o shredded.fasta -m 1999 -l 1999 -s 500
 """
 
 def stop_err(msg, error_level=1):
