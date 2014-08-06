@@ -13,6 +13,8 @@ from optparse import OptionParser
 from Bio import SeqIO
 
 usage = """Basic usage: shred_contigs.py assembly.fasta -o dedup_output.fasta
+
+Multiple input FASTA files are accepted, see -h for more details.
 """
 
 def stop_err(msg, error_level=1):
@@ -45,26 +47,37 @@ output_fasta = options.output_filename
 
 if shred_step < 1:
     stop_err("Shred step should be positive")
+if shred_length < shred_step:
+    stop_err("Shred step should be less than shred length")
+
+print("Accepting contigs up to length %i as they are (option -m)" % max_contig)
+print("Shredding longer contigs into reads of %i bp (option -l), step %i (option -s)" % (shred_length, shred_step))
 
 for assembly_fasta in args:
     if not os.path.isfile(assembly_fasta):
         stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
 
 def shred(input_filename):
+    global as_is, shredded
     for record in SeqIO.parse(input_filename, "fasta"):
         length = len(record)
         if length <= max_contig:
+            as_is += 1
             yield record
         else:
             #Shred it!
-            for i, start in enumerate(range(0, length, shred_step)):
+            shredded += 1
+            for i, start in enumerate(range(0, length - shred_step, shred_step)):
                 fragment = record[start:start+shred_length]
                 fragment.id = "%s_fragment%i" % (record.id, i+1)
                 yield fragment
 
 
 count = 0
+as_is = 0
+shredded = 0
 with open(output_fasta, "w") as output_handle:
     for assembly_fasta in args:
         count += SeqIO.write(shred(assembly_fasta), output_handle, "fasta")
-print("Shreded %i FASTA files, giving %i reads" % (len(args), count))
+print("Shredded %i FASTA files, containing %i contigs" % (len(args), as_is + shredded))
+print("Accepted %i short contigs, shredded %i long contigs, giving %i reads" % (as_is, shredded, count))
