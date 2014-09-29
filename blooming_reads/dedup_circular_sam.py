@@ -43,8 +43,36 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.0"
+VERSION = "0.0.1"
 
+def cigar_tuples(cigar_str):
+    """CIGAR string parsed into a list of tuples (operator code, count).
+
+    e.g. cigar string of 36M2I3M becomes [('M', 36), ('I', 2), ('M', 3)]
+    Any empty CIGAR string (represented as * in SAM) is given as None.
+    """
+    if cigar_str == "*":
+        return None
+    answer = []
+    count = ""
+    for letter in cigar_str:
+        if letter.isdigit():
+            count += letter #string addition
+        else:
+            if letter not in "MIDNSHP=X":
+                raise ValueError("Invalid character %s in CIGAR %s"
+                                 % (letter, cigar_str))
+            answer.append((letter, int(count)))
+            count = ""
+    return answer
+
+def cigar_seq_len(cigar_str):
+    slen = 0
+    for operator, count in cigar_tuples(cigar_str):
+        if operator in "MIS=X":
+            slen += count
+    return slen
+assert cigar_seq_len("1I58M1I34M1I2M1D12M") == 109
 
 def go(input, output, paired, linear_refs, circular_refs):
     ref_len_linear = dict()
@@ -102,7 +130,11 @@ def go(input, output, paired, linear_refs, circular_refs):
     reads = set()
     while line:
         #SAM read
-        qname, flag, rname, pos, rest = line.split("\t", 4)
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
+        if seq != "*" and cigar != "*":
+            slen = cigar_seq_len(cigar)
+            if slen != len(seq):
+                sys_exit("Bad SAM line, SEQ len %i, but CIGAR says should be %i (%s):\n%r" % (len(seq), slen, cigar, line))
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
@@ -118,10 +150,10 @@ def go(input, output, paired, linear_refs, circular_refs):
         if qname == cur_read_name:
             #Cache this, as a tuple - ordered to allow sorting on position:
             #Using a set will eliminate duplicates after adjusting POS
-            reads.add((qname, rname, pos, flag, rest))
+            reads.add((qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest))
         else:
             flush_cache(output_handle, reads)
-            reads = set([(qname, rname, pos, flag, rest)])
+            reads = set([(qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest)])
             cur_read_name = qname
         #Next line...
         line = input_handle.readline()
@@ -140,9 +172,9 @@ def flush_cache(handle, set_of_read_tuples):
     #    for qname, rname, pos, flag, rest in sorted(set_of_read_tuples):
     #        sys.stderr.write("\t".join([qname, flag, rname, pos, rest]))
     #Note for sorting we don't use the SAM column order
-    for qname, rname, pos, flag, rest in sorted(set_of_read_tuples):
+    for qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest in sorted(set_of_read_tuples):
         #Assume that 'rest' has the trailing \n
-        handle.write("\t".join([qname, flag, rname, pos, rest]))
+        handle.write("\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest]))
 
 
 def get_fasta_ids_and_lengths(fasta_filename):
