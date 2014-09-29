@@ -126,6 +126,7 @@ def go(input, output, paired, linear_refs, circular_refs):
         output_handle.write(line)
         line = input_handle.readline()
 
+    bad_reads = 0
     cur_read_name = None
     reads = set()
     while line:
@@ -134,7 +135,10 @@ def go(input, output, paired, linear_refs, circular_refs):
         if seq != "*" and cigar != "*":
             slen = cigar_seq_len(cigar)
             if slen != len(seq):
-                sys_exit("Bad SAM line, SEQ len %i, but CIGAR says should be %i (%s):\n%r" % (len(seq), slen, cigar, line))
+                if not bad_reads:
+                    sys.stderr.write("WARNING: Will ignore following bad SAM line and any others with same problem!\n")
+                    sys.stderr.write("SEQ len %i, but CIGAR says should be %i (%s):\n%r\n" % (len(seq), slen, cigar, line))
+                bad_reads += 1
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
@@ -164,6 +168,8 @@ def go(input, output, paired, linear_refs, circular_refs):
         input_handle.close()
     if isinstance(output, basestring):
         output_handle.close()
+    if bad_reads:
+        sys.stderr.write("WARNING: Ignored %i bad SAM lines where CIGAR and SEQ did not agree\n" % bad_reads)
 
 
 def flush_cache(handle, set_of_read_tuples):
