@@ -139,6 +139,7 @@ def go(input, output, paired, linear_refs, circular_refs):
                     sys.stderr.write("WARNING: Will ignore following bad SAM line and any others with same problem!\n")
                     sys.stderr.write("SEQ len %i, but CIGAR says should be %i (%s):\n%r\n" % (len(seq), slen, cigar, line))
                 bad_reads += 1
+                continue
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
