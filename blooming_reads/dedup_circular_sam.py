@@ -139,6 +139,8 @@ def go(input, output, paired, linear_refs, circular_refs):
                     sys.stderr.write("WARNING: Will ignore following bad SAM line and any others with same problem!\n")
                     sys.stderr.write("SEQ len %i, but CIGAR says should be %i (%s):\n%r\n" % (len(seq), slen, cigar, line))
                 bad_reads += 1
+                line = input_handle.readline()
+                #sys.stderr.write("%s bad\n" % qname)
                 continue
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
@@ -152,6 +154,7 @@ def go(input, output, paired, linear_refs, circular_refs):
                 line = input_handle.readline()
                 continue
                 #pos = str(int_pos-length+1) #Modulo circle length 
+        #sys.stderr.write("%s good\n" % qname)
         if qname == cur_read_name:
             #Cache this, as a tuple - ordered to allow sorting on position:
             #Using a set will eliminate duplicates after adjusting POS
@@ -176,8 +179,8 @@ def go(input, output, paired, linear_refs, circular_refs):
 def flush_cache(handle, set_of_read_tuples):
     #if len(set_of_read_tuples) > 1:
     #    sys.stderr.write("Interesting...\n")
-    #    for qname, rname, pos, flag, rest in sorted(set_of_read_tuples):
-    #        sys.stderr.write("\t".join([qname, flag, rname, pos, rest]))
+    #    for values in sorted(set_of_read_tuples):
+    #        sys.stderr.write("\t".join(values))
     #Note for sorting we don't use the SAM column order
     for qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest in sorted(set_of_read_tuples):
         #Assume that 'rest' has the trailing \n
