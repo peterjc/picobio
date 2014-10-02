@@ -43,7 +43,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 def cigar_tuples(cigar_str):
     """CIGAR string parsed into a list of tuples (operator code, count).
@@ -142,6 +142,10 @@ def go(input, output, paired, linear_refs, circular_refs):
                 line = input_handle.readline()
                 #sys.stderr.write("%s bad\n" % qname)
                 continue
+        if rname == "*" or int(flag) & 0x4:
+            #unmapped, ignore it
+            line = input_handle.readline()
+            continue
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
