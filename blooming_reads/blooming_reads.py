@@ -63,7 +63,9 @@ except ImportError:
     sys_exit("Missing 'dablooms' Python bindings, available from "
              "https://github.com/bitly/dablooms")
 
-VERSION = "0.0.4"
+VERSION = "0.0.5"
+
+# TODO - Re-examine SAM input and paired vs single mode
 
 def fasta_iterator(handle):
     """FASTA parser yielding (upper case sequence, raw record) string tuples."""
@@ -411,7 +413,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
             if wanted:
                 out_handle.write(raw_reads)
                 out_count += len(upper_seqs)
-            if in_count % 100000 == 0:
+            if in_count % 1000000 == 0:
                 sys.stderr.write("Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n" \
                                  % (in_count, out_count, (100.0*out_count)/in_count, time.time()-t0, filter_time))
     else:
@@ -449,7 +451,9 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
     sys.stderr.write("Kept %i out of %i reads (%0.1f%%)\n" % (out_count, in_count, out_count*100.0/in_count))
 
 def main():
-    parser = OptionParser(usage="usage: %prog [options]",
+    parser = OptionParser(usage="""usage: %prog [options]
+
+You should add -s (single reads) or -p (interlaced paired reads).""",
                           version="%prog "+VERSION)
     #References
     parser.add_option("-l", "--lref", dest="linear_references",
@@ -469,6 +473,10 @@ def main():
                       help="Number of mismatches per kmer (def. 0, max 1)")
     
     #Reads
+    parser.add_option("-s", action="store_false", dest="paired",
+                      help="Single end mode (see also -p)")
+    parser.add_option("-p", action="store_true", dest="paired", default=True,
+                      help="Paired mode (overrides -s mode; default)")
     parser.add_option("-f", "--format", dest="format",
                       type="string", metavar="FORMAT", default="fasta",
                       help="Input (and output) read file format, one of 'fasta',"
@@ -509,7 +517,7 @@ def main():
     if args:
         parser.error("No arguments expected")
 
-    paired = True
+    paired = options.paired
     go(options.input_reads, options.output_reads, options.format, paired,
        options.linear_references, options.circular_references,
        options.kmer, options.mismatches, inserts, deletions)
