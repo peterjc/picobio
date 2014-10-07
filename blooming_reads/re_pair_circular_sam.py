@@ -204,7 +204,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
                     assert len(row) == length
                     handle.write("\t".join("%.1f" % v for v in row) + "\n")
         handle.close()
-    sys.stderr.write("%i singletons; %i where only /1 mapped, %i where only /2 mapped, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
+    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both present\n" % (solo0, solo1, solo2, solo12))
 
 
 def cigar_tuples(cigar_str):
