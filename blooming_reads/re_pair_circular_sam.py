@@ -146,6 +146,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     while line:
         #SAM read
         qname, flag, rname, pos, rest = line.split("\t", 4)
+        int_flag = int(flag)
         if " " in qname:
             #Stupid mrfast!
             qname = qname.split(None,1)[0]
@@ -163,9 +164,11 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         elif qname[-2:] == "/2":
             qname = qname[:-2]
             frag = 2
-        elif int(flag) & 0x40:
+        elif not (int_flag & 0x1):
+            frag = 0 # Single read
+        elif int_flag & 0x40:
             frag = 1
-        elif int(flag) & 0x80:
+        elif int_flag & 0x80:
             frag = 2
         else:
             frag = 0 #Assume unpaired
@@ -299,7 +302,10 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
     refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
     refs2 = set(rname for qname, flag, rname, pos, rest in reads2)
     for ref in sorted(refs1.union(refs2)):
-        if ref in ref_len_linear:
+        if ref == "*":
+            circular = False
+            ref_lengths = {"*": 0}
+        elif ref in ref_len_linear:
             circular = False
             ref_lengths = ref_len_linear
         else:
