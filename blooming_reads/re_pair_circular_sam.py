@@ -9,7 +9,7 @@ I'm using mrfast at the moment for this. Then remove the duplicates
 Input:
 
 SAM file: Read name sorted SAM file, where the read names (QNAME)
-have traditional FASTQ style /1 and /2 suffices indicating a
+may have traditional FASTQ style /1 and /2 suffices indicating a
 matched pair. Expects one SAM line where the mapping spans the
 origin (with POS in range 1 to reference length, caculated
 alignment end point would spill over).
@@ -56,7 +56,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.0"
+VERSION = "0.0.1"
 
 solo0 = solo1 = solo2 = solo12 = 0
 
@@ -162,6 +162,10 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
             frag = 1
         elif qname[-2:] == "/2":
             qname = qname[:-2]
+            frag = 2
+        elif int(flag) & 0x40:
+            frag = 1
+        elif int(flag) & 0x80:
             frag = 2
         else:
             frag = 0 #Assume unpaired
