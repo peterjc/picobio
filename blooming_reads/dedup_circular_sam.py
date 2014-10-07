@@ -152,13 +152,22 @@ def go(input, output, paired, linear_refs, circular_refs):
                 line = input_handle.readline()
                 #sys.stderr.write("%s bad\n" % qname)
                 continue
-        if rname in ref_len_circles and pos != "0":
-            # Do this to mapped reads, and any unmapped reads with placement
-            # i.e. partners of mapped reads
+        if rname in ref_len_circles:
             length = ref_len_circles[rname]
-            if length <= int_pos:
-                assert int_pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
-                pos = str(int_pos-length+1) #Modulo circle length
+            if int_pos != -1 and length <= int_pos:
+                assert int_pos < length*2, \
+                    "Have POS %s yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
+                int_pos -= length
+                pos = str(int_pos + 1)
+        if rnext in ref_len_circles:
+            length = ref_len_circles[rnext]
+            int_pnext = int(pnext) - 1
+            if int_pnext != -1 and length <= int_pnext:
+                assert int_pnext < length*2, \
+                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r" % (pnext, length, length*2, line)
+                int_pnext -= length
+                pnext = str(int_pnext + 1)
+            del int_pnext
         #sys.stderr.write("%s good\n" % qname)
         key = (name, rname, int_pos, rev_strand)
         if name == cur_read_name:
