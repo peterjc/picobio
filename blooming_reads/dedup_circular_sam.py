@@ -43,7 +43,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 def cigar_tuples(cigar_str):
     """CIGAR string parsed into a list of tuples (operator code, count).
@@ -128,10 +128,19 @@ def go(input, output, paired, linear_refs, circular_refs):
 
     bad_reads = 0
     cur_read_name = None
-    reads = set()
+    reads = dict()
     while line:
         #SAM read
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
+        int_flag = int(flag)
+        #TODO - Check for special case of 0x40 and 0x80 being set (multi-fragment reads)?
+        if int_flag & 0x40:
+            name = qname + "/1"
+        elif int_flag & 0x80:
+            name = qname + "/2"
+        else:
+            name = qname
+        rev_strand = bool(int_flag & 0x10)
         if seq != "*" and cigar != "*":
             slen = cigar_seq_len(cigar)
             if slen != len(seq):
@@ -142,29 +151,33 @@ def go(input, output, paired, linear_refs, circular_refs):
                 line = input_handle.readline()
                 #sys.stderr.write("%s bad\n" % qname)
                 continue
-        if rname == "*" or int(flag) & 0x4:
+        if rname == "*" or int_flag & 0x4:
             #unmapped, ignore it
-            line = input_handle.readline()
-            continue
-        if rname in ref_len_circles and pos != "0":
+            int_pos = -1
+            rev_stand = None
+            ###line = input_handle.readline()
+            ###continue
+        elif rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
             if length <= int_pos:
                 assert int_pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
                 pos = str(int_pos-length+1) #Modulo circle length
         #sys.stderr.write("%s good\n" % qname)
-        if qname == cur_read_name:
-            #Cache this, as a tuple - ordered to allow sorting on position:
-            #Using a set will eliminate duplicates after adjusting POS
-            reads.add((qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest))
+        key = (name, rname, pos, rev_strand)
+        if name == cur_read_name:
+            if key not in reads:
+                reads[key] = (qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest)
+            #else ignore as a duplicate
         else:
-            flush_cache(output_handle, reads)
-            reads = set([(qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest)])
-            cur_read_name = qname
+            flush_cache(output_handle, reads.values())
+            #Reset the dict
+            reads = {key: (qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest)}
+            cur_read_name = name
         #Next line...
         line = input_handle.readline()
     if reads:
-        flush_cache(output_handle, reads)
+        flush_cache(output_handle, reads.values())
 
     if isinstance(input, basestring):
         input_handle.close()
