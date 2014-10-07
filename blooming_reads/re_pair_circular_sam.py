@@ -246,7 +246,7 @@ def count_coverage(coverage, reads):
         #Singleton
         assert not reads1 and not reads2
         field = 0
-        for ref, length in coverage.iteritems():
+        for ref, values in coverage.iteritems():
             length = values.shape[1]
             r0 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads0 if ref==rname and not (flag & 0x4)]
             if len(r0) == len(reads0):
