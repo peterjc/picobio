@@ -146,7 +146,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     while line:
         #SAM read
         qname, flag, rname, pos, rest = line.split("\t", 4)
-        int_flag = int(flag)
+        flag = int(flag)
         if " " in qname:
             #Stupid mrfast!
             qname = qname.split(None,1)[0]
@@ -164,11 +164,11 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         elif qname[-2:] == "/2":
             qname = qname[:-2]
             frag = 2
-        elif not (int_flag & 0x1):
+        elif not (flag & 0x1):
             frag = 0 # Single read
-        elif int_flag & 0x40:
+        elif flag & 0x40:
             frag = 1
-        elif int_flag & 0x80:
+        elif flag & 0x80:
             frag = 2
         else:
             frag = 0 #Assume unpaired
@@ -240,15 +240,15 @@ def cigar_alen(cigar_str):
 
 def count_coverage(coverage, reads):
     """Update coverage (dict of arrays) using given mapping of a read/pair."""
-    reads1 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+    reads1 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
               for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==1]
-    reads2 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+              in reads if frag==1 and not (flag & 0x4)]
+    reads2 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
               for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==2]
-    reads0 = [(int(flag), rname, int(pos)-1, rest.split("\t",2)[1]) \
+              in reads if frag==2 and not (flag & 0x4)]
+    reads0 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
               for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==0]
+              in reads if frag==0 and not (flag & 0x4)]
     if reads0:
         #Singleton
         assert not reads1 and not reads2
@@ -374,16 +374,16 @@ def flush_cache(handle, set_of_read_tuples, raw_dict, ref_len_linear, ref_len_ci
         return
 
     #0x41 = 0x1 + 0x40 = paired, first in pair
-    reads1 = [(qname, int(flag) | 0x41, rname, pos, rest) \
+    reads1 = [(qname, flag | 0x41, rname, pos, rest) \
               for (qname, frag, rname, pos, flag, rest) \
               in reads if frag==1]
 
     #0x81 = 0x1 + 0x80 = paired, second in pair
-    reads2 = [(qname, int(flag) | 0x81, rname, pos, rest) \
+    reads2 = [(qname, flag | 0x81, rname, pos, rest) \
               for (qname, frag, rname, pos, flag, rest) \
               in reads if frag==2]
 
-    reads0  = [(qname, int(flag), rname, pos, rest) \
+    reads0  = [(qname, flag, rname, pos, rest) \
               for (qname, frag, rname, pos, flag, rest) \
               in reads if frag==0]
 
