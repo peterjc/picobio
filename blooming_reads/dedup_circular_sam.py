@@ -43,7 +43,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 def cigar_tuples(cigar_str):
     """CIGAR string parsed into a list of tuples (operator code, count).
@@ -140,6 +140,7 @@ def go(input, output, paired, linear_refs, circular_refs):
             name = qname + "/2"
         else:
             name = qname
+        int_pos = int(pos) - 1
         rev_strand = bool(int_flag & 0x10)
         if seq != "*" and cigar != "*":
             slen = cigar_seq_len(cigar)
@@ -151,20 +152,15 @@ def go(input, output, paired, linear_refs, circular_refs):
                 line = input_handle.readline()
                 #sys.stderr.write("%s bad\n" % qname)
                 continue
-        if rname == "*" or int_flag & 0x4:
-            #unmapped, ignore it
-            int_pos = -1
-            rev_stand = None
-            ###line = input_handle.readline()
-            ###continue
-        elif rname in ref_len_circles and pos != "0":
+        if rname in ref_len_circles and pos != "0":
+            # Do this to mapped reads, and any unmapped reads with placement
+            # i.e. partners of mapped reads
             length = ref_len_circles[rname]
-            int_pos = int(pos) - 1
             if length <= int_pos:
                 assert int_pos < length*2, "Have POS %i yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
                 pos = str(int_pos-length+1) #Modulo circle length
         #sys.stderr.write("%s good\n" % qname)
-        key = (name, rname, pos, rev_strand)
+        key = (name, rname, int_pos, rev_strand)
         if name == cur_read_name:
             if key not in reads:
                 reads[key] = (qname, rname, pos, flag, mapq, cigar, rnext, pnext, tlen, seq, qual, rest)
