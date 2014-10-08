@@ -45,7 +45,7 @@ def sys_exit(msg, error_level=1):
 
 VERSION = "0.0.0"
 
-parser = OptionParser(usage="usage: %prog [options]",
+parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
                       version="%prog "+VERSION)
 
 #References
