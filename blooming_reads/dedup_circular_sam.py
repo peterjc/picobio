@@ -43,7 +43,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 
 def cigar_tuples(cigar_str):
     """CIGAR string parsed into a list of tuples (operator code, count).
@@ -156,7 +156,8 @@ def go(input, output, paired, linear_refs, circular_refs):
             length = ref_len_circles[rname]
             if int_pos != -1 and length <= int_pos:
                 assert int_pos < length*2, \
-                    "Have POS %s yet length is %i or %i when doubled!\n%r" % (pos, length, length*2, line)
+                    "Have POS %s yet length is %i or %i when doubled!\n%r" \
+                    % (pos, length, length*2, line)
                 int_pos -= length
                 pos = str(int_pos + 1)
         if rnext in ref_len_circles:
@@ -164,7 +165,18 @@ def go(input, output, paired, linear_refs, circular_refs):
             int_pnext = int(pnext) - 1
             if int_pnext != -1 and length <= int_pnext:
                 assert int_pnext < length*2, \
-                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r" % (pnext, length, length*2, line)
+                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r" \
+                    % (pnext, length, length*2, line)
+                int_pnext -= length
+                pnext = str(int_pnext + 1)
+            del int_pnext
+        elif rnext == "=" and rname in ref_len_circles:
+            length = ref_len_circles[rname]
+            int_pnext = int(pnext) - 1
+            if int_pnext != -1 and length <= int_pnext:
+                assert int_pnext < length*2, \
+                    "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r" \
+                    % (pnext, rname, length, length*2, line)
                 int_pnext -= length
                 pnext = str(int_pnext + 1)
             del int_pnext
