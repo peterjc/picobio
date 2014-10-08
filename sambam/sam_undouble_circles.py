@@ -241,6 +241,35 @@ def undouble_circle_mappings(sam_lines):
                 tlen = "0" # old value invalidated
         yield "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest])
 
+def dedup_batch(sam_lines):
+    """De-duplicates and sorts a list of SAM lines for a single QNAME.
+
+    Currently given a set of duplicates the first line is preserved.
+    TODO - Look at the 0x100 FLAG for secondary alignment here?
+    """
+    global dup_reads_removed
+    reads = {}
+    batch_count = 0
+    #sys.stderr.write("-"*80 + "\n")
+    for line in sam_lines:
+        batch_count += 1
+        qname, flag, rname, pos, rest = line.split("\t", 4)
+        int_flag = int(flag)
+        frag = get_frag(int_flag)
+        int_pos = int(pos) - 1
+        rev_strand = bool(int_flag & 0x10)
+        key = (qname, frag, rname, int_pos, rev_strand)
+        if key in reads:
+            dup_reads_removed += 1
+            #sys.stderr.write("%s -Drop- %s" % (key, line))
+        else:
+            reads[key] = line
+            #sys.stderr.write("%s -KEEP- %s" % (key, line))
+    for key in sorted(reads):
+        yield reads[key]
+    #sys.stderr.write("%s %i --> %i\n" % (qname, batch_count, len(reads)))
+
+
 #Open handles
 if options.input_reads:
     input_handle = open(options.input_reads)
@@ -257,6 +286,7 @@ last_name = None
 last_frag = 0
 count = 0
 seq_mod = 0
+dup_reads_removed = 0
 for batch in batch_by_qname(input_handle):
     #sys.stderr.write("%s\nBatch of %i lines:\n%s%s\n" % ("-" * 80, len(batch), "".join(batch), "-" * 80))
     if not batch:
@@ -289,7 +319,7 @@ for batch in batch_by_qname(input_handle):
             output_handle.write(line)
         continue
     # Should be a batch of reads...
-    for line in undouble_circle_mappings(restore_seq(batch)):
+    for line in dedup_batch(undouble_circle_mappings(restore_seq(batch))):
         count += 1
         output_handle.write(line)
 
@@ -299,4 +329,6 @@ if options.input_reads:
 if options.output_reads:
     output_handle.close()
 
-sys.stderr.write("Restored missing SEQ for %i out of %i reads\n" % (seq_mod, count))
+sys.stderr.write("Processed %i reads\n" % count)
+sys.stderr.write("Restored missing SEQ for %i reads\n" % seq_mod)
+sys.stderr.write("Undoubling the circles removed %i duplicate alignments\n" % dup_reads_removed)
