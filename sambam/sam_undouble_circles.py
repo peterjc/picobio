@@ -204,6 +204,43 @@ def restore_seq(sam_lines):
             last_qual = qual
         yield line
 
+def undouble_circle_mappings(sam_lines):
+    """Iterates over SAM lines updating POS for those mapped to circles."""
+    global ref_len_circles
+    for line in sam_lines:
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest = line.split("\t", 9)
+        if rname in ref_len_circles:
+            length = ref_len_circles[rname]
+            int_pos= int(pos) - 1
+            if int_pos != -1 and length <= int_pos:
+                assert int_pos < length*2, \
+                    "Have POS %s yet length is %i or %i when doubled!\n%r" \
+                    % (pos, length, length*2, line)
+                int_pos -= length
+                pos = str(int_pos + 1)
+                tlen = "0" # old value invalidated
+        if rnext in ref_len_circles:
+            length = ref_len_circles[rnext]
+            int_pnext = int(pnext) - 1
+            if int_pnext != -1 and length <= int_pnext:
+                assert int_pnext < length*2, \
+                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r" \
+                    % (pnext, length, length*2, line)
+                int_pnext -= length
+                pnext = str(int_pnext + 1)
+                tlen = "0" # old value invalidated
+        elif rnext == "=" and rname in ref_len_circles:
+            length = ref_len_circles[rname]
+            int_pnext = int(pnext) - 1
+            if int_pnext != -1 and length <= int_pnext:
+                assert int_pnext < length*2, \
+                    "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r" \
+                    % (pnext, rname, length, length*2, line)
+                int_pnext -= length
+                pnext = str(int_pnext + 1)
+                tlen = "0" # old value invalidated
+        yield "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest])
+
 #Open handles
 if options.input_reads:
     input_handle = open(options.input_reads)
@@ -228,10 +265,31 @@ for batch in batch_by_qname(input_handle):
         # SAM header
         for line in batch:
             assert line[0] == "@"
-        output_handle.write("".join(batch))
+            if line[0:4] == "@SQ\t":
+                parts = line[4:].strip().split("\t")
+                rname = None
+                length = None
+                for p in parts:
+                    if p.startswith("SN:"):
+                        rname = p[3:]
+                    if p.startswith("LN:"):
+                        length = int(p[3:])
+                if rname in ref_len_linear:
+                    assert length == ref_len_linear[rname]
+                    #print "Found @SQ line for linear reference %s" % rname
+                elif rname in ref_len_circles:
+                    assert length == 2 * ref_len_circles[rname]
+                    #Return the length to its correct value
+                    #print "Fixing @SQ line for %s, length %i --> %i" % (rname, length, ref_len_circles[rname])
+                    line = "@SQ\tSN:%s\tLN:%i\n" % (rname, ref_len_circles[rname])
+                elif rname is None:
+                    sys_exit("Bad @SQ line:\n%s" % line)
+                else:
+                    sys_exit("This reference was not given!:\n%s" % line)
+            output_handle.write(line)
         continue
     # Should be a batch of reads...
-    for line in restore_seq(batch):
+    for line in undouble_circle_mappings(restore_seq(batch)):
         count += 1
         output_handle.write(line)
 
