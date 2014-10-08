@@ -139,6 +139,37 @@ if options.circular_references:
     sys.stderr.write("Lengths of %i circular references loaded\n" % len(ref_len_circles))
 
 
+def batch_by_qname(input_handle):
+    """Yields lists of SAM lines, batching by read name.
+
+    If there is a SAM header, that is returned first.
+
+    There after you get all the SAM lines for read name one, then
+    for read name two, etc. This assumes the SAM file is sorted
+    or at least grouped by read name (typical of alignment output).
+    """
+    batch = []
+    batch_qname = None
+    for line in input_handle:
+        if line[0] == "@":
+            # SAM Header
+            if batch_qname or (batch and batch[-1][0] != "@"):
+                sys_exit("Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line))
+            batch.append(line)
+        else:
+            # SAM read
+            qname, rest = line.split("\t", 1)
+            if batch_qname == qname:
+                batch.append(line)
+            else:
+                yield batch
+                batch = [line]
+                batch_qname = qname
+    # End of file
+    if batch:
+        yield batch
+
+
 #Open handles
 if options.input_reads:
     input_handle = open(options.input_reads)
@@ -155,9 +186,16 @@ last_name = None
 last_frag = 0
 count = 0
 mod = 0
-for line in input_handle:
-    if line[0]!="@":
-        #Should be a read
+for batch in batch_by_qname(input_handle):
+    #sys.stderr.write("%s\nBatch of %i lines:\n%s%s\n" % ("-" * 80, len(batch), "".join(batch), "-" * 80))
+    for line in batch:
+        if line[0] == "@":
+            # SAM header
+            for tmp in batch:
+                assert tmp[0] == "@"
+            output_handle.write("".join(batch))
+            continue
+        # Should be a batch of reads...
         count += 1
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
         if seq == "*":
