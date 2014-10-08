@@ -16,8 +16,19 @@ values.
 
 Aim is to replace the combined effect of these three scripts:
 * https://github.com/peterjc/picobio/blob/master/sambam/sam_restore_seq.py
-* https://github.com/peterjc/picobio/blob/master/blooming_reads/dedup_circular_sam.py
+* https://github.com/peterjc/picobio/blob/39fd9655e3641a22430c42b3d25fbcb4e6f4e099/blooming_reads/dedup_circular_sam.py
 * https://github.com/peterjc/picobio/blob/master/blooming_reads/re_pair_circular_sam.py
+
+TODO:
+
+Review/use secondary alignment 0x100 FLAG when removing duplicates.
+
+Review/set properly paired 0x2 FLAG after removing duplicates, and
+recalculate TLEN. See also re_pair_circular_sam.py
+
+Depending on feelings of SAM/BAM community, may want to split reads
+spanning the origin into two sub-parts. Currently they spill over the
+"end" of the sequence.
 
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
