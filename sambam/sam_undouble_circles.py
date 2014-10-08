@@ -170,6 +170,40 @@ def batch_by_qname(input_handle):
         yield batch
 
 
+def restore_seq(sam_lines):
+    """Process a batch/list of SAM lines restoring missing SEQ.
+
+    Designed for use on BWA MEM output where only the first read
+    has the SEQ and QUAL recorded, additional alignments are just
+    recorded with SEQ * and QUAL * instead.
+    """
+    global seq_mod
+    for line in sam_lines:
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
+        if seq == "*":
+            if qname == last_name and get_frag(flag) == last_frag:
+                assert last_seq
+                exp_len = cigar_seq_len(cigar)
+                if exp_len < len(last_seq) and "H" in cigar:
+                    # Ought to work if record it as soft trimming...
+                    cigar = cigar.replace("H", "S")
+                    exp_len = cigar_seq_len(cigar)
+                assert exp_len == len(last_seq), \
+                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s" \
+                    % (last_seq, len(last_seq), cigar_seq_len(cigar), line)
+                seq = last_seq
+                if qual == "*":
+                    qual = last_qual
+                seq_mod += 1
+                line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
+        elif "H" not in cigar:
+            #Cache the SEQ
+            last_name = qname
+            last_frag = get_frag(flag)
+            last_seq = seq
+            last_qual = qual
+        yield line
+
 #Open handles
 if options.input_reads:
     input_handle = open(options.input_reads)
@@ -185,42 +219,21 @@ last_qual = None
 last_name = None
 last_frag = 0
 count = 0
-mod = 0
+seq_mod = 0
 for batch in batch_by_qname(input_handle):
     #sys.stderr.write("%s\nBatch of %i lines:\n%s%s\n" % ("-" * 80, len(batch), "".join(batch), "-" * 80))
-    for line in batch:
-        if line[0] == "@":
-            # SAM header
-            for tmp in batch:
-                assert tmp[0] == "@"
-            output_handle.write("".join(batch))
-            continue
-        # Should be a batch of reads...
+    if not batch:
+        continue
+    if batch[0][0] == "@":
+        # SAM header
+        for line in batch:
+            assert line[0] == "@"
+        output_handle.write("".join(batch))
+        continue
+    # Should be a batch of reads...
+    for line in restore_seq(batch):
         count += 1
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
-        if seq == "*":
-            if qname == last_name and get_frag(flag) == last_frag:
-                assert last_seq
-                exp_len = cigar_seq_len(cigar)
-                if exp_len < len(last_seq) and "H" in cigar:
-                    # Ought to work if record it as sort trimming...
-                    cigar = cigar.replace("H", "S")
-                    exp_len = cigar_seq_len(cigar)
-                assert exp_len == len(last_seq), \
-                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s" \
-                    % (last_seq, len(last_seq), cigar_seq_len(cigar), line)
-                seq = last_seq
-                if qual == "*":
-                    qual = last_qual
-                mod += 1
-                line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
-        elif "H" not in cigar:
-            #Cache the SEQ
-            last_name = qname
-            last_frag = get_frag(flag)
-            last_seq = seq
-            last_qual = qual
-    output_handle.write(line)
+        output_handle.write(line)
 
 #Close handles
 if options.input_reads:
@@ -228,4 +241,4 @@ if options.input_reads:
 if options.output_reads:
     output_handle.close()
 
-sys.stderr.write("Modified %i out of %i reads\n" % (mod, count))
+sys.stderr.write("Restored missing SEQ for %i out of %i reads\n" % (seq_mod, count))
