@@ -153,7 +153,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                 output_handle.write("\t".join("%.1f" % v for v in row) + "\n")
                 m = max(m, max(row))
             sys.stderr.write("%s length %i max depth %i\n" % (ref, length, m))
-    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both present\n" % (solo0, solo1, solo2, solo12))
+    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
 
 
 def cigar_tuples(cigar_str):
@@ -199,6 +199,17 @@ def count_coverage(coverage, reads):
     reads0 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
               for (qname, frag, rname, pos, flag, rest) \
               in reads if frag==0 and not (flag & 0x4)]
+
+    global solo0, solo1, solo2, solo12
+    if reads0:
+        solo0 += 1
+    elif reads1 and reads2:
+        solo12 += 1
+    elif reads1:
+        solo1 += 1
+    elif reads2:
+        solo2 += 1
+
     if reads0:
         #Singleton
         #print("Counting coverage from %i singleton reads" % len(reads0))
