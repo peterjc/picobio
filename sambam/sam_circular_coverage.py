@@ -114,25 +114,61 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
             #End of header
             continue
 
-        reads = set()
+        # Split up all the QNAME reads by fragment
+        r0 = set()
+        r1 = set()
+        r2 = set()
+        rnames = set()
+        reads = {None: r0, 1: r1, 2: r2}
+        qname = None
         for line in batch:
-            #SAM read
-            qname, flag, rname, pos, rest = line.split("\t", 4)
+            # SAM read
+            qname, flag, rname, pos, mapq, cigar, rest =  line.split("\t", 6)
             flag = int(flag)
+            if flag & 0x4:
+                #Unmapped, ignore
+                continue
             frag = get_frag(flag)
-            if rname in ref_len_circles and pos != "0":
-                length = ref_len_circles[rname]
-                if sam_len_references[rname] <= int(pos) - 1:
-                    sys_exit("Have POS %s yet %s length in header is %i (or %i circular)\n"
-                             % (pos, rname, sam_len_references[rname], length))
-            elif rname in ref_len_linear and pos != "0":
-                length = ref_len_linear[rname]
-                if length <= int(pos) - 1:
-                    sys_exit("Have POS %s yet length of %s is %i (linear)\n" % (pos, rname, length))
-            reads.add((qname, frag, rname, pos, flag, rest))
-
-        #print("Counting coverage from %i reads for %s" % (len(reads), qname))
-        count_coverage(coverage, reads)
+            reads[frag].add((rname, pos, cigar))
+            rnames.add(rname) # to see if all map to same ref
+        # Now get weighted coverage
+        if r0:
+            # This QNAME is a single read (perhaps multiply mapped)
+            assert not r1 and not r2, \
+                "Inconsistent FLAG for %s, is it paired or unpaired?" % qname
+            solo0 += 1
+            if len(rnames) == 1:
+                field = 0
+            else:
+                field = 1
+            weight = 1.0 / len(r0)
+            for rname, ref_len, pos, cigar in r0:
+                count_coverage(coverage, field, weight, rname, pos, cigar)
+        elif r1 or r2:
+            # This QNAME is a paired read
+            if r1 and r2:
+                solo12 += 1
+                if len(rnames) == 1:
+                    field = 2
+                else:
+                    field = 3
+            elif r1:
+                solo1 += 1
+                field = 4
+            elif r2:
+                solo2 += 1
+                field = 4
+            else:
+                assert False, "Error sorting %s by fragment" % qname
+            if r1:
+                weight = 1.0 / len(r1)
+                for rname, pos, cigar in r1:
+                    count_coverage(coverage, field, weight, rname, pos, cigar)
+            if r2:
+                weight = 1.0 / len(r2)
+                for rname, pos, cigar in r2:
+                    count_coverage(coverage, field, weight, rname, pos, cigar)
+       
 
     for lengths in [ref_len_linear, ref_len_circles]:
         for ref, length in lengths.iteritems():
@@ -177,73 +213,12 @@ def cigar_alen(cigar_str):
     return alen
 
 
-def count_coverage(coverage, reads):
-    """Update coverage (dict of arrays) using given mapping of a read/pair."""
-
-    reads1 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
-              for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==1 and not (flag & 0x4)]
-    reads2 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
-              for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==2 and not (flag & 0x4)]
-    reads0 = [(flag, rname, int(pos)-1, rest.split("\t",2)[1]) \
-              for (qname, frag, rname, pos, flag, rest) \
-              in reads if frag==0 and not (flag & 0x4)]
-
-    global solo0, solo1, solo2, solo12
-    if reads0:
-        solo0 += 1
-    elif reads1 and reads2:
-        solo12 += 1
-    elif reads1:
-        solo1 += 1
-    elif reads2:
-        solo2 += 1
-
-    if reads0:
-        #Singleton
-        #print("Counting coverage from %i singleton reads" % len(reads0))
-        assert not reads1 and not reads2
-        field = 0
-        for ref, values in coverage.iteritems():
-            length = values.shape[1]
-            r0 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads0 if ref==rname]
-            if len(r0) == len(reads0):
-                #All on this ref
-                field = 0
-            else:
-                #Also on other refs
-                field = 1
-            weight = 1.0 / len(reads0)
-            for start, end in r0:
-                for i in xrange(start, end):
-                    values[field, i % length] += weight
-    elif reads1 or reads2:
-        #Paired
-        #print("Counting coverage for %i:%i paired reads" % (len(reads1), len(reads2)))
-        assert not reads0
-        for ref, values in coverage.iteritems():
-            length = values.shape[1]
-            r1 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads1 if ref==rname]
-            r2 = [(pos, pos+cigar_alen(cigar)) for (flag, rname, pos, cigar) in reads2 if ref==rname]
-            #print("Counting coverage on %s of %i:%i paired reads" % (rname, len(r1), len(r2)))
-            if r1 and r2:
-                #Both read parts /1 and /2 map to same ref, good
-                if len(r1) == len(reads1) and len(r2) == len(reads2):
-                    #All on this ref
-                    field = 2
-                else:
-                    field = 3
-            else:
-                #Only one of parts maps to this ref, bad
-                field = 4
-            for reads, all_reads in [(r1, reads1), (r2, reads2)]:
-                if reads:
-                    weight = 1.0 / len(all_reads)
-                    for start, end in reads:
-                        for i in xrange(start, end):
-                            values[field, i % length] += weight
-
+def count_coverage(coverage, field, weight, rname, pos, cigar):
+    pos = int(pos) - 1
+    values = coverage[rname]
+    length = values.shape[1]
+    for i in xrange(pos, pos + cigar_alen(cigar)):
+        values[field, i % length] += weight
 
 def get_frag(flag):
     f = int(flag)
