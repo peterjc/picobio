@@ -56,7 +56,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 solo0 = solo1 = solo2 = solo12 = 0
 
@@ -72,9 +72,9 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         else:
             sys.stderr.write("Creating %s\n" % idx)
             raw= SeqIO.index_db(idx, raw_reads, "fastq")
+        sys.stderr.write("Have %i raw reads (used for unmapped partners)\n" % len(raw))
     else:
         raw = dict()
-    sys.stderr.write("Have %i raw reads (used for unmapped partners)\n" % len(raw))
     
     ref_len_linear = dict()
     if linear_refs:
