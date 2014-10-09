@@ -11,7 +11,7 @@ SAM format data from stdin, and writes SAM format data to stdout.
 
 This script is designed to be used on the BWA-MEM output where it seems
 with the -a option additional alignments are reported with the SEQ and
-QUAL fields set to just *, so as part of the script is restores the SEQ
+QUAL fields set to just *, so as part of the script it restores the SEQ
 values.
 
 Aim is to replace the combined effect of these three scripts:
