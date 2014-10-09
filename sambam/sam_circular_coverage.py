@@ -6,6 +6,17 @@ circular reference spill over (aligned end exceeds length), or
 are directly from mapping against a doubled-reference - and thus
 caculates coverage at each position modulo the circle length.
 
+Currently calculates coverage split into these five categories:
+- Single reads all mapped to same reference
+- Single reads mapped to multiple references
+- Paired reads both mapped to same reference
+- Paired reads mapped to multiple references
+- Paired reads with partner unmapped
+
+The output is a FASTA QUAL like plain text file, ">identifier"
+followed by five lines of space separated coverage scores (one
+value for each base in the associated reference sequence).
+
 TODO: Switch to JSON output?
 """
 
