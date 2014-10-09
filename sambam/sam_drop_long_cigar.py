@@ -19,7 +19,7 @@ $ ./sam_drop_long_cigar.py < original.sam > no_long_cigar.sam
 
 Simple usage with BAM files with conversion to/from SAM via samtools:
 
-$ samtools view -h original.bam | ./sam_dorp_long_cigar.py | samtools view -S -b - > no_long_cigar.bam
+$ samtools view -h original.bam | ./sam_drop_long_cigar.py | samtools view -S -b - > no_long_cigar.bam
 
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
