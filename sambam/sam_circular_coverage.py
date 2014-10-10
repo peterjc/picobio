@@ -142,7 +142,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
             else:
                 field = 1
             weight = 1.0 / len(r0)
-            for rname, ref_len, pos, cigar in r0:
+            for rname, pos, cigar in r0:
                 count_coverage(coverage, field, weight, rname, pos, cigar)
         elif r1 or r2:
             # This QNAME is a paired read
