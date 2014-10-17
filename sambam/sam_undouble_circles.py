@@ -43,7 +43,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.0"
+VERSION = "0.0.1"
 
 parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
                       version="%prog "+VERSION)
@@ -189,6 +189,8 @@ def restore_seq(sam_lines):
     recorded with SEQ * and QUAL * instead.
     """
     global seq_mod
+    last_name = None
+    last_frag = None
     for line in sam_lines:
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
         if seq == "*":
