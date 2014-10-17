@@ -15,7 +15,8 @@ Currently calculates coverage split into these five categories:
 
 The output is a FASTA QUAL like plain text file, ">identifier"
 followed by five lines of space separated coverage scores (one
-value for each base in the associated reference sequence).
+value for each base in the associated reference sequence). If
+all the entries for a category are zero "None" is record instead.
 
 TODO: Switch to JSON output?
 """
@@ -30,7 +31,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
                       version="%prog "+VERSION)
@@ -176,8 +177,12 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
             m = 0
             for row in coverage[ref]:
                 assert len(row) == length
-                output_handle.write("\t".join("%.1f" % v for v in row) + "\n")
-                m = max(m, max(row))
+                row_max = max(row)
+                if row_max:
+                    output_handle.write("\t".join("%.1f" % v for v in row) + "\n")
+                else:
+                    output_handle.write("None\n")
+                m = max(m, row_max)
             sys.stderr.write("%s length %i max depth %i\n" % (ref, length, m))
     sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
 
@@ -185,7 +190,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
 def cigar_tuples(cigar_str):
     """CIGAR string parsed into a list of tuples (operator code, count).
 
-    e.g.cigar string of 36M2I3M becomes [('M', 36), ('I', 2), ('M', 3)]
+    e.g. cigar string of 36M2I3M becomes [('M', 36), ('I', 2), ('M', 3)]
 
     Any empty CIGAR string (represented as * in SAM) is given as None.
     """
