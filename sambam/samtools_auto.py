@@ -5,8 +5,9 @@ It can be a downside that the samtools command line API is a single
 binary which offers multiple (often independent) commands.
 
 Right now, samtools 1.1 still lacks some functionality from 0.1.19,
-for example "samtools depad" and "samtools rmdup" are not yet fully
-functional. e.g.
+for example "samtools index", "samtools depad" and "samtools rmdup"
+are not yet fully functional. e.g.
+ - https://github.com/samtools/samtools/issues/199
  - https://github.com/samtools/samtools/issues/291
 
 Conversely, the "samtools bam2fq" from samtools 0.1.19 has had
@@ -43,7 +44,7 @@ def pick_binary():
     """
     if len(sys.argv) == 1:
         return samtools_new
-    elif sys.argv in ["depad", "rmdup"]:
+    elif sys.argv in ["index", "depad", "rmdup"]:
         return samtools_old
     else:
         return samtools_new
