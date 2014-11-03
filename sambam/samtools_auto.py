@@ -34,7 +34,7 @@ paths below (variables ``samtools_old`` and ``samtools_new``).
 import os
 import sys
 
-samtools_old = "/mnt/galaxy/bin/samtools_0_1_19"
+samtools_old = "/mnt/galaxy/bin/samtools_0.1.19"
 samtools_new = "/mnt/galaxy/bin/samtools_1.1"
 
 def pick_binary():
@@ -44,7 +44,7 @@ def pick_binary():
     """
     if len(sys.argv) == 1:
         return samtools_new
-    elif sys.argv in ["index", "depad", "rmdup"]:
+    elif sys.argv[1] in ["index", "depad", "rmdup"]:
         return samtools_old
     else:
         return samtools_new
