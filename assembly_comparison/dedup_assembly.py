@@ -4,7 +4,6 @@
 
 import os
 import sys
-import warnings
 import tempfile
 import shutil
 from optparse import OptionParser

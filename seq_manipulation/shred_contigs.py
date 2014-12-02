@@ -6,9 +6,6 @@ e.g. for input into Newbler.
 
 import os
 import sys
-import warnings
-import tempfile
-import shutil
 from optparse import OptionParser
 from Bio import SeqIO
 
