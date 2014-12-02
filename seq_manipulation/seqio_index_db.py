@@ -9,13 +9,14 @@ History:
 * v0.0.1 - Original
 * v0.0.2 - Option to force re-creation of indexes
          - Check indexes claiming to have zero records
+* v0.0.3 - Actually print the usage text I wrote.
 """
 
 import os
 import sys
 from optparse import OptionParser
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -45,7 +46,7 @@ def main():
     By default (if not using the -i or --index argument), one index
     will be created for each sequence file with ".idx" appended.
     """
-    parser = OptionParser(usage="usage: %prog [options]",
+    parser = OptionParser(usage=usage,
                           version="%prog "+VERSION)
     parser.add_option("-f", "--format", dest="format",
                       type="string", metavar="FORMAT",
@@ -59,15 +60,15 @@ def main():
     parser.add_option("-r", "--reindex", dest="reindex",
                       action="store_true",
                       help="Delete pre-existing indexes and rebuild them.")
-    (options, args) = parser.parse_args()
+    (options, filenames) = parser.parse_args()
 
-    if not args:
+    if not filenames:
         sys_exit("No sequence filenames provided")
     if not options.format:
         sys_exit("No sequence format specified")
     format = options.format.lower()
 
-    for filename in args:
+    for filename in filenames:
         if not os.path.isfile(filename):
             sys_exit("Missing %s" % filename)
     
@@ -85,7 +86,7 @@ def main():
         print("%s - OK, %i records in %i files" % (idx_filename, len(d), len(filenames)))
     else:
         # One index per sequence file
-        for filename in args:
+        for filename in filenames:
             idx_filename = filename + ".idx"
             if options.reindex and os.path.isfile(idx_filename):
                 print("%s - re-indexing..." % filename)
