@@ -63,7 +63,7 @@ def hack_ncbi_fasta_name(pipe_name):
     else:
         return pipe_name
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
@@ -80,16 +80,16 @@ parser.add_option("-o", "--output", dest="pdf_filename",
 min_hit = int(options.min_hit)
 
 if len(args) < 2:
-    stop_err("Requires two or more arguments!\n\n" + usage)
+    sys_exit("Requires two or more arguments!\n\n" + usage)
 assemblies_fasta = args[:]
 diagram_pdf = options.pdf_filename
 if not diagram_pdf:
-    stop_err("Requires output PDF file to be specified!\n\n" + usage)
+    sys_exit("Requires output PDF file to be specified!\n\n" + usage)
 output_directory = os.path.dirname(diagram_pdf)
 
 for assembly_fasta in assemblies_fasta:
     if not os.path.isfile(assembly_fasta):
-        stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+        sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
@@ -136,7 +136,7 @@ reference_fasta = None
 ref_offsets = dict()
 for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
-        stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+        sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
     assembly_genbank = os.path.splitext(assembly_fasta)[0] + ".gbk"
 
     contig_offsets = dict()
@@ -235,10 +235,10 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                 r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
             except KeyError:
                 if hack_ncbi_fasta_name(hsp.hit_id) != hsp.hit_id:
-                    stop_err("Could not find offset key %r for hit %r in dict (query id %r)"
+                    sys_exit("Could not find offset key %r for hit %r in dict (query id %r)"
                              % (hack_ncbi_fasta_name(hsp.hit_id), hsp.hit_id, hsp.query_id))
                 else:
-                    stop_err("Could not find offset for hit %r in dict (query id %r)"
+                    sys_exit("Could not find offset for hit %r in dict (query id %r)"
                              % (hsp.hit_id, hsp.query_id))
             loc = FeatureLocation(r_offset + hsp.hit_start, r_offset + hsp.hit_end, strand=0)
             hit = gd_ref_features.add_feature(SeqFeature(loc), color=color, border=border)

@@ -19,7 +19,7 @@ FASTA file and BLAST database.
 makeblastdb_binary = "makeblastdb"
 blastn_binary = "blastn"
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
@@ -46,7 +46,7 @@ parser.add_option("-c", "--min-cover", dest="min_cover", type="float",
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
-    stop_err("Requires two arguments!\n\n" + usage)
+    sys_exit("Requires two arguments!\n\n" + usage)
 assembly_fasta, output_fasta = args
 min_len = int(options.min_len)
 min_hit = int(options.min_hit)
@@ -54,7 +54,7 @@ min_cover = float(options.min_cover)
 perc_identity = float(options.perc_identity)
 
 if not os.path.isfile(assembly_fasta):
-    stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+    sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 cols = "qseqid sseqid qlen slen length qstart qend"
 c_query = 0

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
-stop_err("""Python script for 'back-translating' a protein alignment.
+sys_exit("""Python script for 'back-translating' a protein alignment.
 
 This script was originally available from here:
 https://github.com/peterjc/picobio/tree/master/align

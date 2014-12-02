@@ -63,7 +63,7 @@ def hack_ncbi_fasta_name(pipe_name):
     else:
         return pipe_name
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
@@ -93,7 +93,7 @@ parser.add_option("-u", "--unmapped", dest="unmapped",
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
-    stop_err("Requires two arguments!\n\n" + usage)
+    sys_exit("Requires two arguments!\n\n" + usage)
 assembly_fasta, reference_fasta = args
 output_fasta = options.fasta_filename
 blast_file = options.blast_filename
@@ -120,10 +120,10 @@ if not diagram_pdf:
     diagram_pdf = output_stem + ".blast.pdf"
 
 if not os.path.isfile(assembly_fasta):
-    stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+    sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 if not os.path.isfile(reference_fasta):
-    stop_err("Reference FASTA file not found: %r" % reference_fasta)
+    sys_exit("Reference FASTA file not found: %r" % reference_fasta)
 
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
@@ -131,7 +131,7 @@ def do_blast(query_fasta, db_fasta, blast_file):
     if not (os.path.isfile(db_fasta + ".nhr") and \
             os.path.isfile(db_fasta + ".nin") and \
             os.path.isfile(db_fasta + ".nsq")):
-        stop_err("Missing BLAST database for %s" % db_fasta)
+        sys_exit("Missing BLAST database for %s" % db_fasta)
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
                                 out=blast_file, outfmt=6,
                                 evalue=1e-5)
@@ -464,7 +464,7 @@ if output_fasta:
     print("Dropped %i short records" % fasta_short_dropped)
     fasta_handle.close()
     if fasta_saved_count + fasta_short_dropped != len(contigs):
-        stop_err("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
+        sys_exit("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
 
 if not contigs_shown:
     print("Nothing to do for PDF")

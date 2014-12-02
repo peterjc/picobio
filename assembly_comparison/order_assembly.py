@@ -50,7 +50,7 @@ def hack_ncbi_fasta_name(pipe_name):
     else:
         return pipe_name
 
-def stop_err(msg, error_level=1):
+def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
@@ -72,7 +72,7 @@ parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
 (options, args) = parser.parse_args()
 
 if len(args) != 3:
-    stop_err("Requires three arguments!\n\n" + usage)
+    sys_exit("Requires three arguments!\n\n" + usage)
 assembly_fasta, reference_fasta, output_fasta = args
 blast_file = options.blast_filename
 min_len = int(options.min_len)
@@ -86,10 +86,10 @@ if not blast_file:
     blast_file = output_stem + ".blast.tsv"
 
 if not os.path.isfile(assembly_fasta):
-    stop_err("Assembly FASTA file not found: %r" % assembly_fasta)
+    sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 if not os.path.isfile(reference_fasta):
-    stop_err("Reference FASTA file not found: %r" % reference_fasta)
+    sys_exit("Reference FASTA file not found: %r" % reference_fasta)
 
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
@@ -97,7 +97,7 @@ def do_blast(query_fasta, db_fasta, blast_file):
     if not (os.path.isfile(db_fasta + ".nhr") and \
             os.path.isfile(db_fasta + ".nin") and \
             os.path.isfile(db_fasta + ".nsq")):
-        stop_err("Missing BLAST database for %s" % db_fasta)
+        sys_exit("Missing BLAST database for %s" % db_fasta)
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
                                 out=blast_file, outfmt=6,
                                 evalue=1e-5)
@@ -252,4 +252,4 @@ print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
 print("Dropped %i short records" % fasta_short_dropped)
 fasta_handle.close()
 if fasta_saved_count + fasta_short_dropped != len(contigs):
-    stop_err("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
+    sys_exit("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
