@@ -1,14 +1,25 @@
 #!/usr/bin/env python
 """Python script to turn FASTQ into unaliged SAM/BAM files.
 
-This script is designed to be used as part of a Unix pipeline.
+This script is designed to be used as part of a Unix pipeline. It
+works with Python 2 and Python 3, e.g.
+
+    $ python fastq_to_sam.py R1.fastq R2.fastq > unmapped.sam
+    Done, 532 pairs
+
+Or:
+
+    $ python3 fastq_to_sam.py R1.fastq R2.fastq > unmapped.sam
+    Done, 532 pairs
+
+As long as the Python script is marked as executable you can do:
 
     $ ./fastq_to_sam.py R1.fastq R2.fastq > unmapped.sam
     Done, 532 pairs
 
 Simple usage with BAM files with conversion to/from SAM via samtools:
 
-    $ python3 fastq_to_sam.py R1.fastq R2.fastq | samtools view -S -b - > unmapped.bam
+    $ ./fastq_to_sam.py R1.fastq R2.fastq | samtools view -S -b - > unmapped.bam
     [samopen] no @SQ lines in the header.
     Done, 532 pairs
 
@@ -16,11 +27,25 @@ Note that no @SQ lines are expected in SAM/BAM files with only unaligned reads.
 
 WARNING: This assumes your FASTQ files use the Sanger quality encoding.
 
+TODO:
+
+ - Test cases
+ - Galaxy wrapper?
+ - Proper command line API
+ - Support for gzipped FASTQ (detected via filename?)
+ - Support for interlaced FASTQ
+ - Support for setting read groups
+ - Support for multiple FASTQ input pairs (and read groups)
+
 Copyright Peter Cock 2015. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
 
 import sys
+
+if "-v" in sys.argv or "--version" in sys.argv:
+    print("This is fastq_to_sam.py version 0.0.1")
+    sys.exit(0)
 
 # TODO - proper API, allow interleaved FASTQ, read group, etc
 if len(sys.argv) != 3:
