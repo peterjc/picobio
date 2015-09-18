@@ -17,7 +17,7 @@ As long as the Python script is marked as executable you can do:
     $ ./fastq_to_sam.py R1.fastq R2.fastq > unmapped.sam
     Done, 532 pairs
 
-Simple usage with BAM files with conversion to/from SAM via samtools:
+Simple usage with BAM files with conversion from SAM via samtools:
 
     $ ./fastq_to_sam.py R1.fastq R2.fastq | samtools view -S -b - > unmapped.bam
     [samopen] no @SQ lines in the header.
@@ -78,7 +78,7 @@ for (t1, s1, q1), (t2, s2, q2) in zip(fastq1, fastq2):
     id1 = t1.split(None, 1)[0]
     id2 = t2.split(None, 1)[0]
     if id1 == id2:
-        # Good, should we check the description follow Illumina naming?
+        # Good, should we check the description follows Illumina naming?
         qname = id1
     else:
         assert id1.endswith("/1"), t1
