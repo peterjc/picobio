@@ -95,9 +95,9 @@ def parse_gff(handle):
         references[name].seq = Seq(seq)
     # Return results
     for name, record in references.items():
-        print("%s length %i with %i features" % (name, len(record), len(record.seq)))
+        # print("%s length %i with %i features" % (name, len(record), len(record.seq)))
         yield record
-            
+
 def sniff(handle):
     offset = handle.tell()
     line = handle.readline()
