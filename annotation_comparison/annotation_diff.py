@@ -140,7 +140,14 @@ def diff_f(old, new):
         old_v = clean(old.qualifiers.get(k, None))
         new_v = clean(new.qualifiers.get(k, None))
         if old_v != new_v:
-            print("\t".join([str(old.location), old.type, k, repr(old_v), repr(new_v)]))
+            if k == "locus_tag" and old_v.split("_", 1)[1] == new_v.split("_", 1)[1]:
+                # Different prefix, ignore
+                pass
+            elif k == "product" and old_v.split() == new_v.split():
+                # White space only, ignore
+                pass
+            else:
+                print("\t".join([str(old.location), old.type, k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
 old_filename, new_filename = sys.argv[1:]
