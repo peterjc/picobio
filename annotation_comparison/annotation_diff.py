@@ -8,6 +8,7 @@ from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
 FEATURE_TYPE_TO_IGNORE = ["source"]
+FEATURE_TYPE_WANTED = ["CDS"]  # Empty/None for any not in FEATURE_TYPE_TO_IGNORE
 MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref", "ID", "transl_table"]
 QUALIFIERS_TO_IGNORE = ["inference", "note"]
 
@@ -40,6 +41,10 @@ def parse_gff(handle):
             start = int(start) - 1
             end = int(end)
             assert 0 <= start < end < len(references[seqid])
+            if ftype in FEATURE_TYPE_TO_IGNORE:
+                continue
+            if FEATURE_TYPE_WANTED and ftype not in FEATURE_TYPE_WANTED:
+                continue
             if strand == "+":
                 loc = FeatureLocation(start, end, +1)
             elif strand == "-":
@@ -162,8 +167,12 @@ for old, new in zip(old_iter, new_iter):
     print("# Comparing records %s vs %s" % (old.id, new.id))
     assert old.id == new.id or old.id == "XXX"
     assert len(old) == len(new)
-    old_fs = [f for f in old.features if f.type not in FEATURE_TYPE_TO_IGNORE]
-    new_fs = [f for f in new.features if f.type not in FEATURE_TYPE_TO_IGNORE]
+    if FEATURE_TYPE_WANTED:
+        old_fs = [f for f in old.features if f.type in FEATURE_TYPE_WANTED]
+        new_fs = [f for f in new.features if f.type in FEATURE_TYPE_WANTED]
+    else:
+        old_fs = [f for f in old.features if f.type not in FEATURE_TYPE_TO_IGNORE]
+        new_fs = [f for f in new.features if f.type not in FEATURE_TYPE_TO_IGNORE]
 
     assert len(old_fs) == len(new_fs), \
         "Have %i [%i] vs %i [%i] features, aborting" % (len(old_fs), len(old.features), len(new_fs), len(new.features))
