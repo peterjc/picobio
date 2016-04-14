@@ -122,7 +122,7 @@ def clean(value):
         value = value.replace("%2C", ",")
     return value
 
-def diff_f(old, new):
+def diff_f(ref_name, old, new):
     assert old.type == new.type
     assert str(old.location) == str(new.location), \
         "%s location %s vs %s" % (old.type, old.location, new.location)
@@ -147,7 +147,7 @@ def diff_f(old, new):
                 # White space only, ignore
                 pass
             else:
-                print("\t".join([str(old.location), old.type, k, repr(old_v), repr(new_v)]))
+                print("\t".join([ref_name, str(old.location), old.type, k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
 old_filename, new_filename = sys.argv[1:]
@@ -168,6 +168,6 @@ for old, new in zip(old_iter, new_iter):
     assert len(old_fs) == len(new_fs), \
         "Have %i [%i] vs %i [%i] features, aborting" % (len(old_fs), len(old.features), len(new_fs), len(new.features))
     for old_f, new_f in zip(old_fs, new_fs):
-        diff_f(old_f, new_f)
+        diff_f(old.id, old_f, new_f)
 
 print("# Done")
