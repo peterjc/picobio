@@ -1,17 +1,105 @@
 #!/usr/bin/env python3
 import sys
+from collections import OrderedDict
 from Bio import SeqIO
+from Bio.Seq import UnknownSeq
+from Bio.Seq import Seq
+from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqRecord import SeqRecord
 
-MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref"]
+FEATURE_TYPE_TO_IGNORE = ["source"]
+MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref", "ID", "transl_table"]
 QUALIFIERS_TO_IGNORE = ["inference", "note"]
 
+def parse_gff(handle):
+    """Quick hack to parse Bacterial GFF files from Prokka etc.
+
+    Does NOT support multi-line features (i.e. splicing and
+    multiple exons). Will load EVERYTHING into memory!
+
+    Iterator yielding SeqRecord objects, intended to fit into the
+    Biopython SeqIO structure.
+    """
+    line = handle.readline()
+    assert line.startswith("##gff-version 3"), line
+    # print("Parsing GFF3")
+    references = OrderedDict()
+    for line in handle:
+        # print(line)
+        if line.startswith("##sequence-region "):
+            _, name, start, end = line.split()
+            assert start == "1"
+            references[name] = SeqRecord(UnknownSeq(int(end)), id=name, name=name)
+        elif line.strip() == "##FASTA":
+            break
+        elif line.startswith("#"):
+            raise NotImplementedError(line)
+        elif line.count("\t") == 8:
+            seqid, source, ftype, start, end, score, strand, phase, attributes = line.split("\t")
+            assert seqid in references, seqid
+            start = int(start) - 1
+            end = int(end)
+            assert 0 <= start < end < len(references[seqid])
+            if strand == "+":
+                loc = FeatureLocation(start, end, +1)
+            elif strand == "-":
+                loc = FeatureLocation(start, end, -1)
+            elif strand == ".":
+                # Unstranded - should use zero but +1 to match EMBL/GB
+                loc = FeatureLocation(start, end, +1)
+            elif strand == "?":
+                # Stranded by missing - should use None but +1 to match EMBL/GB
+                loc = FeatureLocation(start, end, +1)
+            else:
+                raise ValueError("Bad strand %r in line: %s" % (strand, line))
+            f = SeqFeature(loc, type=ftype)
+            for part in attributes.strip().split(";"):
+                key, value = part.split("=", 1)
+                if key in MISSING_QUALIFIERS_TO_IGNORE:
+                    continue
+                if key == "eC_number":
+                    key = "EC_number"
+                value = value.replace("%2C", ",")
+                try:
+                    f.qualifiers[key].append(value)
+                except KeyError:
+                    f.qualifiers[key] = [value]
+            references[seqid].features.append(f)
+        else:
+            raise NotImplementedError(line)
+    # Deal with any FASTA block
+    name = None
+    seqs = []
+    for line in handle:
+        if line.startswith(">"):
+            if name and seqs:
+                seq = "".join(seqs)
+                assert len(seq) == len(references[name]), \
+                    "FASTA entry for %s was %i long, expected %i" % (name, len(seq), len(references[name]))
+                references[name].seq = Seq(seq)
+            name = line[1:].split(None, 1)[0]
+            seqs = []
+        elif name:
+            seqs.append(line.strip())
+        elif line.strip():
+            raise NotImplementedError(line)
+    if name and seqs:
+        seq = "".join(seqs)
+        assert len(seq) == len(references[name]), \
+            "FASTA entry for %s was %i long, expected %i" % (name, len(seq), len(references[name]))
+        references[name].seq = Seq(seq)
+    # Return results
+    for name, record in references.items():
+        print("%s length %i with %i features" % (name, len(record), len(record.seq)))
+        yield record
+            
 def sniff(handle):
     offset = handle.tell()
     line = handle.readline()
     handle.seek(offset)
 
     if line.startswith("##gff-version"):
-        raise NotImplementedError("TODO: GFF support")
+        return parse_gff(handle)
     elif line.startswith("LOCUS "):
         return SeqIO.parse(handle, "gb")
     elif line.startswith("ID "):
@@ -36,7 +124,8 @@ def clean(value):
 
 def diff_f(old, new):
     assert old.type == new.type
-    assert str(old.location) == str(new.location)
+    assert str(old.location) == str(new.location), \
+        "%s location %s vs %s" % (old.type, old.location, new.location)
 
 
     if "locustag" in old.qualifiers and "locustag" in new.qualifiers:
@@ -66,8 +155,12 @@ for old, new in zip(old_iter, new_iter):
     print("# Comparing records %s vs %s" % (old.id, new.id))
     assert old.id == new.id or old.id == "XXX"
     assert len(old) == len(new)
-    assert len(old.features) == len(new.features)
-    for old_f, new_f in zip(old.features, new.features):
+    old_fs = [f for f in old.features if f.type not in FEATURE_TYPE_TO_IGNORE]
+    new_fs = [f for f in new.features if f.type not in FEATURE_TYPE_TO_IGNORE]
+
+    assert len(old_fs) == len(new_fs), \
+        "Have %i [%i] vs %i [%i] features, aborting" % (len(old_fs), len(old.features), len(new_fs), len(new.features))
+    for old_f, new_f in zip(old_fs, new_fs):
         diff_f(old_f, new_f)
 
 print("# Done")
