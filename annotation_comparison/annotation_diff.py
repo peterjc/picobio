@@ -40,7 +40,7 @@ def parse_gff(handle):
             raise NotImplementedError(line)
         elif line.count("\t") == 8:
             seqid, source, ftype, start, end, score, strand, phase, attributes = line.split("\t")
-            assert seqid in references, seqid
+            assert seqid in references, "Reference %r not declared with ##sequence-region line:\n%r" % (seqid, line)
             start = int(start) - 1
             end = int(end)
             assert 0 <= start < end < len(references[seqid])
