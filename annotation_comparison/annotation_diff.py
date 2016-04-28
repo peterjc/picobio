@@ -7,6 +7,9 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
+# TODO - expose this as a public API in Biopython:
+from Bio.SeqIO.InsdcIO import _insdc_location_string as location_string
+
 FEATURE_TYPE_TO_IGNORE = ["source"]
 FEATURE_TYPE_WANTED = ["CDS"]  # Empty/None for any not in FEATURE_TYPE_TO_IGNORE
 MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref", "ID", "transl_table"]
@@ -127,11 +130,12 @@ def clean(value):
         value = value.replace("%2C", ",")
     return value
 
-def diff_f(ref_name, old, new):
+def diff_f(ref_name, ref_len, old, new):
     assert old.type == new.type
     assert str(old.location) == str(new.location), \
         "%s location %s vs %s" % (old.type, old.location, new.location)
-
+    assert location_string(old.location, ref_len) == location_string(new.location, ref_len), \
+        "%s location %s vs %s" % (old.type, location_string(old.location, ref_len), location_string(new.location, ref_len))
 
     if "locustag" in old.qualifiers and "locustag" in new.qualifiers:
         if old.qualifiers["locustag"] == new.qualifiers["locustag"]:
@@ -152,7 +156,7 @@ def diff_f(ref_name, old, new):
                 # White space only, ignore
                 pass
             else:
-                print("\t".join([ref_name, str(old.location), old.type, k, repr(old_v), repr(new_v)]))
+                print("\t".join([ref_name, location_string(old.location, ref_len), old.type, k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
 old_filename, new_filename = sys.argv[1:]
@@ -177,6 +181,6 @@ for old, new in zip(old_iter, new_iter):
     assert len(old_fs) == len(new_fs), \
         "Have %i [%i] vs %i [%i] features, aborting" % (len(old_fs), len(old.features), len(new_fs), len(new.features))
     for old_f, new_f in zip(old_fs, new_fs):
-        diff_f(old.id, old_f, new_f)
+        diff_f(old.id, len(old), old_f, new_f)
 
 print("# Done")
