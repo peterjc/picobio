@@ -15,6 +15,47 @@ FEATURE_TYPE_WANTED = ["CDS"]  # Empty/None for any not in FEATURE_TYPE_TO_IGNOR
 MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref", "ID", "transl_table"]
 QUALIFIERS_TO_IGNORE = ["inference", "note"]
 
+usage = """Annotation feature qualifier diff tool, for GenBank/EMBL/GFF3
+
+Usage:
+
+$ ./annotation_diff.py old_file.ext new_file.ext
+
+The two files should contain the same set of sequences, with
+matching features (in same order). The tool then compares the
+feature annotations (e.g. gene names, locus tags, products).
+
+Output is to standard out, use Unix redirection to capture as a file:
+
+$ ./annotation_diff.py old_file.ext new_file.ext > old_vs_new.txt
+
+The output is a simple tab based format, where lines with a
+leading # are comments:
+
+- Reference/chromosome name
+- INSDC style location string (as used in GenBank/EMBL files)
+- Feature type, e.g. 'CDS'
+- Annotation qualifier key, e.g. 'gene'
+- Old annotation qualifier value
+- New annotation qualifier value
+
+The qualifier values are generally quoted strings, or None as a
+special value to indicate missing. If a key appears multiple times
+you get a list using Python style square brackets.
+
+The expectation is you can then apply (some or all) of the changes
+to (an edited version of) the old file with the sister script:
+
+$ ./annotation_patch.py old_vs_new.txt original.gff > updated.gff
+
+The input files can be in GenBank or EMBL format (using Biopython)
+or GFF3 (using a simplistic internal parser which DOES NOT SUPPORT
+multi-line features, i.e. joins or multi-exon features).
+
+Also note the two input files MUST have the same set of reference
+sequences, and the same set of features.
+"""
+
 def parse_gff(handle):
     """Quick hack to parse Bacterial GFF files from Prokka etc.
 
@@ -165,7 +206,10 @@ def diff_f(ref_name, ref_len, old, new):
                 print("\t".join([ref_name, location_string(old.location, ref_len), old.type, k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
-old_filename, new_filename = sys.argv[1:]
+try:
+    old_filename, new_filename = sys.argv[1:]
+except ValueError:
+    sys.exit(usage)
 
 old_handle = open(old_filename)
 new_handle = open(new_filename)

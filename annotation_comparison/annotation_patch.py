@@ -8,6 +8,41 @@ from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
 
+usage = """Annotation feature qualifier patch tool, for GFF3 format.
+
+Usage:
+
+$ ./annotation_patch.py old_vs_new.txt original.gff > updated.gff 
+
+The output is printed to stdout, use Unix redirection to capture
+this to a file.
+
+The input patch file is a simple tab based format, where lines with
+a leading # are comments:
+
+- Reference/chromosome name
+- INSDC style location string (as used in GenBank/EMBL files)
+- Feature type, e.g. 'CDS'
+- Annotation qualifier key, e.g. 'gene'
+- Old annotation qualifier value
+- New annotation qualifier value
+
+The qualifier values should be quoted strings, or None as a special
+value to indicate missing (i.e. adding or removing a key=value).
+
+The order of the patch file is not important (it is loaded into
+memory, and then the script streams/iterates over the input file).
+
+The expectation is you create (and perhaps post-process) the patch
+file using the sister script annotation_diff.py, e.g.
+
+$ ./annotation_diff.py old.gff new.gbk > old_vs_new.txt
+
+Note the patch script only supports GFF3, and uses a simplistic
+internal parser which DOES NOT SUPPORT multi-line features, i.e.
+joins or multi-exon features.
+"""
+
 def patch_gff(handle, diffs):
     """Quick hack to patch Bacterial GFF files from Prokka etc.
 
@@ -118,7 +153,7 @@ def apply_diffs(handle, diffs):
 try:
     diff_filename, old_filename = sys.argv[1:]
 except ValueError:
-    sys.exit("Want two arguments: patch/diff filename, and input filename\n")
+    sys.exit(usage)
 
 if diff_filename == "-":
     diffs = load_diffs(sys.stdin)
