@@ -50,15 +50,17 @@ def patch_gff(handle, diffs):
                     if key == "EC_number":
                         key = "eC_number"
                     if new is None:
-                        new = ""  # Remove it!
+                        # Remove the key=value;
+                        assert ("%s=%s;" % (key, old)) in a
+                        a = a.replace("%s=%s;" % (key, old), "")
                     else:
                         new = "%s=%s" % (key, new.replace(",", "%2C"))
-                    if old is None:
-                        a += new + ";"
-                    else:
-                        old = "%s=%s" % (key, old.replace(",", "%2C"))
-                        assert old in a, (line, old, new)
-                        a = a.replace(old, new)
+                        if old is None:
+                            a += new + ";"
+                        else:
+                            old = "%s=%s" % (key, old.replace(",", "%2C"))
+                            assert old in a, (line, old, new)
+                            a = a.replace(old, new)
                 assert a.endswith(";")
                 line = line.replace(attributes, a[:-1])
             assert line.count("\n") == 1 and line.endswith("\n"), repr(line)
