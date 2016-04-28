@@ -30,7 +30,7 @@ def patch_gff(handle, diffs):
             out_handle.write(line)
             continue
         elif line.count("\t") == 8:
-            seqid, source, ftype, start, end, score, strand, phase, attributes = line.split("\t")
+            seqid, source, ftype, start, end, score, strand, phase, attributes = line.rstrip().split("\t")
             #assert seqid in references, seqid
             start = int(start)  # Leave this as one-based
             end = int(end)
@@ -61,6 +61,7 @@ def patch_gff(handle, diffs):
                         a = a.replace(old, new)
                 assert a.endswith(";")
                 line = line.replace(attributes, a[:-1])
+            assert line.count("\n") == 1 and line.endswith("\n"), repr(line)
             out_handle.write(line)
         else:
             raise NotImplementedError(line)
