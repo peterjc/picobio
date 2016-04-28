@@ -59,9 +59,15 @@ def parse_gff(handle):
                 # Stranded by missing - should use None but +1 to match EMBL/GB
                 loc = FeatureLocation(start, end, +1)
             else:
-                raise ValueError("Bad strand %r in line: %s" % (strand, line))
+                raise ValueError("Bad strand %r in line:\n%r" % (strand, line))
             f = SeqFeature(loc, type=ftype)
             for part in attributes.strip().split(";"):
+                if not part:
+                    assert ";;" in line, line
+                    sys.stderr.write("Warning - missing key=value or double semi-colon in line:\n%r\n" % line)
+                    continue
+                if "=" not in part:
+                    sys.exit("Bad key=value entry %r in line:\n%r" % (part, line))
                 key, value = part.split("=", 1)
                 if key in MISSING_QUALIFIERS_TO_IGNORE:
                     continue
