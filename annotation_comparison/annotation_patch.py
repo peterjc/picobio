@@ -32,20 +32,16 @@ def patch_gff(handle, diffs):
         elif line.count("\t") == 8:
             seqid, source, ftype, start, end, score, strand, phase, attributes = line.split("\t")
             #assert seqid in references, seqid
-            start = int(start) - 1
+            start = int(start)  # Leave this as one-based
             end = int(end)
             assert 0 <= start < end #< len(references[seqid])
-            if strand == "+":
-                loc = FeatureLocation(start, end, +1)
-            elif strand == "-":
-                loc = FeatureLocation(start, end, -1)
-            elif strand == ".":
-                # Unstranded - should use zero but +1 to match EMBL/GB
-                loc = FeatureLocation(start, end, +1)
-            elif strand == "?":
-                # Stranded by missing - should use None but +1 to match EMBL/GB
-                loc = FeatureLocation(start, end, +1)
-            else:
+            loc = "%i..%i" % (start, end)
+            if strand == "-":
+                loc = "complement(%s)" % loc
+            elif strand not in "+.?":
+                # "+" = Forward strand - do nothing
+                # "." = Unstranded - do nothing to match INSDC
+                # "?" = Stranded but missing - do nothing to match INSDC
                 raise ValueError("Bad strand %r in line: %s" % (strand, line))
             diff_key = "%s:%s:%s" % (seqid, loc, ftype)
             if diff_key in diffs:
@@ -116,7 +112,10 @@ def apply_diffs(handle, diffs):
         sys.exit("Could not guess file type from first line:\n%s" % line)
 
 # TODO: Proper command line API
-diff_filename, old_filename = sys.argv[1:]
+try:
+    diff_filename, old_filename = sys.argv[1:]
+except ValueError:
+    sys.exit("Want two arguments: patch/diff filename, and input filename\n")
 
 if diff_filename == "-":
     diffs = load_diffs(sys.stdin)
