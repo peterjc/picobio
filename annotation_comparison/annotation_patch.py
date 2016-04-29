@@ -21,8 +21,8 @@ The input patch file is a simple tab based format, where lines with
 a leading # are comments:
 
 - Reference/chromosome name
-- INSDC style location string (as used in GenBank/EMBL files)
 - Feature type, e.g. 'CDS'
+- INSDC style location string (as used in GenBank/EMBL files)
 - Annotation qualifier key, e.g. 'gene'
 - Old annotation qualifier value
 - New annotation qualifier value
@@ -112,7 +112,7 @@ def load_diffs(handle):
         if line.startswith("#"):
             continue
         parts = line.strip("\n").split("\t")
-        ref, loc, ftype, key, old, new = parts
+        ref, ftype, loc, key, old, new = parts
         if old == "None":
             old = None
         elif old.startswith("'") and old.endswith("'"):

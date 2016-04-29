@@ -33,8 +33,8 @@ The output is a simple tab based format, where lines with a
 leading # are comments:
 
 - Reference/chromosome name
-- INSDC style location string (as used in GenBank/EMBL files)
 - Feature type, e.g. 'CDS'
+- INSDC style location string (as used in GenBank/EMBL files)
 - Annotation qualifier key, e.g. 'gene'
 - Old annotation qualifier value
 - New annotation qualifier value
@@ -203,7 +203,7 @@ def diff_f(ref_name, ref_len, old, new):
                 # White space only, ignore
                 pass
             else:
-                print("\t".join([ref_name, location_string(old.location, ref_len), old.type, k, repr(old_v), repr(new_v)]))
+                print("\t".join([ref_name, old.type, location_string(old.location, ref_len), k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
 try:
