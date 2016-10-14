@@ -35,18 +35,27 @@ TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
 
+#Old naming,
+#master = "/mnt/shared/cluster/blast/galaxy"
+#local = "/var/local/blast/galaxy"
+
 master = "/mnt/shared/cluster/blast/galaxy"
-local = "/var/local/blast/galaxy"
-#db = "ncbi/nr"
+local = "/mnt/scratch/local/blast/galaxy"
+
+#e.g. db = "ncbi/nr"
 
 import sys
 import os
 import time
 
+#print("Given: %r" % sys.argv)
+
 #argv[0] is this python script
 #Turn the argv list into a string, escaping as needed
 def wrap(text):
     if " " in text and not text[0]=='"' and not text[-1]=='"':
+        return '"%s"' % text
+    elif "|" in text:
         return '"%s"' % text
     else:
         return text
