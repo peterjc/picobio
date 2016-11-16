@@ -34,9 +34,29 @@ try:
 except ImportEror:
    sys.stop("This script requires Biopython 1.69 or later")
 
+
+def insert_gaps(record):
+   seq = str(record.seq).upper()
+   sys.stderr.write("Record %s (length %i bp) has %i N characters\n" %
+                    (record.id, len(seq), seq.count("N")))
+   gap = "N" * 100
+   try:
+      i = seq.find(gap)
+   except InderError:
+      sys.stderr.write("No long gaps in record %s (length %i bp)\n" %
+                       (record.id, len(seq)))
+      return record
+
+   count = 1
+   sys.stderr.write("Added %i gap features to record %s (length %i bp)\n" %
+                    (count, record.id, len(seq)))
+   return record
+
+
 print("Adding gap features to %s making %s" % (input_embl, output_embl))
 
-# Place holder:
-SeqIO.convert(input_embl, "embl", output_embl, "embl")
+# This is a memory efficient generator expression, one record at a time:
+fixed_records = (insert_gaps(r) for r in SeqIO.parse(input_embl, "embl"))
+count = SeqIO.write(fixed_records, output_embl, "embl")
 
-print("Done")
+print("Done, %i records" % count)
