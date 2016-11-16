@@ -10,6 +10,10 @@ $ java -jar embl-api-validator-1.1.146.jar BXF1.embl
 ERROR: Sequence contains a stretch of 'n' characters between base {0} and {1} that is not represented with a "gap" feature (stretches of n greater than {2} gives a warning, greater than {3} gives an error). (26 occurrences) (SequenceToGapFeatureBasesCheck-1) 
 ...
 
+The validator reports a warning for any Ns without a gap feature, and an
+error for runs of at least 10 Ns without a gap feature. Therefore seems
+sensible to create gap features for any run of 10 or more N?
+
 References:
 
 Prokka: https://github.com/tseemann/prokka
@@ -28,18 +32,31 @@ if len(sys.argv) != 3:
    sys.stop("Expects two arguments: Input EMLB filename, output EMBL filename\n")
 input_embl = sys.argv[1]
 output_embl = sys.argv[2]
+MIN_GAP = 10  # TODO: Could be a command line option?
+
 
 try:
     from Bio import SeqIO
+    from Bio.SeqFeature import SeqFeature, FeatureLocation
 except ImportEror:
    sys.stop("This script requires Biopython 1.69 or later")
+
+
+def insert_feature(record, feature):
+   pos = int(feature.location.start)
+   i = 0
+   for i, f in enumerate(record.features):
+      if int(f.location.start) > pos:
+         break
+   record.features.insert(i, feature)
+   
 
 
 def insert_gaps(record):
    seq = str(record.seq).upper()
    sys.stderr.write("Record %s (length %i bp) has %i N characters\n" %
                     (record.id, len(seq), seq.count("N")))
-   gap = "N" * 100
+   gap = "N" * MIN_GAP
    try:
       i = seq.find(gap)
    except InderError:
@@ -47,7 +64,20 @@ def insert_gaps(record):
                        (record.id, len(seq)))
       return record
 
-   count = 1
+   count = 0
+   while i != -1:
+      j = i + len(gap)
+      while seq[j] == "N":
+         j += 1
+      sys.stderr.write("Record %s (length %i bp) has run of %i N from %i to %i\n" %
+                       (record.id, len(seq), j - i, i + 1, j))
+      # WARNING - I suspect the validator is broken for features of one,
+      # where I think the location is just X, rather than X..X instead?
+      gap_feature = SeqFeature(FeatureLocation(i, j), type="gap",
+                               qualifiers={"estimated_length": j - i})
+      insert_feature(record, gap_feature)
+      count += 1
+      i = seq.find(gap, j)
    sys.stderr.write("Added %i gap features to record %s (length %i bp)\n" %
                     (count, record.id, len(seq)))
    return record
