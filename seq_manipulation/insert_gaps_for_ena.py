@@ -38,6 +38,7 @@ MIN_GAP = 10  # TODO: Could be a command line option?
 try:
     from Bio import SeqIO
     from Bio.SeqFeature import SeqFeature, FeatureLocation
+    from Bio._py3k import StringIO
 except ImportEror:
    sys.stop("This script requires Biopython 1.69 or later")
 
@@ -85,8 +86,63 @@ def insert_gaps(record):
 
 print("Adding gap features to %s making %s" % (input_embl, output_embl))
 
-# This is a memory efficient generator expression, one record at a time:
-fixed_records = (insert_gaps(r) for r in SeqIO.parse(input_embl, "embl"))
-count = SeqIO.write(fixed_records, output_embl, "embl")
+# This is the original short-and-sweet implementation, however right now
+# as of November 2016 the Biopython EMBL round-trip is not close enough
+# to avoid creating extra warnings from the ENA submission validator.
+#
+# fixed_records = (insert_gaps(r) for r in SeqIO.parse(input_embl, "embl"))
+# count = SeqIO.write(fixed_records, output_embl, "embl")
+#
+# New version uses original header combined with Biopython's output of
+# the feature table etc.
 
+def get_header(embl_string):
+   """Return everything up to but excluding the FH line.
+
+   i.e. All the header lines prior to the features.
+   """
+   assert "\nFH" in embl_string
+   answer = []
+   for line in embl_string.split("\n"):
+      if line.startswith("FH"):
+         break
+      else:
+         answer.append(line)
+   return "\n".join(answer) + "\n"
+
+def get_body(embl_string):
+   """Return everything after and including the FH line.
+
+   i.e. All the features and the sequence itself.
+   """
+   assert "\nFH" in embl_string
+   answer = []
+   for line in embl_string.split("\n"):
+       if line.startswith("FH"):
+          answer = []
+       answer.append(line)
+   answer = "\n".join(answer)
+   return answer.rstrip("\n") + "\n"
+
+def break_up_embl_file(handle):
+   record = []
+   for line in handle:
+      record.append(line)
+      if line.startswith("//"):
+         yield "".join(record)
+         record = []
+   if record:
+      yield "".join(record)
+
+
+count = 0
+with open(input_embl) as in_handle:
+   with open(output_embl, "w") as out_handle:
+      for embl_string in break_up_embl_file(in_handle):
+         assert embl_string.startswith("ID "), embl_string
+         assert embl_string.endswith("//\n"), embl_string
+         count += 1
+         out_handle.write(get_header(embl_string))
+         r = SeqIO.read(StringIO(embl_string), "embl")
+         out_handle.write(get_body(insert_gaps(r).format("embl")))
 print("Done, %i records" % count)
