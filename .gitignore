@@ -1,0 +1,36 @@
+#Ignore backup files from some Unix editors,
+*~
+*.swp
+*.bak
+
+#Ignore any tar-balls
+*.tar.gz
+
+#Ignore patches and any original files created by patch command
+*.diff
+*.patch
+*.orig
+*.rej
+
+#Ignore these hidden files from Mac OS X
+.DS_Store
+
+#Ignore hidden files from Dolphin window manager
+.directory
+ 
+#Ignore all compiled python files (e.g. from running the unit tests):
+*.pyc
+*.pyo
+
+#Ignore all Jython class files (present if using Jython)
+*.class
+
+#Ignore any NCBI BLAST database files
+*.nhr
+*.nin
+*.nsq
+
+#Ignore any PDF or graphics output files
+*.pdf
+*.png
+
