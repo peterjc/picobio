@@ -104,7 +104,7 @@ def get_header(embl_string):
    assert "\nFH" in embl_string
    answer = []
    for line in embl_string.split("\n"):
-      if line.startswith("FH"):
+      if line.startswith("FH  "):
          break
       else:
          answer.append(line)
@@ -118,7 +118,7 @@ def get_body(embl_string):
    assert "\nFH" in embl_string
    answer = []
    for line in embl_string.split("\n"):
-       if line.startswith("FH"):
+       if line.startswith("FH   "):
           answer = []
        answer.append(line)
    answer = "\n".join(answer)
