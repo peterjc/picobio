@@ -29,7 +29,7 @@ This script: https://github.com/peterjc/picobio/tree/master/seq_manipulation
 import sys
 
 if len(sys.argv) != 3:
-   sys.stop("Expects two arguments: Input EMLB filename, output EMBL filename\n")
+   sys.exit("Expects two arguments: Input EMLB filename, output EMBL filename\n")
 input_embl = sys.argv[1]
 output_embl = sys.argv[2]
 MIN_GAP = 10  # TODO: Could be a command line option?
@@ -40,7 +40,7 @@ try:
     from Bio.SeqFeature import SeqFeature, FeatureLocation
     from Bio._py3k import StringIO
 except ImportEror:
-   sys.stop("This script requires Biopython 1.69 or later")
+   sys.exit("This script requires Biopython 1.69 or later")
 
 
 def insert_feature(record, feature):
