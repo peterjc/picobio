@@ -98,7 +98,6 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
     if pos >= len(ref_seq):
         raise ValueError("Bad POS %i for a reference of length %i"
                          % (pos, len(ref_seq)))
-    offset = pos
     pending = read_seq
     answer = ""
     cigar_ops = decode_cigar(cigar)
