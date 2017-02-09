@@ -3,10 +3,12 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
+
 from optparse import OptionParser
+
 from Bio import SeqIO
 
 usage = """Basic usage: dedup_assembly.py assembly.fasta dedup_output.fasta

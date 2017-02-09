@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import random
 import sys
+
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 

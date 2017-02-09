@@ -3,8 +3,9 @@
 
 Checks read identifiers agree, or end with /1 and /2 respectively.
 """
-import sys
+
 import gzip
+import sys
 
 
 def sys_exit(msg, error_level=1):

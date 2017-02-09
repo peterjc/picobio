@@ -4,9 +4,8 @@ try:
 except ImportError:
     from io import StringIO  # Python 3
 
-from Bio import SeqIO
-from Bio import TogoWS
 from Bio import Entrez
+from Bio import SeqIO
 
 Entrez.email = "peter.cock@hutton.ac.uk"
 

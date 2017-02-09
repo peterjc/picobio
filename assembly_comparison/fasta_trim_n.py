@@ -2,8 +2,8 @@
 """Python script for trimming N bases from ends of sequences.
 """
 
-import os
 import sys
+
 from optparse import OptionParser
 
 usage = """Basic usage: ./fasta_trim_n.py < input.fasta > output.fasta

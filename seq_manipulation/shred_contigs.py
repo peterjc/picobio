@@ -6,7 +6,9 @@ e.g. for input into Newbler.
 
 import os
 import sys
+
 from optparse import OptionParser
+
 from Bio import SeqIO
 
 usage = """Basic usage: python shred_contigs.py assembly.fasta -o shredded.fasta

@@ -13,16 +13,14 @@ with warnings.catch_warnings():
     from Bio import SearchIO
 
 from Bio import SeqIO
-from Bio.SeqIO.FastaIO import SimpleFastaParser
-from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Blast.Applications import NcbiblastnCommandline
-
-from reportlab.lib import colors
-from reportlab.lib.colors import red, grey, orange, green, brown, blue, lightblue, purple
-from reportlab.lib.units import cm
-
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
+from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqIO.FastaIO import SimpleFastaParser
+
+from reportlab.lib import colors
+from reportlab.lib.units import cm
 
 SPACER = 20000
 

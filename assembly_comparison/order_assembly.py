@@ -5,6 +5,7 @@
 import os
 import sys
 import warnings
+
 from optparse import OptionParser
 
 from Bio import BiopythonExperimentalWarning
@@ -13,7 +14,6 @@ with warnings.catch_warnings():
     from Bio import SearchIO
 
 from Bio import SeqIO
-from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 usage = """Basic usage: order_assembly.py assembly.fasta reference.fasta output.fasta

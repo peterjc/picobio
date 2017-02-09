@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 import sys
-from collections import OrderedDict
-from Bio import SeqIO
-from Bio.Seq import UnknownSeq
-from Bio.Seq import Seq
-from Bio.SeqFeature import FeatureLocation, SeqFeature
-from Bio.SeqRecord import SeqRecord
 
+from collections import OrderedDict
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.Seq import UnknownSeq
+from Bio.SeqFeature import FeatureLocation, SeqFeature
 # TODO - expose this as a public API in Biopython:
 from Bio.SeqIO.InsdcIO import _insdc_location_string as location_string
+from Bio.SeqRecord import SeqRecord
 
 FEATURE_TYPE_TO_IGNORE = ["source"]
 # Empty/None for any not in FEATURE_TYPE_TO_IGNORE
@@ -198,9 +199,10 @@ def diff_f(ref_name, ref_len, old, new):
         "%s location %s vs %s" % (old.type, location_string(
             old.location, ref_len), location_string(new.location, ref_len))
 
-    if "locustag" in old.qualifiers and "locustag" in new.qualifiers:
-        if old.qualifiers["locustag"] == new.qualifiers["locustag"]:
-            name = old.qualifiers["locustag"]
+    # This has no effect, what was it for?
+    # if "locustag" in old.qualifiers and "locustag" in new.qualifiers:
+    #    if old.qualifiers["locustag"] == new.qualifiers["locustag"]:
+    #        name = old.qualifiers["locustag"]
 
     keys = set(old.qualifiers).union(
         new.qualifiers).difference(QUALIFIERS_TO_IGNORE)

@@ -39,7 +39,7 @@ try:
     from Bio import SeqIO
     from Bio.SeqFeature import SeqFeature, FeatureLocation
     from Bio._py3k import StringIO
-except ImportEror:
+except ImportError:
     sys.exit("This script requires Biopython 1.69 or later")
 
 
@@ -59,7 +59,7 @@ def insert_gaps(record):
     gap = "N" * MIN_GAP
     try:
         i = seq.find(gap)
-    except InderError:
+    except IndexError:
         sys.stderr.write("No long gaps in record %s (length %i bp)\n" %
                          (record.id, len(seq)))
         return record

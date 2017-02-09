@@ -8,9 +8,10 @@
 # v004 - fixed missing | in fna names
 # v005 - Handle feature extraction via Biopython
 #      - Tested under Python 3
+
 import os
+
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 date_stamp = "20131114"

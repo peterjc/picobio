@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
+
 from collections import OrderedDict
+
 from Bio import SeqIO
 
 min_run = 50

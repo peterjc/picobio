@@ -41,10 +41,12 @@ TODO:
 * FASTA paired support
 
 """
-import sys
+
 import os
+import sys
 import tempfile
 import time
+
 from optparse import OptionParser
 
 
@@ -181,7 +183,7 @@ def sam_batched_iterator(handle):
     Checks reads are unmapped. Any header is discarded. Requires paired reads are
     consecutive in the file, FLAG 77 (0x4d) then FLAG 141 (0x8d).
     """
-    good_flags = set(["0", "77", "141"])
+    # good_flags = set(["0", "77", "141"])
 
     line = handle.readline()
     while line[0] == "@":

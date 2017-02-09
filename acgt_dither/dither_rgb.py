@@ -10,15 +10,19 @@ http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 """
 
 import os
+
 from Bio import SeqIO
-import numpy as np
+
 from PIL import Image
 
-from reportlab.pdfgen import canvas
+import numpy as np
+
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing, String, Line, Rect, Wedge
-from reportlab.lib.units import mm, cm, inch
+from reportlab.graphics.shapes import Drawing, String
 from reportlab.lib import colors
+from reportlab.lib.units import cm, mm
+from reportlab.pdfgen import canvas
+
 
 # These are hueristic, and currently slighlty squash the image vertically,
 # so h_scale should be a little smaller or the v_scale a little bigger.

@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 import sys
-from collections import OrderedDict
-from Bio import SeqIO
-from Bio.Seq import UnknownSeq
-from Bio.Seq import Seq
-from Bio.SeqFeature import FeatureLocation, SeqFeature
-from Bio.SeqRecord import SeqRecord
-
 
 usage = """Annotation feature qualifier patch tool, for GFF3 format.
 
@@ -57,7 +50,6 @@ def patch_gff(handle, diffs):
     out_handle.write(line)
 
     # print("Parsing GFF3")
-    references = OrderedDict()
     for line in handle:
         if line.strip() == "##FASTA":
             out_handle.write(line)

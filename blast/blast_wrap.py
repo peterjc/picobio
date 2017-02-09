@@ -44,8 +44,8 @@ local = "/mnt/scratch/local/blast/galaxy"
 
 # e.g. db = "ncbi/nr"
 
-import sys
 import os
+import sys
 import time
 
 # print("Given: %r" % sys.argv)

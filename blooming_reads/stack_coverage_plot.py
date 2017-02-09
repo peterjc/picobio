@@ -1,6 +1,10 @@
+"""Script to produce stacked coverage plot with matplotlib."""
+
 import sys
-import numpy as np
+
 from matplotlib import pyplot as plt
+
+import numpy as np
 
 
 def load(filename):

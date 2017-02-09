@@ -1,12 +1,15 @@
 from Bio import SeqIO
-import numpy as np
+
 from PIL import Image
 
-from reportlab.pdfgen import canvas
+import numpy as np
+
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing, String, Line, Rect, Wedge
-from reportlab.lib.units import cm, inch
+from reportlab.graphics.shapes import Drawing, String
 from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.pdfgen import canvas
+
 
 png_file = "Swanson_et_al_2012_fig1a.png"
 pdf_file = "Swanson_et_al_2012_fig1a.pdf"
