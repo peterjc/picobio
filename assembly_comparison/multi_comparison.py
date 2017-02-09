@@ -141,6 +141,7 @@ max_len = 0
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 reference_fasta = None
 ref_offsets = dict()
+gd_ref_features = None
 for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
         sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
