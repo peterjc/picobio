@@ -148,7 +148,7 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
             raise ValueError(
                 "Unsupported CIGAR operator %s in %s" % (op, cigar))
     if pending:
-        raise RunTimeError("Still had %i bases left" % len(pending))
+        raise RuntimeError("Still had %i bases left" % len(pending))
     assert len(answer) == len(
         read_seq), "%s -> %s with %s" % (read_seq, answer, cigar)
     if drop and answer == "=" * len(answer) and len(answer) > 1:
@@ -193,6 +193,7 @@ del temp_mt, temp
 sys.stderr.write("Loading reference sequences from %s\n" % reference_filename)
 try:
     import sqlite3
+    del sqlite3
     reference = SeqIO.index_db(
         reference_filename + ".idx", reference_filename, "fasta")
 except ImportError:
