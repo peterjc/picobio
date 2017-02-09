@@ -134,16 +134,15 @@ for line in sys.stdin:
         rg = rg[5:]
 
     flag = int(flag)
-    if (not (flag & 0x1)  # Single end read
-            or flag & 0x4  # Unmapped
-            or flag & 0x8  # Partner unmapped
+    if (not (flag & 0x1) or  # Single end read
+            flag & 0x4 or  # Unmapped
+            flag & 0x8 or  # Partner unmapped
             # Neither R1 nor R2 (i.e. more than 2 parts)
-            or (flag & 0x40 and flag & 0x80)
-            or not (flag & 0x40 or flag & 0x80)  # Unknown fragment number
-            or flag & 0x100 or flag & 0x800  # Ignore secondary or supplementary alignments
-            or flag & 0x200  # failed QC
-            or flag & 0x400  # PCR or optical duplicate
-        ):
+            (flag & 0x40 and flag & 0x80) or
+            not (flag & 0x40 or flag & 0x80) or  # Unknown fragment number
+            flag & 0x100 or flag & 0x800 or  # Ignore secondary or supplementary alignments
+            flag & 0x200 or  # failed QC
+            flag & 0x400):  # PCR or optical duplicate
         # Ignore this read
         continue
 
