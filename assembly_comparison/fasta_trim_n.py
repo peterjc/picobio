@@ -63,10 +63,10 @@ format = options.sequence_format.lower()
 def strip_seq(records):
     for record in records:
         # FASTQ etc will be a problem, must trim quality too!
-        #old_len = len(record.seq)
+        # old_len = len(record.seq)
         record.seq = record.seq.strip(chars)
         # TODO Minium length!
-        #new_len = len(record.seq)
+        # new_len = len(record.seq)
         # if new_len < old_len:
         #    sys.stderr.write("Trimmed %s from %i to %i\n" % (record.id, old_len, new_len))
         yield record

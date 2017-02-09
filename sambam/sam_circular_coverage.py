@@ -129,7 +129,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
             qname, flag, rname, pos, mapq, cigar, rest = line.split("\t", 6)
             flag = int(flag)
             if flag & 0x4:
-                #Unmapped, ignore
+                # Unmapped, ignore
                 continue
             frag = get_frag(flag)
             reads[frag].add((rname, pos, cigar))

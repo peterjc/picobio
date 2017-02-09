@@ -67,7 +67,7 @@ def patch_gff(handle, diffs):
             continue
         elif line.count("\t") == 8:
             seqid, source, ftype, start, end, score, strand, phase, attributes = line.rstrip().split("\t")
-            #assert seqid in references, seqid
+            # assert seqid in references, seqid
             start = int(start)  # Leave this as one-based
             end = int(end)
             assert 0 <= start < end  # < len(references[seqid])
@@ -164,8 +164,8 @@ else:
     with open(diff_filename) as handle:
         diffs = load_diffs(handle)
 sys.stderr.write("Loaded %i differences to apply\n" % len(diffs))
-#sys.stderr.write("%s\n" % list(diffs.keys())[:10])
-#sys.stderr.write("%s\n" % list(diffs.values())[0])
+# sys.stderr.write("%s\n" % list(diffs.keys())[:10])
+# sys.stderr.write("%s\n" % list(diffs.values())[0])
 
 old_handle = open(old_filename)
 apply_diffs(old_handle, diffs)

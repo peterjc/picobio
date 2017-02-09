@@ -138,7 +138,7 @@ def reverse_complement_hsp_fragment(frag, query_length):
     elif frag.hit_strand == +1:
         rev.hit_strand = -1
     else:
-        #O or None,
+        # O or None,
         rev.hit_strand = frag.hit_strand
     return rev
 
@@ -200,8 +200,8 @@ def make_offset(blast_hsps, contig_len):
 contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 
 # Sort the contigs by horizontal position on the diagram
-#(yes, this does mean parsing the entire BLAST output)
-#(and yes, also the FASTA file to get the query lengths)
+# (yes, this does mean parsing the entire BLAST output)
+# (and yes, also the FASTA file to get the query lengths)
 blast_data = sorted(filter_blast(b, len(contigs[b.id]))
                     for b in SearchIO.parse(blast_file, "blast-tab"))
 contigs_shown = set()
@@ -213,7 +213,7 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     contig_len = len(contig)
     if not blast_hsps:
         # Works, but only if contig appears in BLAST output at all
-        #contigs_not_shown_bp += contig_len
+        # contigs_not_shown_bp += contig_len
         continue
 
     contigs_shown.add(contig_id)

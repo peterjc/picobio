@@ -119,7 +119,7 @@ def fastq_batched_iterator(handle):
     For use on interlaced paired FASTQ reads following the /1 and /2 suffix convention.
     """
     while True:
-        #Read /1
+        # Read /1
         title = handle.readline()
         if not title:
             raise StopIteration
@@ -135,7 +135,7 @@ def fastq_batched_iterator(handle):
         qual = handle.readline()
         if len(seq) != len(qual):  # both include newline
             raise ValueError("Different FASTQ seq/qual lengths for %r" % title)
-        #Read /2
+        # Read /2
         title2 = handle.readline()
         if not title2[0] == "@":
             raise ValueError("Expected FASTQ @ line, got %r" % title2)
@@ -277,7 +277,7 @@ def disambiguate(seq):
 def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                  mismatches, inserts, deletions, error_rate=0.01, rc=True):
     # Using 5e-06 is close to a set for my example, both in run time
-    #(a fraction more) and the number of reads kept (9528 vs 8058
+    # (a fraction more) and the number of reads kept (9528 vs 8058
     # with sets).
     simple = set()
     del_hashes = set()
@@ -288,7 +288,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing linear references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
-                #assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
+                # assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
                 #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
                 # Note we do the disambiguate call on the fragments rather than
                 # the whole reference to avoid too many levels of recursion.
@@ -296,7 +296,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     for fragment in disambiguate(upper_seq[i:i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
-                        #bloom.add(fragment, kmer)
+                        # bloom.add(fragment, kmer)
                         # TODO - Can do this in one go from len(upper_seq)
                         count += 1
                 if deletions:
@@ -310,7 +310,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             sys.stderr.write("Hashing circular references in %s\n" % fasta)
             handle = open(fasta)
             for upper_seq, raw_read in fasta_iterator(handle):
-                #assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
+                # assert set(upper_seq).issubset("ACGT"), "%s contains %s" \
                 #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
                 # Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
@@ -318,7 +318,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                     for fragment in disambiguate(upper_seq[i:i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
-                        #bloom.add(fragment, kmer)
+                        # bloom.add(fragment, kmer)
                         # TODO - Can do this in one go from len(upper_seq)
                         count += 1
                 if deletions:
@@ -373,7 +373,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
 def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatches, inserts, deletions):
     if paired:
         if format == "fasta":
-            #read_iterator = fasta_batched_iterator
+            # read_iterator = fasta_batched_iterator
             raise NotImplementedError
         elif format == "fastq":
             read_iterator = fastq_batched_iterator
@@ -393,7 +393,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
 
     # Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
-    #sys.stderr.write("Using %s\n" %  bloom_filename)
+    # sys.stderr.write("Using %s\n" %  bloom_filename)
     simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs,
                                  kmer, mismatches, inserts, deletions)
 

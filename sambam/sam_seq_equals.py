@@ -186,7 +186,7 @@ temp = add_or_remove_equals(temp_mt, "TATTAACCCCTCACGTGATCTCTCCCTGCATTTTATTTTT",
 assert ("========C======T==T======C=============T", "33M2D7M") == temp, temp
 # temp = add_or_remove_equals(temp_mt, "CGAAATCTGGTTCGTACTTCAGGGTCATAAAGCCTAAATAGCCCACCCGTTCCGCTTAGATAAGACATCACGATGG",
 #                            86, "76M", True)
-#assert "" == temp, temp
+# assert "" == temp, temp
 del temp_mt, temp
 
 

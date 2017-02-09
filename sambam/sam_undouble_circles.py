@@ -275,7 +275,7 @@ def dedup_batch(sam_lines):
     global dup_reads_removed
     reads = {}
     batch_count = 0
-    #sys.stderr.write("-"*80 + "\n")
+    # sys.stderr.write("-"*80 + "\n")
     for line in sam_lines:
         batch_count += 1
         qname, flag, rname, pos, rest = line.split("\t", 4)
@@ -286,13 +286,13 @@ def dedup_batch(sam_lines):
         key = (qname, frag, rname, int_pos, rev_strand)
         if key in reads:
             dup_reads_removed += 1
-            #sys.stderr.write("%s -Drop- %s" % (key, line))
+            # sys.stderr.write("%s -Drop- %s" % (key, line))
         else:
             reads[key] = line
-            #sys.stderr.write("%s -KEEP- %s" % (key, line))
+            # sys.stderr.write("%s -KEEP- %s" % (key, line))
     for key in sorted(reads):
         yield reads[key]
-    #sys.stderr.write("%s %i --> %i\n" % (qname, batch_count, len(reads)))
+    # sys.stderr.write("%s %i --> %i\n" % (qname, batch_count, len(reads)))
 
 
 # Open handles
@@ -313,7 +313,7 @@ count = 0
 seq_mod = 0
 dup_reads_removed = 0
 for batch in batch_by_qname(input_handle):
-    #sys.stderr.write("%s\nBatch of %i lines:\n%s%s\n" % ("-" * 80, len(batch), "".join(batch), "-" * 80))
+    # sys.stderr.write("%s\nBatch of %i lines:\n%s%s\n" % ("-" * 80, len(batch), "".join(batch), "-" * 80))
     if not batch:
         continue
     if batch[0][0] == "@":

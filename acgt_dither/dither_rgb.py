@@ -64,15 +64,15 @@ def run(im, seq, pdf_file, main_caption):
     c.save()
 
 # print "A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale)
-#--> A0: Suggest width 600, height 951 pixels
+# --> A0: Suggest width 600, height 951 pixels
 # print "A1: Suggest width %i, height %i pixels" % (594 * mm / h_scale, 841 * mm / v_scale)
-#--> Suggest width 424, height 672 pixels
+# --> Suggest width 424, height 672 pixels
 # print "A2: Suggest width %i, height %i pixels" % (420 * mm / h_scale, 594 * mm / v_scale)
-#--> A2: Suggest width 300, height 475 pixels
+# --> A2: Suggest width 300, height 475 pixels
 # print "A3: Suggest width %i, height %i pixels" % (297 * mm / h_scale, 420 * mm / v_scale)
-#--> A3: Suggest width 212, height 336 pixels
+# --> A3: Suggest width 212, height 336 pixels
 # print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale)
-#--> A4: Suggest width 150, height 237 pixels
+# --> A4: Suggest width 150, height 237 pixels
 
 
 # This is a hard coded list of potato images used for the
@@ -80,16 +80,16 @@ def run(im, seq, pdf_file, main_caption):
 # http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 for name, seq_file in [
     ("Purple on black 002", "chr06.fasta"),
-    #("Potato field 001", "chr07.fasta"),
+    # ("Potato field 001", "chr07.fasta"),
     ("Potato field 002", "chr07.fasta"),
     ("Potato roots 001", "chr08.fasta"),
     ("Tractor 001", "chr09.fasta"),
     ("Potato flower", "chr01.fasta"),
-    #("Potato branch", "chr02.fasta"),
+    # ("Potato branch", "chr02.fasta"),
     ("Potato branch center", "chr02.fasta"),
     ("new branch 001", "chr02.fasta"),
-    #("Potato tubers", "chr03.fasta"),
-    #("Potato tubers2", "chr03.fasta"),
+    # ("Potato tubers", "chr03.fasta"),
+    # ("Potato tubers2", "chr03.fasta"),
     ("Potato tubers 003", "chr03.fasta"),
     ("Potato leaves", "chr04.fasta"),
     ("Potato blue flowers", "chr05.fasta"),

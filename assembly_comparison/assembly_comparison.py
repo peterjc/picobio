@@ -179,13 +179,13 @@ ref_offsets = dict()
 for record in reference_parser:
     if offset > 0:
         # Add Jaggy
-        #print("Adding jaggy from %i to %i" % (offset, offset+SPACER))
+        # print("Adding jaggy from %i to %i" % (offset, offset+SPACER))
         gd_feature_set.add_feature(SeqFeature(FeatureLocation(offset, offset + SPACER)),
                                    sigil="JAGGY",
                                    color=colors.slategrey, border=colors.black)
         offset += SPACER
     ref_offsets[hack_ncbi_fasta_name(record.id)] = offset
-    #print("Adding %s to inner reference track at offset %i" % (record.id, offset))
+    # print("Adding %s to inner reference track at offset %i" % (record.id, offset))
     # Add feature for whole contig,
     loc = FeatureLocation(offset, offset + len(record), strand=0)
     gd_feature_set.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
@@ -215,7 +215,7 @@ def reverse_complement_hsp_fragment(frag, query_length):
     elif frag.hit_strand == +1:
         rev.hit_strand = -1
     else:
-        #O or None,
+        # O or None,
         rev.hit_strand = frag.hit_strand
     return rev
 
@@ -286,7 +286,7 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
         j = i
         while j < len(contig_seq) and contig_seq[j] == "N":
             j += 1
-        #print("Adding jaggy")
+        # print("Adding jaggy")
         gd_contig_features.add_feature(SeqFeature(FeatureLocation(offset + i, offset + j)),
                                        sigil="JAGGY",
                                        color=colors.slategrey, border=colors.black)
@@ -297,8 +297,8 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
 contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 
 # Sort the contigs by horizontal position on the diagram
-#(yes, this does mean parsing the entire BLAST output)
-#(and yes, also the FASTA file to get the query lengths)
+# (yes, this does mean parsing the entire BLAST output)
+# (and yes, also the FASTA file to get the query lengths)
 blast_data = sorted(filter_blast(b, len(contigs[b.id]))
                     for b in SearchIO.parse(blast_file, "blast-tab"))
 contigs_shown = set()
@@ -310,7 +310,7 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     contig_len = len(contig)
     if not blast_hsps:
         # Works, but only if contig appears in BLAST output at all
-        #contigs_not_shown_bp += contig_len
+        # contigs_not_shown_bp += contig_len
         continue
 
     contigs_shown.add(contig_id)
@@ -422,7 +422,7 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
     contig_id = contig.id
     if contig_id in contigs_shown:
         continue
-    #print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
+    # print("Adding unmapped contig %s (len %i bp), offset now %i" % (contig_id, contig_len, position))
     unplaced += 1
     contig_len = len(contig)
     if output_fasta:
@@ -454,7 +454,7 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
                 # Good, will fit on current
                 position += MIN_GAP
             else:
-                #print("Having to add another track for %s (len %i bp)" % (contig_id, contig_len))
+                # print("Having to add another track for %s (len %i bp)" % (contig_id, contig_len))
                 gd_track_for_contig = gd_diagram.new_track(max(gd_diagram.tracks) + 1,
                                                            name=contig_id,
                                                            greytrack=False, height=0.5,

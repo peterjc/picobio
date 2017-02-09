@@ -40,9 +40,9 @@ def stack(data, filename, colors=None):
             colors = ["#CDCDC1", "#8B8B83", "#FF6A6A", "#F0E68C", "#CDC673"]
         else:
             colors = make_colors(np.array([0xCC, 0x66, 0x66]),
-                                 #np.array([0x6E, 0x51, 0x60]),
+                                 # np.array([0x6E, 0x51, 0x60]),
                                  np.array([0x90, 0x41, 0x50]),
-                                 #np.array([0x20, 0xF0, 0x60]),
+                                 # np.array([0x20, 0xF0, 0x60]),
                                  data[0][1].shape[0])
         print colors
     for i, (name, values) in enumerate(data):

@@ -48,7 +48,7 @@ def fix_bam(filename):
     size = os.path.getsize(filename)
     h = open(filename, "rb")  # read only for now
     # Check it looks like a BGZF file
-    #(could still be GZIP'd, in which case the extra block is harmless)
+    # (could still be GZIP'd, in which case the extra block is harmless)
     data = h.read(len(header))
     if data != header:
         sys_exit("File %s is not a BAM file" % filename)

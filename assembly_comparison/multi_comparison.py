@@ -180,7 +180,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             contig_id, hits = filter_blast(
                 blast_result, contig_lengths[blast_result.id])
             blast_data[contig_id] = hits
-            #print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
+            # print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
     else:
         assert i == 0
 
@@ -214,15 +214,15 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
         # print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
         if contig_id not in blast_data:
-            #print("No BLAST matches for contig %s" % contig_id)
+            # print("No BLAST matches for contig %s" % contig_id)
             offset += SPACER + contig_len
             continue
         blast_hsps = blast_data[contig_id]
         if not blast_hsps:
-            #print("No BLAST matches for contig %s" % contig_id)
+            # print("No BLAST matches for contig %s" % contig_id)
             offset += SPACER + contig_len
             continue
-        #print("%i BLAST matches for contig %s" % (len(blast_hsps), contig_id))
+        # print("%i BLAST matches for contig %s" % (len(blast_hsps), contig_id))
 
         # Add cross-links,
         for hsp in blast_hsps:

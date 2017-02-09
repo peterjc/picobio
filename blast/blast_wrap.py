@@ -36,19 +36,19 @@ but via the BLAST environment variable etc.
 """
 
 # Old naming,
-#master = "/mnt/shared/cluster/blast/galaxy"
-#local = "/var/local/blast/galaxy"
+# master = "/mnt/shared/cluster/blast/galaxy"
+# local = "/var/local/blast/galaxy"
 
 master = "/mnt/shared/cluster/blast/galaxy"
 local = "/mnt/scratch/local/blast/galaxy"
 
-#e.g. db = "ncbi/nr"
+# e.g. db = "ncbi/nr"
 
 import sys
 import os
 import time
 
-#print("Given: %r" % sys.argv)
+# print("Given: %r" % sys.argv)
 
 # argv[0] is this python script
 # Turn the argv list into a string, escaping as needed

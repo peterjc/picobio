@@ -24,9 +24,9 @@ updated, then job 2 starts and will try to update the local copy
 We avoid this by running BLAST jobs which take a whole node at once.
 """
 # example values:
-#master = "/mnt/gfs/blast/galaxy"
-#local = "/var/blast/galaxy"
-#db = "ncbi/nr"
+# master = "/mnt/gfs/blast/galaxy"
+# local = "/var/blast/galaxy"
+# db = "ncbi/nr"
 
 import os
 import sys

@@ -97,7 +97,7 @@ def pop_most_mapped():
         contig_mapping[sseqid].difference_update(taken_bases)
         contig_mapping[sseqid] = cull_runs(contig_mapping[sseqid], min_run)
         if len(contig_mapping[sseqid]) < min_bases:
-            #print("Culled %s" % sseqid)
+            # print("Culled %s" % sseqid)
             del contig_mapping[sseqid]
     return most_mapped, most_mapped_count
 
@@ -108,7 +108,7 @@ for sseqid in list(contig_mapping):  # list as editing dict during loop
         del contig_mapping[sseqid]
 
 # print "- Raw -"
-#contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
+# contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
 # for sseqid, bases in contig_mapping_counts:
 #    print sseqid, bases
 print "- Culling 1st hit -"

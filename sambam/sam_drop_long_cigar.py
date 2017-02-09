@@ -46,7 +46,7 @@ if len(sys.argv) != 1:
 #            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
 #    return answer
 #
-#assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
+# assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
 
 
 def cigar_length(cigar):

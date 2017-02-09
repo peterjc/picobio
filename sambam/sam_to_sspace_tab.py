@@ -31,7 +31,7 @@ Simple usage with BAM files with conversion to SAM via samtools:
 $ samtools view -h original.bam | ./sam_to_sspace_tab.py converted
 
 Note the -h is required with a BAM file in order to see the header
-information. 
+information.
 
 This will produce files named converted_*.tab, one per read group
 using the read group ID in the filename, plus converted.library
@@ -169,11 +169,11 @@ for line in sys.stdin:
         continue
 
     if flag & 0x40:
-        #This is R1, other is R2
+        # This is R1, other is R2
         assert other_flag & 0x80
         pass
     elif flag & 0x80:
-        #This is R2, other is R1
+        # This is R2, other is R1
         assert other_flag & 0x40
     else:
         assert False, "Bad FLAGs for %s (%i and %i)" % (

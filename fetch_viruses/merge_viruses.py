@@ -171,7 +171,7 @@ for group in ["dsDnaViruses",
                     assert pro.endswith("*") and pro.count("*") == 1
                     record.seq = pro[:-1]  # remove stop
                 SeqIO.write([record], handle, "fasta")
-            #print("%i: %i in %s" % (index+1, count, name))
+            # print("%i: %i in %s" % (index+1, count, name))
         handle.close()
         print("Done")
         print("%i proteins" % count)

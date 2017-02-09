@@ -52,7 +52,7 @@ def check_bam(filename):
         sys_exit("Empty file (zero bytes) %s" % filename, 3)
     h = open(filename, "rb")
     # Check it looks like a BGZF file
-    #(could still be GZIP'd, in which case the extra block is harmless)
+    # (could still be GZIP'd, in which case the extra block is harmless)
     data = h.read(len(header))
     if data != header:
         sys_exit("File %s is not a BGZF/BAM file" % filename, 4)
