@@ -34,22 +34,26 @@ https://github.com/peterjc/picobio
 import sys
 
 if "-v" in sys.argv[1:]:
-    black_list = set(x.strip() for x in sys.argv[1:] if x!="-v")
+    black_list = set(x.strip() for x in sys.argv[1:] if x != "-v")
     sys.stderr.write("Removing these tags: %s\n" % ", ".join(black_list))
     for line in sys.stdin:
-        if line[0]!="@":
-            #Should be a read
+        if line[0] != "@":
+            # Should be a read
             qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
-            tags = "\t".join(t for t in tags.split("\t") if t[:2] not in black_list)
-            line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
+            tags = "\t".join(t for t in tags.split("\t")
+                             if t[:2] not in black_list)
+            line = "\t".join([qname, flag, rname, pos, mapq,
+                              cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
         sys.stdout.write(line)
 else:
     white_list = set(x.strip() for x in sys.argv[1:])
     sys.stderr.write("Keeping only these tags: %s\n" % ", ".join(white_list))
     for line in sys.stdin:
-        if line[0]!="@":
-            #Should be a read
+        if line[0] != "@":
+            # Should be a read
             qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
-            tags = "\t".join(t for t in tags.split("\t") if t[:2] in white_list)
-            line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
+            tags = "\t".join(t for t in tags.split("\t")
+                             if t[:2] in white_list)
+            line = "\t".join([qname, flag, rname, pos, mapq,
+                              cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
         sys.stdout.write(line)

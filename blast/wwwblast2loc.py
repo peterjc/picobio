@@ -8,19 +8,20 @@
 # v001 - First version
 
 
-#This gives us the list of databases and their type (nt vs aa):
+# This gives us the list of databases and their type (nt vs aa):
 blastrc = "/var/www/html/blast/blast.rc"
-#This gives us a sensible order and their descriptions:
+# This gives us a sensible order and their descriptions:
 blastwww = "/var/www/html/blast/blast.html"
 
-#BLAST DB path,
+# BLAST DB path,
 blastpath = "/data/blastdb"
 
-#Output files
+# Output files
 blast_nt = "blastdb.loc"
 blast_aa = "blastdb_p.loc"
 
 import os
+
 
 def load_blast_db_list(filename):
     nt = set()
@@ -32,7 +33,7 @@ def load_blast_db_list(filename):
         elif line.startswith("NumCpuToUse"):
             continue
         elif line.startswith("blastn ") or line.startswith("tblastn") \
-        or line.startswith("tblastx "):
+                or line.startswith("tblastx "):
             nt.update(line.rstrip().split()[1:])
         elif line.startswith("blastp ") or line.startswith("blastx"):
             aa.update(line.rstrip().split()[1:])
@@ -42,8 +43,9 @@ def load_blast_db_list(filename):
     return nt, aa
 
 nt, aa = load_blast_db_list(blastrc)
-#print nt
-#print aa
+# print nt
+# print aa
+
 
 def load_blast_db_descr(html_filename, nt, aa):
     nt_list = []
@@ -52,17 +54,17 @@ def load_blast_db_descr(html_filename, nt, aa):
     for line in handle:
         line = line.strip()
         if not line.startswith("<option ") \
-        or not line.endswith("</option>"):
+                or not line.endswith("</option>"):
             continue
         i = line.find(">")
         assert i != -1, line
-        descr = line[i+1:-9].strip()
+        descr = line[i + 1:-9].strip()
         attrs = line[8:i]
         for db in nt:
             if '"%s"' % db in attrs:
                 if descr.endswith(" (nt)"):
                     descr = descr[:-5].strip()
-                #print "NT: %s -> %s" % (db, descr)
+                # print "NT: %s -> %s" % (db, descr)
                 nt_list.append((db, descr))
                 nt.remove(db)
                 break
@@ -70,7 +72,7 @@ def load_blast_db_descr(html_filename, nt, aa):
             if '"%s"' % db in attrs:
                 if descr.endswith(" (aa)"):
                     descr = descr[:-5].strip()
-                #print "AA: %s -> %s" % (db, descr)
+                # print "AA: %s -> %s" % (db, descr)
                 aa_list.append((db, descr))
                 aa.remove(db)
                 break
@@ -78,8 +80,8 @@ def load_blast_db_descr(html_filename, nt, aa):
     return nt_list, aa_list
 
 nt_list, aa_list = load_blast_db_descr(blastwww, nt, aa)
-#print nt_list
-#print aa_list
+# print nt_list
+# print aa_list
 
 
 for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
@@ -88,13 +90,15 @@ for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
     handle.write("#file %s\n" % blastrc)
     handle.write("#and %s\n" % blastwww)
     for db, descr in dbs:
-        handle.write("\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
+        handle.write(
+            "\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
     handle.close()
 print "Done, %i nt and %i aa BLAST databases" % (len(aa_list), len(nt_list))
 if aa:
     print "Missing protein databases:"
-    for db in aa: print db
+    for db in aa:
+        print db
 if nt:
     print "Missing nucleotide databases:"
-    for db in nt: print db
-
+    for db in nt:
+        print db

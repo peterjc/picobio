@@ -19,6 +19,7 @@ you might wish to use something like this on an Illumina assembly:
 $ python shred_contigs.py other_assemby.fasta -o shredded.fasta -m 1999 -l 1999 -s 500
 """
 
+
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
@@ -53,11 +54,13 @@ if shred_length < shred_step:
     sys_exit("Shred step should be less than shred length")
 
 print("Accepting contigs up to length %i as they are (option -m)" % max_contig)
-print("Shredding longer contigs into reads of %i bp (option -l), step %i (option -s)" % (shred_length, shred_step))
+print("Shredding longer contigs into reads of %i bp (option -l), step %i (option -s)" %
+      (shred_length, shred_step))
 
 for assembly_fasta in args:
     if not os.path.isfile(assembly_fasta):
         sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+
 
 def shred(input_filename):
     global as_is, shredded
@@ -67,11 +70,11 @@ def shred(input_filename):
             as_is += 1
             yield record
         else:
-            #Shred it!
+            # Shred it!
             shredded += 1
             for i, start in enumerate(range(0, length - shred_step, shred_step)):
-                fragment = record[start:start+shred_length]
-                fragment.id = "%s_fragment%i" % (record.id, i+1)
+                fragment = record[start:start + shred_length]
+                fragment.id = "%s_fragment%i" % (record.id, i + 1)
                 yield fragment
 
 
@@ -81,5 +84,7 @@ shredded = 0
 with open(output_fasta, "w") as output_handle:
     for assembly_fasta in args:
         count += SeqIO.write(shred(assembly_fasta), output_handle, "fasta")
-print("Shredded %i FASTA files, containing %i contigs" % (len(args), as_is + shredded))
-print("Accepted %i short contigs, shredded %i long contigs, giving %i reads" % (as_is, shredded, count))
+print("Shredded %i FASTA files, containing %i contigs" %
+      (len(args), as_is + shredded))
+print("Accepted %i short contigs, shredded %i long contigs, giving %i reads" %
+      (as_is, shredded, count))

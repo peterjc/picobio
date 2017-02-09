@@ -32,9 +32,11 @@ v0.0.1 - Use append mode to add EOF block
 import os
 import sys
 
+
 def sys_exit(msg, return_code=1):
     sys.stderr.write(msg.rstrip() + "\n")
     sys.exit(return_code)
+
 
 def fix_bam(filename):
     header = "\x1f\x8b\x08\x04\x00\x00\x00\x00" + \
@@ -44,13 +46,13 @@ def fix_bam(filename):
     if not os.path.isfile(filename):
         sys_exit("Missing file %s" % filename)
     size = os.path.getsize(filename)
-    h = open(filename, "rb") #read only for now
-    #Check it looks like a BGZF file
+    h = open(filename, "rb")  # read only for now
+    # Check it looks like a BGZF file
     #(could still be GZIP'd, in which case the extra block is harmless)
     data = h.read(len(header))
     if data != header:
         sys_exit("File %s is not a BAM file" % filename)
-    #Check if it has the EOF already
+    # Check if it has the EOF already
     h.seek(size - 28)
     data = h.read(28)
     h.close()

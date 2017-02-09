@@ -41,8 +41,8 @@ tweaked = 0
 mask = 0x1 | 0x8 | 0x20 | 0x40 | 0x80
 flip_mask = ~mask
 for line in sys.stdin:
-    if line[0]!="@":
-        #Should be a read
+    if line[0] != "@":
+        # Should be a read
         count += 1
         qname, flag, rest = line.split("\t", 2)
         flag = int(flag)

@@ -18,10 +18,12 @@ FASTA file and BLAST database.
 makeblastdb_binary = "makeblastdb"
 blastn_binary = "blastn"
 
+
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
+
 
 def run(cmd):
     print(cmd)
@@ -64,11 +66,13 @@ c_length = 4
 c_qstart = 5
 c_qend = 6
 
+
 def prepare_sorted_fasta(assembly_fasta, sorted_fasta):
     # Sort & remove short contigs, being lazy and doing this in memory
-    contigs = [r for r in SeqIO.parse(assembly_fasta, "fasta") if len(r) >= min_len]
+    contigs = [r for r in SeqIO.parse(
+        assembly_fasta, "fasta") if len(r) >= min_len]
     # Sort on length (longest first), tie break on identifier
-    contigs.sort(key = lambda r: (-len(r), r.id))
+    contigs.sort(key=lambda r: (-len(r), r.id))
     # Write sorted FASTA file
     count = SeqIO.write(contigs, sorted_fasta, "fasta")
     assert count == len(contigs)
@@ -78,10 +82,13 @@ def prepare_sorted_fasta(assembly_fasta, sorted_fasta):
     run(cmd)
     print("Prepared BLAST database of %i contigs passing minimum length" % count)
 
+
 def prepare_blast(sorted_fasta, blast_file):
-    cmd = '%s -db %s -query %s -out %s -perc_identity %f -outfmt="6 %s"' % (blastn_binary, sorted_fasta, sorted_fasta, blast_file, perc_identity, cols)
+    cmd = '%s -db %s -query %s -out %s -perc_identity %f -outfmt="6 %s"' % (
+        blastn_binary, sorted_fasta, sorted_fasta, blast_file, perc_identity, cols)
     run(cmd)
     print("Ran self-BLAST")
+
 
 def find_duplicates(blast_file):
     regions = dict()
@@ -141,10 +148,11 @@ def find_duplicates(blast_file):
             # Sanity test
             qstart, qend = list(regions[query])[0]
             assert q == qend - qstart + 1
-        #else:
+        # else:
         #    # For debugging:
         #    print qlen, sorted(regions[query])
-        assert q <= qlen, "%0.2f of %s hit other longer contigs (%i of %i bp)" % (q * 100.0 / qlen, query, q, qlen)
+        assert q <= qlen, "%0.2f of %s hit other longer contigs (%i of %i bp)" % (
+            q * 100.0 / qlen, query, q, qlen)
         if qlen * min_cover / 100 <= q:
             # print("%0.2f of %s hit other longer contigs" % (q * 100.0 / qlen, query))
             yield query
@@ -155,7 +163,8 @@ def dedup(assembly_fasta, blast_file, output_fasta):
     print("Identified %i contigs to treat as duplicates" % len(duplicates))
     # Filter the original assembly FASTA file to retain its ordering.
     # Must repeat the minimum length filter here too...
-    wanted = (r for r in SeqIO.parse(assembly_fasta, "fasta") if r.id not in duplicates and len(r) >= min_len)
+    wanted = (r for r in SeqIO.parse(assembly_fasta, "fasta")
+              if r.id not in duplicates and len(r) >= min_len)
     count = SeqIO.write(wanted, output_fasta, "fasta")
     print("Saved %i contigs to %s" % (count, output_fasta))
 
@@ -174,19 +183,22 @@ total = 0
 for r in SeqIO.parse(assembly_fasta, "fasta"):
     count += 1
     total += len(r)
-print("Input %i contigs, total length %i bp, in %s" % (count, total, assembly_fasta))
+print("Input %i contigs, total length %i bp, in %s" %
+      (count, total, assembly_fasta))
 count = 0
 total = 0
 for r in SeqIO.parse(sorted_fasta, "fasta"):
     count += 1
     total += len(r)
-print("Min length gives %i contigs, total length %i bp, in %s" % (count, total, sorted_fasta))
+print("Min length gives %i contigs, total length %i bp, in %s" %
+      (count, total, sorted_fasta))
 count = 0
 total = 0
 for r in SeqIO.parse(output_fasta, "fasta"):
     count += 1
     total += len(r)
-print("Output %i contigs, total length %i bp, in %s" % (count, total, output_fasta))
+print("Output %i contigs, total length %i bp, in %s" %
+      (count, total, output_fasta))
 print("-" * 60)
 
 shutil.rmtree(temp_dir)

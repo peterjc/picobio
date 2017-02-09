@@ -26,7 +26,7 @@ from Bio.Graphics.GenomeDiagram import CrossLink
 
 SPACER = 20000
 
-MIN_GAP_JAGGY = 1000 # Sigils
+MIN_GAP_JAGGY = 1000  # Sigils
 MIN_GAP = 20000
 
 
@@ -47,6 +47,7 @@ will each be drawn on one track with the contigs end to end (with a
 spacer).
 """
 
+
 def hack_ncbi_fasta_name(pipe_name):
     """Turn 'gi|445210138|gb|CP003959.1|' into 'CP003959.1' etc.
 
@@ -58,10 +59,11 @@ def hack_ncbi_fasta_name(pipe_name):
     """
     if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
         return pipe_name.split("|")[3]
-    elif pipe_name.startswith("gnl|") and pipe_name.count("|")==2:
+    elif pipe_name.startswith("gnl|") and pipe_name.count("|") == 2:
         return pipe_name.split("|")[2]
     else:
         return pipe_name
+
 
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -91,12 +93,16 @@ for assembly_fasta in assemblies_fasta:
     if not os.path.isfile(assembly_fasta):
         sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
+
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
     assert os.path.isfile(db_fasta)
-    assert os.path.isfile(db_fasta + ".nhr"), "Missing database for %s" % db_fasta
-    assert os.path.isfile(db_fasta + ".nin"), "Missing database for %s" % db_fasta
-    assert os.path.isfile(db_fasta + ".nsq"), "Missing database for %s" % db_fasta
+    assert os.path.isfile(
+        db_fasta + ".nhr"), "Missing database for %s" % db_fasta
+    assert os.path.isfile(
+        db_fasta + ".nin"), "Missing database for %s" % db_fasta
+    assert os.path.isfile(
+        db_fasta + ".nsq"), "Missing database for %s" % db_fasta
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
                                 out=blast_file, outfmt=6,
                                 evalue=1e-5)
@@ -106,8 +112,9 @@ def do_blast(query_fasta, db_fasta, blast_file):
 
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit]
-    hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
+    hsps = [hsp for hsp in blast_result.hsps if (
+        hsp.query_end - hsp.query_start) >= min_hit]
+    hsps = sorted(hsps, key=lambda hsp: hsp.hit_start)
     return blast_result.id, hsps
 
 
@@ -125,7 +132,7 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
         while j < len(contig_seq) and contig_seq[j] == "N":
             j += 1
         print("Adding jaggy")
-        gd_contig_features.add_feature(SeqFeature(FeatureLocation(offset+i, offset+j)),
+        gd_contig_features.add_feature(SeqFeature(FeatureLocation(offset + i, offset + j)),
                                        sigil="JAGGY",
                                        color=colors.slategrey, border=colors.black)
         i = j + 1
@@ -149,7 +156,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             contig_offsets[contig_id] = track_len
             track_len += len(seq)
             contig_lengths[contig_id] = len(seq)
-    #TODO - Configurable offset to visually align tracks?
+    # TODO - Configurable offset to visually align tracks?
     max_len = max(max_len, track_len)
 
     gd_track = gd_diagram.new_track(1 + 2 * i,
@@ -170,13 +177,13 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
         print("Loading %s" % blast_file)
         for blast_result in SearchIO.parse(blast_file, "blast-tab"):
             blast_result.id = hack_ncbi_fasta_name(blast_result.id)
-            contig_id, hits = filter_blast(blast_result, contig_lengths[blast_result.id])
+            contig_id, hits = filter_blast(
+                blast_result, contig_lengths[blast_result.id])
             blast_data[contig_id] = hits
             #print("Using %i of %i hits for %s" % (len(hits), len(blast_result.hsps), contig_id))
     else:
         assert i == 0
 
-    
     offset = 0
     if os.path.isfile(assembly_genbank):
         print("Drawing %s" % assembly_genbank)
@@ -188,13 +195,13 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
         contig_id = hack_ncbi_fasta_name(contig.id)
         contig_len = len(contig)
 
-        #Add feature for whole contig,
+        # Add feature for whole contig,
         loc = FeatureLocation(offset, offset + contig_len, strand=0)
         gd_contig_features.add_feature(SeqFeature(loc), color=colors.grey, border=colors.black,
-                                   label=True, name=contig_id)
-        #Mark any NNNN regions,
+                                       label=True, name=contig_id)
+        # Mark any NNNN regions,
         add_jaggies(str(contig.seq), offset, gd_contig_features)
-        #Mark any genes (if using GenBank file),
+        # Mark any genes (if using GenBank file),
         for feature in contig.features:
             if feature.type != "gene":
                 continue
@@ -204,7 +211,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                                            label_position="start",
                                            label_size=6, label_angle=0)
 
-        #print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
+        # print "%s (len %i) offset %i" % (contig_id, contig_len, offset)
 
         if contig_id not in blast_data:
             #print("No BLAST matches for contig %s" % contig_id)
@@ -217,7 +224,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
             continue
         #print("%i BLAST matches for contig %s" % (len(blast_hsps), contig_id))
 
-        #Add cross-links,
+        # Add cross-links,
         for hsp in blast_hsps:
             if hsp.hit_strand == -1:
                 flip = True
@@ -226,11 +233,15 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                 flip = False
                 color = colors.firebrick
             border = colors.lightgrey
-            #Fade the colour based on percentage identify, 100% identity = 50% transparent
-            color = colors.Color(color.red, color.green, color.blue, alpha=(hsp.ident_pct/200.0))
+            # Fade the colour based on percentage identify, 100% identity = 50%
+            # transparent
+            color = colors.Color(color.red, color.green,
+                                 color.blue, alpha=(hsp.ident_pct / 200.0))
             assert offset == contig_offsets[hack_ncbi_fasta_name(hsp.query_id)]
-            loc = FeatureLocation(offset + hsp.query_start, offset + hsp.query_end, strand=0)
-            query = gd_contig_features.add_feature(SeqFeature(loc), color=color, border=border)
+            loc = FeatureLocation(offset + hsp.query_start,
+                                  offset + hsp.query_end, strand=0)
+            query = gd_contig_features.add_feature(
+                SeqFeature(loc), color=color, border=border)
             try:
                 r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
             except KeyError:
@@ -240,19 +251,22 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                 else:
                     sys_exit("Could not find offset for hit %r in dict (query id %r)"
                              % (hsp.hit_id, hsp.query_id))
-            loc = FeatureLocation(r_offset + hsp.hit_start, r_offset + hsp.hit_end, strand=0)
-            hit = gd_ref_features.add_feature(SeqFeature(loc), color=color, border=border)
-            gd_diagram.cross_track_links.append(CrossLink(query, hit, color, border, flip))
+            loc = FeatureLocation(r_offset + hsp.hit_start,
+                                  r_offset + hsp.hit_end, strand=0)
+            hit = gd_ref_features.add_feature(
+                SeqFeature(loc), color=color, border=border)
+            gd_diagram.cross_track_links.append(
+                CrossLink(query, hit, color, border, flip))
 
         offset += SPACER + contig_len
 
-    #Ready for next pairwise comparison,
+    # Ready for next pairwise comparison,
     reference_fasta = assembly_fasta
     ref_offsets = contig_offsets
     gd_ref_features = gd_contig_features
 
-#Set size based on max track length?
-page = (2*cm + 5*cm*len(assemblies_fasta), 100*cm*max_len/5000000)
+# Set size based on max track length?
+page = (2 * cm + 5 * cm * len(assemblies_fasta), 100 * cm * max_len / 5000000)
 gd_diagram.draw(format="linear", fragments=1,
                 pagesize=page, start=0, end=max_len)
 gd_diagram.write(diagram_pdf, "PDF")

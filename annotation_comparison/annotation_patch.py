@@ -43,6 +43,7 @@ internal parser which DOES NOT SUPPORT multi-line features, i.e.
 joins or multi-exon features.
 """
 
+
 def patch_gff(handle, diffs):
     """Quick hack to patch Bacterial GFF files from Prokka etc.
 
@@ -69,7 +70,7 @@ def patch_gff(handle, diffs):
             #assert seqid in references, seqid
             start = int(start)  # Leave this as one-based
             end = int(end)
-            assert 0 <= start < end #< len(references[seqid])
+            assert 0 <= start < end  # < len(references[seqid])
             loc = "%i..%i" % (start, end)
             if strand == "-":
                 loc = "complement(%s)" % loc
@@ -106,6 +107,7 @@ def patch_gff(handle, diffs):
     for line in handle:
         out_handle.write(line)
 
+
 def load_diffs(handle):
     answer = dict()
     for line in handle:
@@ -134,6 +136,7 @@ def load_diffs(handle):
             answer[diff_key] = []
         answer[diff_key].append((key, old, new))
     return answer
+
 
 def apply_diffs(handle, diffs):
     offset = handle.tell()

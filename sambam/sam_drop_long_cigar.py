@@ -32,7 +32,7 @@ if len(sys.argv) != 1:
     sys.stderr.write("Expects SAM on stdin, and writes SAM to stdout.\n")
     sys.exit(1)
 
-#def decode_cigar(cigar):
+# def decode_cigar(cigar):
 #    """Returns a list of 2-tuples, integer count and operator char."""
 #    count = ""
 #    answer = []
@@ -48,6 +48,7 @@ if len(sys.argv) != 1:
 #
 #assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
 
+
 def cigar_length(cigar):
     """Returns number of cigar operators (integer)."""
     answer = 0
@@ -57,21 +58,23 @@ def cigar_length(cigar):
         elif letter in "MIDNSHP=X":
             answer += 1
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" %
+                             (letter, cigar))
     return answer
 
 count = 0
 longs = 0
 for line in sys.stdin:
-    if line[0]!="@":
-        #Should be a read
+    if line[0] != "@":
+        # Should be a read
         count += 1
         qname, flag, rname, pos, mapq, cigar, rest = line.split("\t", 6)
         if cigar != "*":
             len_cigar = cigar_length(cigar)
             if len_cigar > 65535:
                 longs += 1
-                sys.stderr.write("Dropping read %s with %i CIGAR operators\n" % (qname, len_cigar))
+                sys.stderr.write(
+                    "Dropping read %s with %i CIGAR operators\n" % (qname, len_cigar))
                 continue
     sys.stdout.write(line)
 sys.stderr.write("Dropped %i out of %i reads\n" % (longs, count))

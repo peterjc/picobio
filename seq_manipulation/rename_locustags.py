@@ -64,7 +64,8 @@ import sys
 
 # TODO - Proper API
 if len(sys.argv) != 5:
-    sys.exit("Expects four arguments: Old prefix, new prefix, input filename, output filename")
+    sys.exit(
+        "Expects four arguments: Old prefix, new prefix, input filename, output filename")
 old_prefix, new_prefix, in_filename, out_filename = sys.argv[1:]
 
 sys.stderr.write('Replacing /locus_tag="%s..." with /locus_tag="%s..."\n'
@@ -99,7 +100,9 @@ if out_filename != "-":
     out_handle.close()
 
 if not count:
-    sys.stderr.write("Original locus tag prefix %s_... not found\n" % old_prefix)
+    sys.stderr.write(
+        "Original locus tag prefix %s_... not found\n" % old_prefix)
     sys.exit(1)
-sys.stderr.write("Edited %s_... -> %s_... in %i lines.\n" % (old_prefix, new_prefix, count))
+sys.stderr.write("Edited %s_... -> %s_... in %i lines.\n" %
+                 (old_prefix, new_prefix, count))
 sys.stderr.write("Saw %i unique locus tags\n" % len(locus_tags))

@@ -34,6 +34,7 @@ approach restricted to avoid phantom positioning with a mean of tied
 values).
 """
 
+
 def hack_ncbi_fasta_name(pipe_name):
     """Turn 'gi|445210138|gb|CP003959.1|' into 'CP003959.1' etc.
 
@@ -45,10 +46,11 @@ def hack_ncbi_fasta_name(pipe_name):
     """
     if pipe_name.startswith("gi|") and pipe_name.endswith("|"):
         return pipe_name.split("|")[3]
-    elif pipe_name.startswith("gnl|") and pipe_name.count("|")==2:
+    elif pipe_name.startswith("gnl|") and pipe_name.count("|") == 2:
         return pipe_name.split("|")[2]
     else:
         return pipe_name
+
 
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
@@ -66,7 +68,7 @@ parser.add_option("-m", "--min-len", dest="min_len", type="int",
 parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
                   help="Minimum BLAST hit length to consider",
                   default=5000)
-#parser.add_option("-u", "--unmapped", dest="unmapped",
+# parser.add_option("-u", "--unmapped", dest="unmapped",
 #                  help="Included unmapped contigs at the end",
 #                  action="store_true")
 (options, args) = parser.parse_args()
@@ -91,11 +93,12 @@ if not os.path.isfile(assembly_fasta):
 if not os.path.isfile(reference_fasta):
     sys_exit("Reference FASTA file not found: %r" % reference_fasta)
 
+
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
     assert os.path.isfile(db_fasta)
-    if not (os.path.isfile(db_fasta + ".nhr") and \
-            os.path.isfile(db_fasta + ".nin") and \
+    if not (os.path.isfile(db_fasta + ".nhr") and
+            os.path.isfile(db_fasta + ".nin") and
             os.path.isfile(db_fasta + ".nsq")):
         sys_exit("Missing BLAST database for %s" % db_fasta)
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
@@ -123,6 +126,7 @@ for record in reference_parser:
     ref_offsets[hack_ncbi_fasta_name(record.id)] = offset
     offset += len(record)
 
+
 def reverse_complement_hsp_fragment(frag, query_length):
     rev = SearchIO.HSPFragment(hit_id=frag.hit_id, query_id=frag.query_id)
     rev.query_start = query_length - frag.query_end
@@ -138,15 +142,18 @@ def reverse_complement_hsp_fragment(frag, query_length):
         rev.hit_strand = frag.hit_strand
     return rev
 
+
 def reverse_complement_hsp(hsp, query_length):
-    rev = SearchIO.HSP(fragments = [reverse_complement_hsp_fragment(frag, query_length) \
-                                    for frag in hsp.fragments[::-1]])
+    rev = SearchIO.HSP(fragments=[reverse_complement_hsp_fragment(frag, query_length)
+                                  for frag in hsp.fragments[::-1]])
     rev.ident_pct = hsp.ident_pct
     return rev
 
+
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit]
-    hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
+    hsps = [hsp for hsp in blast_result.hsps if (
+        hsp.query_end - hsp.query_start) >= min_hit]
+    hsps = sorted(hsps, key=lambda hsp: hsp.hit_start)
     plus = 0
     minus = 0
     flipped = False
@@ -156,10 +163,10 @@ def filter_blast(blast_result, query_length):
         else:
             plus += hsp.hit_end - hsp.hit_start
     if minus > plus:
-        #Reverse the contig
+        # Reverse the contig
         flipped = True
         hsps = [reverse_complement_hsp(hsp, query_length) for hsp in hsps]
-        hsps = sorted(hsps, key = lambda hsp: hsp.hit_start)
+        hsps = sorted(hsps, key=lambda hsp: hsp.hit_start)
     return make_offset(hsps, query_length), blast_result.id, hsps, flipped
 
 
@@ -167,62 +174,64 @@ def weighted_median(values_and_weights, tie_break=True):
     """Median of values with integer weights."""
     x = []
     count = sum(w for v, w in values_and_weights)
-    map(x.extend,([v]*w for v, w in values_and_weights))
+    map(x.extend, ([v] * w for v, w in values_and_weights))
     if tie_break:
         # This can give the mean of the mid-points,
         # with side effect of sometimes using an artifical
         # offset not present in the data
-        return (x[count/2]+x[(count-1)/2])/2.
+        return (x[count / 2] + x[(count - 1) / 2]) / 2.
     else:
         # Approximiately the median - avoids mean of
         # mid two values by taking the lower.
-        return x[count/2]
+        return x[count / 2]
+
 
 def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
-    #Weighted by the HSP length:
+    # Weighted by the HSP length:
     offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start,
-                                  hsp.hit_end - hsp.hit_start)
+                                   hsp.hit_end - hsp.hit_start)
                                   for hsp in blast_hsps], tie_break=False))
     return offset
 
 
-#Yes, this does end up parsing the entire FASTA file :(
+# Yes, this does end up parsing the entire FASTA file :(
 contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 
-#Sort the contigs by horizontal position on the diagram
+# Sort the contigs by horizontal position on the diagram
 #(yes, this does mean parsing the entire BLAST output)
 #(and yes, also the FASTA file to get the query lengths)
-blast_data = sorted(filter_blast(b, len(contigs[b.id])) \
-                        for b in SearchIO.parse(blast_file, "blast-tab"))
+blast_data = sorted(filter_blast(b, len(contigs[b.id]))
+                    for b in SearchIO.parse(blast_file, "blast-tab"))
 contigs_shown = set()
 contigs_shown_bp = 0
 contig_tracks = []
 for offset, contig_id, blast_hsps, flipped in blast_data:
-    #TODO - Use BLAST query length instead of parsing FASTA file?
+    # TODO - Use BLAST query length instead of parsing FASTA file?
     contig = contigs[contig_id]
     contig_len = len(contig)
     if not blast_hsps:
-        #Works, but only if contig appears in BLAST output at all
+        # Works, but only if contig appears in BLAST output at all
         #contigs_not_shown_bp += contig_len
         continue
 
     contigs_shown.add(contig_id)
     contigs_shown_bp += contig_len
     if contig_len < min_len:
-        print("Note %s had BLAST hit but was only length %i" % (contig_id, contig_len))
+        print("Note %s had BLAST hit but was only length %i" %
+              (contig_id, contig_len))
     if flipped:
         SeqIO.write(contigs[contig_id].reverse_complement(id=True, name=True,
                                                           description="reversed"),
                     fasta_handle, "fasta")
     else:
-        #Fast provided don't need to take reverse complement
+        # Fast provided don't need to take reverse complement
         fasta_handle.write(contigs.get_raw(contig_id))
     fasta_saved_count += 1
 
 
-#Now add the unmatched contigs
+# Now add the unmatched contigs
 position = 0
 unplaced = 0
 for contig in SeqIO.parse(assembly_fasta, "fasta"):
@@ -239,7 +248,8 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
 
 
 assert unplaced == len(contigs) - len(contigs_shown), \
-    "Only processed %i unplaced contigs, expected %i" % (unplaced, len(contigs) - len(contigs_shown))
+    "Only processed %i unplaced contigs, expected %i" % (
+        unplaced, len(contigs) - len(contigs_shown))
 
 print("Placed: %i of the %i contigs/scaffolds, %i bp"
       % (len(contigs_shown), len(contigs), contigs_shown_bp))
@@ -252,4 +262,5 @@ print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
 print("Dropped %i short records" % fasta_short_dropped)
 fasta_handle.close()
 if fasta_saved_count + fasta_short_dropped != len(contigs):
-    sys_exit("Should have written %i records!" % (len(contigs) - fasta_short_dropped))
+    sys_exit("Should have written %i records!" %
+             (len(contigs) - fasta_short_dropped))

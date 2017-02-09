@@ -36,20 +36,21 @@ if len(sys.argv) == 1:
 elif len(sys.argv) == 2:
     prefix = sys.argv[1]
 else:
-    sys.stderr.write("Error, expect one optional parameter only (read name prefix)")
+    sys.stderr.write(
+        "Error, expect one optional parameter only (read name prefix)")
     sys.exit(1)
 
 count = 0
 mapping = dict()
-#TODO - Automatically remove mapping entries once all parts of the read
-#have been found? They would typically be near each other in the file...
-#otherwise memory will be a problem with big paired end datasets.
+# TODO - Automatically remove mapping entries once all parts of the read
+# have been found? They would typically be near each other in the file...
+# otherwise memory will be a problem with big paired end datasets.
 for line in sys.stdin:
-    if line[0]!="@":
-        #Should be a read
+    if line[0] != "@":
+        # Should be a read
         qname, flag, rest = line.split("\t", 2)
         if int(flag) & 0x1:
-            #Multi-fragment read
+            # Multi-fragment read
             try:
                 qname = prefix + str(mapping[qname])
             except KeyError:
@@ -57,7 +58,7 @@ for line in sys.stdin:
                 mapping[qname] = count
                 qname = prefix + str(count)
         else:
-            #Single fragment read
+            # Single fragment read
             qname = "*"
         line = "\t".join([qname, flag, rest])
     sys.stdout.write(line)

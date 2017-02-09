@@ -52,6 +52,7 @@ https://github.com/peterjc/picobio
 
 import sys
 
+
 def sys_exit(msg, error=1):
     sys.stderr.write(msg.rstrip() + "\n")
     sys.exit(error)
@@ -67,20 +68,23 @@ def decode_cigar(cigar):
     answer = []
     for letter in cigar:
         if letter.isdigit():
-            count += letter #string addition
+            count += letter  # string addition
         elif letter in "MIDNSHP=X":
             answer.append((int(count), letter))
             count = ""
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" %
+                             (letter, cigar))
     return answer
 
-assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
+    14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
+
 
 def cigar_mapped_len(cigar):
     """The aligned length is given by the sum of the CIGAR M/=/X/D/N operations."""
-    if not cigar or cigar=="*":
-        return 1 #Dummy value
+    if not cigar or cigar == "*":
+        return 1  # Dummy value
     length = 0
     for op_length, op_code in decode_cigar(cigar):
         if op_code in "M=XDN":
@@ -94,11 +98,11 @@ rg_handles = dict()
 rg_lengths = dict()
 rg_dir = dict()
 
-cached = dict() #Key by read name
+cached = dict()  # Key by read name
 for line in sys.stdin:
-    if line[0]=="@":
-        #Header line
-        if line[1:3]=="RG":
+    if line[0] == "@":
+        # Header line
+        if line[1:3] == "RG":
             tags = line.rstrip().split("\t")
             rg = None
             for t in tags:
@@ -108,17 +112,18 @@ for line in sys.stdin:
                 sys_exit("Missing ID in this read group line: %r" % line)
             rg_handles[rg] = open("%s_%s.tab" % (prefix, rg), "w")
             rg_lengths[rg] = []
-            rg_dir[rg] = {"FR":0, "RF":0, "FF":0}
+            rg_dir[rg] = {"FR": 0, "RF": 0, "FF": 0}
         continue
-    #Should be a read
+    # Should be a read
     if reads % 500000 == 0:
-        sys.stderr.write("Processed %i reads, %i pairs so far...\n" % (reads, pairs))
+        sys.stderr.write(
+            "Processed %i reads, %i pairs so far...\n" % (reads, pairs))
     reads += 1
     qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
     rg_tags = [t for t in tags.split("\t") if t[:2] == "RG"]
     if not rg_tags:
         rg = None
-        #Ignore this read? What about single library SAM/BAM files?
+        # Ignore this read? What about single library SAM/BAM files?
         continue
     elif len(rg_tags) > 1:
         sys_exit("Multiple RG tags in this line: %r" % line)
@@ -129,34 +134,37 @@ for line in sys.stdin:
         rg = rg[5:]
 
     flag = int(flag)
-    if (not (flag & 0x1) # Single end read
-        or flag & 0x4 # Unmapped
-        or flag & 0x8 # Partner unmapped
-        or (flag & 0x40 and flag & 0x80) #Neither R1 nor R2 (i.e. more than 2 parts)
-        or not (flag & 0x40 or flag & 0x80) #Unknown fragment number
-        or flag & 0x100 or flag & 0x800 #Ignore secondary or supplementary alignments
-        or flag & 0x200 # failed QC
-        or flag & 0x400 # PCR or optical duplicate
+    if (not (flag & 0x1)  # Single end read
+            or flag & 0x4  # Unmapped
+            or flag & 0x8  # Partner unmapped
+            # Neither R1 nor R2 (i.e. more than 2 parts)
+            or (flag & 0x40 and flag & 0x80)
+            or not (flag & 0x40 or flag & 0x80)  # Unknown fragment number
+            or flag & 0x100 or flag & 0x800  # Ignore secondary or supplementary alignments
+            or flag & 0x200  # failed QC
+            or flag & 0x400  # PCR or optical duplicate
         ):
-        #Ignore this read
+        # Ignore this read
         continue
 
     if rnext == "=":
         rnext = rname
     if qname in cached:
-        #This is the second half of the pair (by file order)
+        # This is the second half of the pair (by file order)
         other_flag, other_rname, other_pos, other_cigar = cached.pop(qname)
         if other_rname != rnext or other_pos != pnext:
-            sys.stderr.write("Mapping position mismatch %s:%s versus %s:%s for %s\n" % (other_rname, other_pos, rnext, pnext, qname))
+            sys.stderr.write("Mapping position mismatch %s:%s versus %s:%s for %s\n" % (
+                other_rname, other_pos, rnext, pnext, qname))
             sys.stderr.write(line)
             sys_exit("Try running samtools fixmates?")
         if bool(flag & 0x10) != bool(other_flag & 0x20) \
-        or bool(flag & 0x20) != bool(other_flag & 0x10):
-            sys.stderr.write("FLAG strand mismatch %i versus %i for %s\n" % (other_flag, flag, qname))
+                or bool(flag & 0x20) != bool(other_flag & 0x10):
+            sys.stderr.write("FLAG strand mismatch %i versus %i for %s\n" % (
+                other_flag, flag, qname))
             sys.stderr.write(line)
             sys_exit("Try running samtools fixmates?")
     else:
-        #This is the first half of the pair (by file order), cache it
+        # This is the first half of the pair (by file order), cache it
         cached[qname] = flag, rname, pos, cigar
         continue
 
@@ -168,8 +176,8 @@ for line in sys.stdin:
         #This is R2, other is R1
         assert other_flag & 0x40
     else:
-        assert False, "Bad FLAGs for %s (%i and %i)" % (qname, flag, other_flag)
-
+        assert False, "Bad FLAGs for %s (%i and %i)" % (
+            qname, flag, other_flag)
 
     len1 = cigar_mapped_len(cigar)
     len2 = cigar_mapped_len(other_cigar)
@@ -198,31 +206,31 @@ for line in sys.stdin:
             elif flag & 0x10:
                 assert end1 <= start1
                 assert start2 <= end2
-                #These are 'innies' --> <--,
-                #Self:          end1 <---- start1
-                #Other: start2 ----> end2
+                # These are 'innies' --> <--,
+                # Self:          end1 <---- start1
+                # Other: start2 ----> end2
                 #
-                #Also consider overlapping reads as 'innies' --> <--
-                #Self:      end1 <---- start1
-                #Other: start2 ----> end2
+                # Also consider overlapping reads as 'innies' --> <--
+                # Self:      end1 <---- start1
+                # Other: start2 ----> end2
                 #
-                #But these are 'outies' <-- -->
-                #Self:  end1 <---- start1
-                #Other:    start2 ----> end2 
+                # But these are 'outies' <-- -->
+                # Self:  end1 <---- start1
+                # Other:    start2 ----> end2
                 if start1 < start2:
-                    rg_dir[rg]["RF"] += 1 # 'outies' <-- -->
-                else:                
-                    rg_dir[rg]["FR"] += 1 # 'innies' --> <--
+                    rg_dir[rg]["RF"] += 1  # 'outies' <-- -->
+                else:
+                    rg_dir[rg]["FR"] += 1  # 'innies' --> <--
             elif flag & 0x20:
                 assert start1 <= end1
                 assert end2 <= start2
-                #Likewise, these are 'outies' <-- -->
-                #Self:      start1 ----> end1
-                #Other:  end2 <---- start2
+                # Likewise, these are 'outies' <-- -->
+                # Self:      start1 ----> end1
+                # Other:  end2 <---- start2
                 if start2 < start1:
-                    rg_dir[rg]["RF"] += 1 # 'outies' <-- -->
+                    rg_dir[rg]["RF"] += 1  # 'outies' <-- -->
                 else:
-                    rg_dir[rg]["FR"] += 1 # 'innies' --> <--
+                    rg_dir[rg]["FR"] += 1  # 'innies' --> <--
             else:
                 rg_dir[rg]["FF"] += 1
     else:
@@ -231,16 +239,19 @@ for line in sys.stdin:
     try:
         handle = rg_handles[rg]
     except KeyError:
-        sys_exit("Unexpected read group identifier %r in this line: %r" % (rg, line))
+        sys_exit("Unexpected read group identifier %r in this line: %r" %
+                 (rg, line))
 
-    handle.write("%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2))
+    handle.write("%s\t%i\t%i\t%s\t%i\t%i\n" %
+                 (rname, start1, end1, rnext, start2, end2))
     pairs += 1
 
 for handle in rg_handles.values():
     handle.close()
 
 sys.stderr.write("Extracted %i pairs from %i reads\n" % (pairs, reads))
-sys.stderr.write("Of these, %i pairs are mapped to different contigs\n" % interesting)
+sys.stderr.write(
+    "Of these, %i pairs are mapped to different contigs\n" % interesting)
 assert not cached, cached
 
 handle = open(prefix + ".library", "w")
@@ -255,17 +266,20 @@ for rg in sorted(rg_lengths):
                  float(sum(lengths)) / len(lengths)))
         print(rg_dir[rg])
         assert sum(rg_dir[rg].values()) == len(lengths)
-        #Pick most common direction
-        direction = [d for d in rg_dir[rg] if rg_dir[rg][d]==max(rg_dir[rg].values())][0]
+        # Pick most common direction
+        direction = [d for d in rg_dir[rg] if rg_dir[
+            rg][d] == max(rg_dir[rg].values())][0]
         print("Most common pairing direction %s" % direction)
-        #This attempts to maximize pairings used (very inclusive)
-        #TODO - Configurable?
+        # This attempts to maximize pairings used (very inclusive)
+        # TODO - Configurable?
         size = 0.5 * (min(lengths) + max(lengths))
         error = (max(lengths) - size) / size
         if error >= 1.0:
-            #Ah. Can't cover all over them since SSPACE limits error to < 1.0 times size.
-            size = float(sum(lengths)) / len(lengths) #median?
+            # Ah. Can't cover all over them since SSPACE limits error to < 1.0
+            # times size.
+            size = float(sum(lengths)) / len(lengths)  # median?
             error = 0.999
-    handle.write("%s TAB %s_%s.tab %i %0.3f %s\n" % (rg, prefix, rg, size, error, direction))
+    handle.write("%s TAB %s_%s.tab %i %0.3f %s\n" %
+                 (rg, prefix, rg, size, error, direction))
 handle.close()
 print("Now run SSPACE with your FASTA file and %s.library" % prefix)

@@ -21,9 +21,11 @@ OR PERFORMANCE OF THIS SOFTWARE.
 import os
 import sys
 
+
 def sys_exit(msg, err=1):
-    sys.stderr.write(msg.rstrip()+"\n")
+    sys.stderr.write(msg.rstrip() + "\n")
     sys.exit(err)
+
 
 def convert(input_handle, output_handle):
     """Convert HMMER space separated table into tab separated table.
@@ -59,15 +61,15 @@ def convert(input_handle, output_handle):
     columns = len(h3.split())
     assert columns == 19 or columns == 23, columns
 
-    #Hard code our expected header names (but allow for differences
-    #in the spacing):
+    # Hard code our expected header names (but allow for differences
+    # in the spacing):
     if columns == 19:
         names = ["target name", "accession", "query name", "accession",
                  "E-value", "score", "bias", "E-value", "score", "bias",
                  "exp", "reg", "clu", "ov", "env", "dom", "rep", "inc",
                  "description of target"]
         assert " ".join(h2[2:-1].split()) == " ".join(names)
-        #Now switch to longer names (including line one information):
+        # Now switch to longer names (including line one information):
         names = ["target name", "accession", "query name", "accession",
                  "full sequence E-value", "full sequence score",
                  "full sequence bias", "best 1 domain E-value",
@@ -88,11 +90,11 @@ def convert(input_handle, output_handle):
                  "from", "to", "from", "to", "from", "to",
                  "acc", "description of target"]
         assert " ".join(h2[2:-1].split()) == " ".join(names)
-        #Now switch to longer names (including line one information):
+        # Now switch to longer names (including line one information):
         names = ["target name", "accession", "tlen", "query name",
                  "accession", "qlen", "full sequence E-value",
                  "full sequence score", "full sequence bias",
-                 #The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
+                 # The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
                  "dom#", "ndom",
                  "c-Evalue", "i-Evalue", "score", "bias",
                  "hmm coord from", "hmm coord to",
@@ -102,13 +104,13 @@ def convert(input_handle, output_handle):
     assert len(names) == columns
     output_handle.write("#%s\n" % "\t".join(names))
 
-    #Now the easy bit, tabify the data (using white space as instructed
-    #in the HMMER3 manual, which says not to use the columnation).
+    # Now the easy bit, tabify the data (using white space as instructed
+    # in the HMMER3 manual, which says not to use the columnation).
     count = 0
     for line in input_handle:
         assert line[0] != "#"
-        #There will be spaces in the last column (description of target)
-        parts = line.rstrip("\n").split(None, columns-1)
+        # There will be spaces in the last column (description of target)
+        parts = line.rstrip("\n").split(None, columns - 1)
         assert len(parts) == columns, parts
         output_handle.write("\t".join(parts) + "\n")
         count += 1

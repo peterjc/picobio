@@ -26,6 +26,7 @@ import os
 from optparse import OptionParser
 import numpy as np
 
+
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
@@ -34,8 +35,8 @@ def sys_exit(msg, error_level=1):
 VERSION = "0.0.2"
 
 parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
-                      version="%prog "+VERSION)
-#References
+                      version="%prog " + VERSION)
+# References
 parser.add_option("-l", "--lref", dest="linear_references",
                   type="string", metavar="FILE", action="append",
                   help="FASTA file of linear reference sequence(s). "
@@ -44,17 +45,17 @@ parser.add_option("-c", "--cref", dest="circular_references",
                   type="string", metavar="FILE", action="append",
                   help="FASTA file of circular reference sequence(s). "
                        "Several files can be given if required.")
-#Reads
+# Reads
 parser.add_option("-i", "--input", dest="input_reads",
                   type="string", metavar="FILE",
                   help="Input file of SAM format mapped reads to be processed (def. stdin)")
-parser.add_option("-o","--output", dest="coverage_file",
+parser.add_option("-o", "--output", dest="coverage_file",
                   type="string", metavar="FILE",
                   help="Output file for coverage report (def. stdout)")
 
 (options, args) = parser.parse_args()
 
-if len(sys.argv)==1:
+if len(sys.argv) == 1:
     parser.print_help()
     sys.exit(1)
 
@@ -71,7 +72,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
     sam_len_references = dict()
 
     # Should be a batch of reads...
-    global solo0, solo1, solo2,solo12
+    global solo0, solo1, solo2, solo12
     solo0 = solo1 = solo2 = solo12 = 0
 
     global coverage
@@ -85,7 +86,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
         if not batch:
             continue
         if batch[0][0] == "@":
-            #SAM header
+            # SAM header
             for line in batch:
                 assert line[0] == "@"
                 if line[0:4] == "@SQ\t":
@@ -100,10 +101,11 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                     sam_len_references[rname] = length
                     if rname in ref_len_linear:
                         assert length == ref_len_linear[rname]
-                        #print "Found @SQ line for linear reference %s" % rname
+                        # print "Found @SQ line for linear reference %s" %
+                        # rname
                     elif rname in ref_len_circles:
                         if length == 2 * ref_len_circles[rname]:
-                        #We will use the length from the FASTA file
+                            # We will use the length from the FASTA file
                             sys.stderr.write("WARNING: @SQ line for %s gives length %i, double %i in FASTA\n"
                                              % (rname, length, ref_len_circles[rname]))
                         else:
@@ -112,7 +114,7 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                         sys_exit("Bad @SQ line:\n%s" % line)
                     else:
                         sys_exit("This reference was not given!:\n%s" % line)
-            #End of header
+            # End of header
             continue
 
         # Split up all the QNAME reads by fragment
@@ -124,14 +126,14 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
         qname = None
         for line in batch:
             # SAM read
-            qname, flag, rname, pos, mapq, cigar, rest =  line.split("\t", 6)
+            qname, flag, rname, pos, mapq, cigar, rest = line.split("\t", 6)
             flag = int(flag)
             if flag & 0x4:
                 #Unmapped, ignore
                 continue
             frag = get_frag(flag)
             reads[frag].add((rname, pos, cigar))
-            rnames.add(rname) # to see if all map to same ref
+            rnames.add(rname)  # to see if all map to same ref
         # Now get weighted coverage
         if r0:
             # This QNAME is a single read (perhaps multiply mapped)
@@ -169,7 +171,6 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                 weight = 1.0 / len(r2)
                 for rname, pos, cigar in r2:
                     count_coverage(coverage, field, weight, rname, pos, cigar)
-       
 
     for lengths in [ref_len_linear, ref_len_circles]:
         for ref, length in lengths.iteritems():
@@ -179,12 +180,14 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                 assert len(row) == length
                 row_max = max(row)
                 if row_max:
-                    output_handle.write("\t".join("%.1f" % v for v in row) + "\n")
+                    output_handle.write("\t".join("%.1f" %
+                                                  v for v in row) + "\n")
                 else:
                     output_handle.write("None\n")
                 m = max(m, row_max)
             sys.stderr.write("%s length %i max depth %i\n" % (ref, length, m))
-    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both mapped\n" % (solo0, solo1, solo2, solo12))
+    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both mapped\n" %
+                     (solo0, solo1, solo2, solo12))
 
 
 def cigar_tuples(cigar_str):
@@ -200,10 +203,10 @@ def cigar_tuples(cigar_str):
     count = ""
     for letter in cigar_str:
         if letter.isdigit():
-            count += letter #string addition
+            count += letter  # string addition
         else:
             if letter not in "MIDNSHP=X":
-                raise ValueError("Invalid character %s in CIGAR %s" \
+                raise ValueError("Invalid character %s in CIGAR %s"
                                  % (letter, cigar_str))
             answer.append((letter, int(count)))
             count = ""
@@ -225,20 +228,21 @@ def count_coverage(coverage, field, weight, rname, pos, cigar):
     for i in xrange(pos, pos + cigar_alen(cigar)):
         values[field, i % length] += weight
 
+
 def get_frag(flag):
     f = int(flag)
     if f & 0x1:
-        #multi-part
+        # multi-part
         first = f & 0x40
         last = f & 0x80
         if first and last:
-            return None # Part of a mult-fragment read, not pair?
+            return None  # Part of a mult-fragment read, not pair?
         elif first:
             return 1
         elif last:
             return 2
         else:
-            return None # Unknown
+            return None  # Unknown
     else:
         return None
 
@@ -260,17 +264,19 @@ def get_fasta_ids_and_lengths(fasta_filename):
     h.close()
 
 
-#Load the reference sequence lengths
+# Load the reference sequence lengths
 ref_len_linear = dict()
 if options.linear_references:
     for f in options.linear_references:
         ref_len_linear.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i linear references loaded\n" % len(ref_len_linear))
+    sys.stderr.write("Lengths of %i linear references loaded\n" %
+                     len(ref_len_linear))
 ref_len_circles = dict()
 if options.circular_references:
     for f in options.circular_references:
         ref_len_circles.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i circular references loaded\n" % len(ref_len_circles))
+    sys.stderr.write("Lengths of %i circular references loaded\n" %
+                     len(ref_len_circles))
 
 
 def batch_by_qname(input_handle):
@@ -288,7 +294,8 @@ def batch_by_qname(input_handle):
         if line[0] == "@":
             # SAM Header
             if batch_qname or (batch and batch[-1][0] != "@"):
-                sys_exit("Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line))
+                sys_exit("Bad SAM file, stay header lines?:\n%s%s" %
+                         ("".join(batch), line))
             batch.append(line)
         else:
             # SAM read
@@ -304,7 +311,7 @@ def batch_by_qname(input_handle):
         yield batch
 
 
-#Open handles
+# Open handles
 if options.input_reads:
     input_handle = open(options.input_reads)
 else:
@@ -318,7 +325,7 @@ else:
 go(input_handle, output_handle, ref_len_circles, ref_len_circles)
 
 
-#Close handles
+# Close handles
 if options.input_reads:
     input_handle.close()
 if options.coverage_file:

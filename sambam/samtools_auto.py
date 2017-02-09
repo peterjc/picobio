@@ -37,6 +37,7 @@ import sys
 samtools_old = "/mnt/galaxy/bin/samtools_0.1.19"
 samtools_new = "/mnt/galaxy/bin/samtools_1.1"
 
+
 def pick_binary():
     """Return new samtools unless known to be using a broken command.
 
@@ -49,10 +50,12 @@ def pick_binary():
     else:
         return samtools_new
 
-#argv[0] is this python script
-#Turn the argv list into a string, escaping as needed
+# argv[0] is this python script
+# Turn the argv list into a string, escaping as needed
+
+
 def wrap(text):
-    if " " in text and not text[0]=='"' and not text[-1]=='"':
+    if " " in text and not text[0] == '"' and not text[-1] == '"':
         return '"%s"' % text
     else:
         return text
@@ -63,5 +66,5 @@ err = os.system(cmd)
 if 0 < err < 128:
     sys.exit(err)
 elif err:
-    #Returning 512 gives 0 (odd)
+    # Returning 512 gives 0 (odd)
     sys.exit(1)

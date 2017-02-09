@@ -84,8 +84,10 @@ for (t1, s1, q1), (t2, s2, q2) in zip(fastq1, fastq2):
         assert id1.endswith("/1"), t1
         assert id2.endswith("/2"), t2
         qname = id1[:-2]
-    
-    print("\t".join([qname, flag1, rname, pos, mapq, cigar, rnext, pnext, tlen, s1, q1]))
-    print("\t".join([qname, flag1, rname, pos, mapq, cigar, rnext, pnext, tlen, s2, q2]))
+
+    print("\t".join([qname, flag1, rname, pos,
+                     mapq, cigar, rnext, pnext, tlen, s1, q1]))
+    print("\t".join([qname, flag1, rname, pos,
+                     mapq, cigar, rnext, pnext, tlen, s2, q2]))
     pairs += 1
 sys.stderr.write("Done, %i pairs\n" % pairs)

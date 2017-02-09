@@ -30,21 +30,25 @@ https://github.com/peterjc/picobio
 
 import sys
 
+
 def decode_cigar(cigar):
     """Returns a list of 2-tuples, integer count and operator char."""
     count = ""
     answer = []
     for letter in cigar:
         if letter.isdigit():
-            count += letter #string addition
+            count += letter  # string addition
         elif letter in "MIDNSHP=X":
             answer.append((int(count), letter))
             count = ""
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" %
+                             (letter, cigar))
     return answer
 
-assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(14,'S'),(15,'M'),(1,'P'),(1,'D'),(3,'P'),(54,'M'),(1,'D'),(34,'M'),(5,'S')]
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
+    14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
+
 
 def cigar_seq_len(cigar_str):
     slen = 0
@@ -54,20 +58,21 @@ def cigar_seq_len(cigar_str):
     return slen
 assert cigar_seq_len("1I58M1I34M1I2M1D12M") == 109
 
+
 def get_frag(flag):
     f = int(flag)
     if f & 0x1:
-        #multi-part
+        # multi-part
         first = f & 0x40
         last = f & 0x80
         if first and last:
-            return None # Part of a mult-fragment read, not pair?
+            return None  # Part of a mult-fragment read, not pair?
         elif first:
             return 1
         elif last:
             return 2
         else:
-            return None # Unknown
+            return None  # Unknown
     else:
         return None
 
@@ -78,10 +83,11 @@ last_frag = 0
 count = 0
 mod = 0
 for line in sys.stdin:
-    if line[0]!="@":
-        #Should be a read
+    if line[0] != "@":
+        # Should be a read
         count += 1
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split("\t", 11)
+        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split(
+            "\t", 11)
         if seq == "*":
             if qname == last_name and get_frag(flag) == last_frag:
                 assert last_seq
@@ -97,9 +103,10 @@ for line in sys.stdin:
                 if qual == "*":
                     qual = last_qual
                 mod += 1
-                line = "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
+                line = "\t".join(
+                    [qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
         elif "H" not in cigar:
-            #Cache the SEQ
+            # Cache the SEQ
             last_name = qname
             last_frag = get_frag(flag)
             last_seq = seq

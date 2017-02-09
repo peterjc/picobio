@@ -6,6 +6,7 @@ Checks read identifiers agree, or end with /1 and /2 respectively.
 import sys
 import gzip
 
+
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
@@ -42,26 +43,27 @@ for title1, seq1, qual1 in iter1:
     try:
         title2, seq2, qual2 = iter2.next()
     except StopIteration:
-        sys_exit("More records in %s than %s, e.g. %s" % (fastq1, fastq2, title1))
+        sys_exit("More records in %s than %s, e.g. %s" %
+                 (fastq1, fastq2, title1))
     id1, descr1 = title1.split(None, 1)
     id2, descr2 = title2.split(None, 1)
     if id1 == id2:
-        #Add the /1 and /2, preserve any description after the ID
+        # Add the /1 and /2, preserve any description after the ID
         if descr1:
             descr1 = " " + descr1
         if descr2:
             descr2 = " " + descr2
-        out_handle.write("@%s/1%s\n%s\n+\n%s\n@%s/2%s\n%s\n+\n%s\n" \
+        out_handle.write("@%s/1%s\n%s\n+\n%s\n@%s/2%s\n%s\n+\n%s\n"
                          % (id1, descr1, seq1, qual1, id2, descr2, seq2, qual2))
-    elif id1.endswith("/1") and id2.endswith("/2") and id1[:-2]==id2[:-2]:
-        out_handle.write("@%s\n%s\n+\n%s\n@%s\n%s\n+\n%s\n" \
+    elif id1.endswith("/1") and id2.endswith("/2") and id1[:-2] == id2[:-2]:
+        out_handle.write("@%s\n%s\n+\n%s\n@%s\n%s\n+\n%s\n"
                          % (title1, seq1, qual1, title2, seq2, qual2))
     else:
         sys_exit("Mismatched records %r vs %r" % (title1, title2))
 
-#Check at end of file two
+# Check at end of file two
 try:
-    title2,seq2, qual2 = iter2.next()
+    title2, seq2, qual2 = iter2.next()
     sys_exit("More records in %s than %s, e.g. %s" % (fastq2, fastq1, title2))
 except StopIteration:
     pass

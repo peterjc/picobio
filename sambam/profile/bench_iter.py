@@ -5,6 +5,7 @@ to_profile = []
 
 try:
     from Bio.Sequencing.SamBam import BamIterator
+
     def peter_iter(bam_filename, out_filename):
         """Peter's pure Python BAM iterator."""
         h = open(bam_filename, "rb")
@@ -25,6 +26,7 @@ except ImportError:
 
 try:
     from pysam import Samfile
+
     def pysam_iter(bam_filename, out_filename):
         """PySam's Samfile as BAM iterator."""
         out_h = open(out_filename, "w")

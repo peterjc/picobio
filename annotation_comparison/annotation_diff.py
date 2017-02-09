@@ -11,8 +11,10 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqIO.InsdcIO import _insdc_location_string as location_string
 
 FEATURE_TYPE_TO_IGNORE = ["source"]
-FEATURE_TYPE_WANTED = ["CDS"]  # Empty/None for any not in FEATURE_TYPE_TO_IGNORE
-MISSING_QUALIFIERS_TO_IGNORE = ["translation", "codon_start", "db_xref", "ID", "transl_table"]
+# Empty/None for any not in FEATURE_TYPE_TO_IGNORE
+FEATURE_TYPE_WANTED = ["CDS"]
+MISSING_QUALIFIERS_TO_IGNORE = ["translation",
+                                "codon_start", "db_xref", "ID", "transl_table"]
 QUALIFIERS_TO_IGNORE = ["inference", "note"]
 
 usage = """Annotation feature qualifier diff tool, for GenBank/EMBL/GFF3
@@ -56,6 +58,7 @@ Also note the two input files MUST have the same set of reference
 sequences, and the same set of features.
 """
 
+
 def parse_gff(handle):
     """Quick hack to parse Bacterial GFF files from Prokka etc.
 
@@ -74,14 +77,17 @@ def parse_gff(handle):
         if line.startswith("##sequence-region "):
             _, name, start, end = line.split()
             assert start == "1"
-            references[name] = SeqRecord(UnknownSeq(int(end)), id=name, name=name)
+            references[name] = SeqRecord(
+                UnknownSeq(int(end)), id=name, name=name)
         elif line.strip() == "##FASTA":
             break
         elif line.startswith("#"):
             raise NotImplementedError(line)
         elif line.count("\t") == 8:
-            seqid, source, ftype, start, end, score, strand, phase, attributes = line.split("\t")
-            assert seqid in references, "Reference %r not declared with ##sequence-region line:\n%r" % (seqid, line)
+            seqid, source, ftype, start, end, score, strand, phase, attributes = line.split(
+                "\t")
+            assert seqid in references, "Reference %r not declared with ##sequence-region line:\n%r" % (
+                seqid, line)
             start = int(start) - 1
             end = int(end)
             assert 0 <= start < end < len(references[seqid])
@@ -105,10 +111,12 @@ def parse_gff(handle):
             for part in attributes.strip().split(";"):
                 if not part:
                     assert ";;" in line, line
-                    sys.stderr.write("Warning - missing key=value or double semi-colon in line:\n%r\n" % line)
+                    sys.stderr.write(
+                        "Warning - missing key=value or double semi-colon in line:\n%r\n" % line)
                     continue
                 if "=" not in part:
-                    sys.exit("Bad key=value entry %r in line:\n%r" % (part, line))
+                    sys.exit("Bad key=value entry %r in line:\n%r" %
+                             (part, line))
                 key, value = part.split("=", 1)
                 if key in MISSING_QUALIFIERS_TO_IGNORE:
                     continue
@@ -130,7 +138,8 @@ def parse_gff(handle):
             if name and seqs:
                 seq = "".join(seqs)
                 assert len(seq) == len(references[name]), \
-                    "FASTA entry for %s was %i long, expected %i" % (name, len(seq), len(references[name]))
+                    "FASTA entry for %s was %i long, expected %i" % (
+                        name, len(seq), len(references[name]))
                 references[name].seq = Seq(seq)
             name = line[1:].split(None, 1)[0]
             seqs = []
@@ -141,12 +150,14 @@ def parse_gff(handle):
     if name and seqs:
         seq = "".join(seqs)
         assert len(seq) == len(references[name]), \
-            "FASTA entry for %s was %i long, expected %i" % (name, len(seq), len(references[name]))
+            "FASTA entry for %s was %i long, expected %i" % (
+                name, len(seq), len(references[name]))
         references[name].seq = Seq(seq)
     # Return results
     for name, record in references.items():
         # print("%s length %i with %i features" % (name, len(record), len(record.seq)))
         yield record
+
 
 def sniff(handle):
     offset = handle.tell()
@@ -161,6 +172,7 @@ def sniff(handle):
         return SeqIO.parse(handle, "embl")
     else:
         sys.exit("Could not guess file type from first line:\n%s" % line)
+
 
 def clean(value):
     if value is None:
@@ -177,18 +189,21 @@ def clean(value):
         value = value.replace("%2C", ",")
     return value
 
+
 def diff_f(ref_name, ref_len, old, new):
     assert old.type == new.type
     assert str(old.location) == str(new.location), \
         "%s location %s vs %s" % (old.type, old.location, new.location)
     assert location_string(old.location, ref_len) == location_string(new.location, ref_len), \
-        "%s location %s vs %s" % (old.type, location_string(old.location, ref_len), location_string(new.location, ref_len))
+        "%s location %s vs %s" % (old.type, location_string(
+            old.location, ref_len), location_string(new.location, ref_len))
 
     if "locustag" in old.qualifiers and "locustag" in new.qualifiers:
         if old.qualifiers["locustag"] == new.qualifiers["locustag"]:
             name = old.qualifiers["locustag"]
 
-    keys = set(old.qualifiers).union(new.qualifiers).difference(QUALIFIERS_TO_IGNORE)
+    keys = set(old.qualifiers).union(
+        new.qualifiers).difference(QUALIFIERS_TO_IGNORE)
     for k in keys:
         if k in MISSING_QUALIFIERS_TO_IGNORE:
             if k not in old.qualifiers or k not in new.qualifiers:
@@ -203,7 +218,8 @@ def diff_f(ref_name, ref_len, old, new):
                 # White space only, ignore
                 pass
             else:
-                print("\t".join([ref_name, old.type, location_string(old.location, ref_len), k, repr(old_v), repr(new_v)]))
+                print("\t".join([ref_name, old.type, location_string(
+                    old.location, ref_len), k, repr(old_v), repr(new_v)]))
 
 # TODO: Proper command line API
 try:
@@ -229,7 +245,8 @@ for old, new in zip(old_iter, new_iter):
         new_fs = [f for f in new.features if f.type not in FEATURE_TYPE_TO_IGNORE]
 
     assert len(old_fs) == len(new_fs), \
-        "Have %i [%i] vs %i [%i] features, aborting" % (len(old_fs), len(old.features), len(new_fs), len(new.features))
+        "Have %i [%i] vs %i [%i] features, aborting" % (
+            len(old_fs), len(old.features), len(new_fs), len(new.features))
     for old_f, new_f in zip(old_fs, new_fs):
         diff_f(old.id, len(old), old_f, new_f)
 

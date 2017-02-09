@@ -11,6 +11,7 @@ usage = """Basic usage: ./fasta_trim_n.py < input.fasta > output.fasta
 For more details, run with -h for the help.
 """
 
+
 def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg.rstrip())
@@ -42,7 +43,8 @@ parser.add_option("-c", "--chars", dest="characters",
 chars = options.characters
 format = options.sequence_format.lower()
 
-sys.stderr.write("Removing %s characters from start/end of %s format file...\n" % (chars, format))
+sys.stderr.write(
+    "Removing %s characters from start/end of %s format file...\n" % (chars, format))
 
 if options.input_filename:
     input_handle = open(options.input_filename)
@@ -57,23 +59,25 @@ else:
 chars = options.characters
 format = options.sequence_format.lower()
 
+
 def strip_seq(records):
     for record in records:
-        #FASTQ etc will be a problem, must trim quality too!
+        # FASTQ etc will be a problem, must trim quality too!
         #old_len = len(record.seq)
         record.seq = record.seq.strip(chars)
-        #TODO Minium length!
+        # TODO Minium length!
         #new_len = len(record.seq)
-        #if new_len < old_len:
+        # if new_len < old_len:
         #    sys.stderr.write("Trimmed %s from %i to %i\n" % (record.id, old_len, new_len))
         yield record
 
-#Do the work,
-count = SeqIO.write(strip_seq(SeqIO.parse(input_handle,format)), output_handle, format)
+# Do the work,
+count = SeqIO.write(strip_seq(SeqIO.parse(
+    input_handle, format)), output_handle, format)
 
 if options.input_filename:
     input_handle.close()
 if options.output_filename:
     output_handle.close()
 
-sys.stderr.write("Saved %i records\n" %count)
+sys.stderr.write("Saved %i records\n" % count)

@@ -26,7 +26,7 @@ print("Input FASTA file %s has %i sequences"
 assert len(set(ids)) == len(ids), "You have duplicate identifiers"
 
 #seqs = SeqIO.index(input_fasta, "fasta")
-#print("Input FASTA file %s has %i sequences"
+# print("Input FASTA file %s has %i sequences"
 #      % (input_fasta, len(seqs)))
 #assert count <= len(seqs)
 #picked = set(random.sample(list(seqs), count))

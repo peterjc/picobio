@@ -1,30 +1,32 @@
 import os
 try:
-    from StringIO import StringIO # Python 2
+    from StringIO import StringIO  # Python 2
 except ImportError:
-    from io import StringIO # Python 3
+    from io import StringIO  # Python 3
 
 from Bio import SeqIO
 from Bio import TogoWS
 from Bio import Entrez
 
-Entrez.email="peter.cock@hutton.ac.uk"
+Entrez.email = "peter.cock@hutton.ac.uk"
+
 
 def download(acc, name, filename):
     fetch_handle = Entrez.efetch("nuccore", rettype="gbwithparts", id=acc)
     #fetch_handle = TogoWS.entry("nuccore", acc)
-    data = fetch_handle.read() # defaults to gb                                                                                                                                      
+    data = fetch_handle.read()  # defaults to gb
     fetch_handle.close()
     assert data.lstrip().startswith("LOCUS "), data
     assert data.rstrip().endswith("//"), data
-    #Test we can parse it:                                                                                                                                                           
-    record = SeqIO.read(StringIO(data),"gb")
+    # Test we can parse it:
+    record = SeqIO.read(StringIO(data), "gb")
     assert name == record.name or record.id.startswith(name + "."), \
         "Got %r and %r expected %r" % (record.id, record.name, name)
-    #Save it:                                                                                                                                                                        
+    # Save it:
     handle = open(filename, "w")
     handle.write(data)
     handle.close()
+
 
 def download_batch(acc_list, check=False):
     missing = []
@@ -46,11 +48,12 @@ def download_batch(acc_list, check=False):
             name = acc
         filename = "GenBank/%s.gbk" % name
         assert not os.path.isfile(filename)
-        print("Fetching %s (%i of %i)" % (name, index+1, count))
+        print("Fetching %s (%i of %i)" % (name, index + 1, count))
         download(acc, name, filename)
 
+
 def check(acc, name, filename):
-    record = SeqIO.read(open(filename),"gb")
+    record = SeqIO.read(open(filename), "gb")
     assert name == record.name or record.id.startswith(name + "."), \
         "Got %r and %r expected %r" % (record.id, record.name, name)
 
@@ -61,20 +64,20 @@ def check(acc, name, filename):
 # Viruses, Taxonomy ID: 10239
 # Cellular organisms, Taxonomy ID: 131567 (to avoid chimeras)
 for group, taxon_id in [
-        ("dsDnaViruses", "35237"),
-        ("dsRnaViruses", "35325"),
-        ("ssDnaViruses", "29258"),
-        ("ssRnaViruses", "439488"),
-        ("allViruses","10239"),
-    ] :
-    print("="*60)
+    ("dsDnaViruses", "35237"),
+    ("dsRnaViruses", "35325"),
+    ("ssDnaViruses", "29258"),
+    ("ssRnaViruses", "439488"),
+    ("allViruses", "10239"),
+]:
+    print("=" * 60)
     print(group)
-    print("="*60)
+    print("=" * 60)
 
     if os.path.isfile("GenBank/%s.txt" % group):
         print("Pre-fetching any outstanding old search results...")
         handle = open("GenBank/%s.txt" % group)
-        names =[line.strip() for line in handle]
+        names = [line.strip() for line in handle]
         handle.close()
         download_batch(names)
     else:
@@ -94,12 +97,12 @@ for group, taxon_id in [
         print("Probably no new names...")
         continue
 
-    #Get the accessions...
+    # Get the accessions...
     names = []
     batch_size = 1000
-    for start in range(0,count,batch_size):
-        end = min(count, start+batch_size)
-        print("Getting accessions for record %i to %i" % (start+1, end))
+    for start in range(0, count, batch_size):
+        end = min(count, start + batch_size)
+        print("Getting accessions for record %i to %i" % (start + 1, end))
         fetch_handle = Entrez.efetch(db="nucleotide", rettype="acc", retmode="xml",
                                      retstart=start, retmax=batch_size,
                                      webenv=webenv, query_key=query_key)
@@ -110,9 +113,9 @@ for group, taxon_id in [
     assert len(names) == count
     print("%i records, %s to %s" % (len(names), names[0], names[-1]))
 
-    handle = open("GenBank/%s.txt" % group,"w")
+    handle = open("GenBank/%s.txt" % group, "w")
     handle.write("\n".join(names))
     handle.close()
 
-    #Get the sequences
+    # Get the sequences
     download_batch(names)

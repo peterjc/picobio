@@ -1,4 +1,4 @@
-#Prepares merged FASTA files to use for BLAST databases
+# Prepares merged FASTA files to use for BLAST databases
 #
 # v000 - proteins only
 # v001 - date based filename
@@ -15,12 +15,13 @@ from Bio.SeqRecord import SeqRecord
 
 date_stamp = "20131114"
 
-tables = {"NC_008956":1, "NC_008954":1, "NC_008949":1, "NC_008948":1,
-          "NC_011452":1, "NC_008956":1}
+tables = {"NC_008956": 1, "NC_008954": 1, "NC_008949": 1, "NC_008948": 1,
+          "NC_011452": 1, "NC_008956": 1}
+
 
 def dedup(input_fasta, output_fasta):
     """Merge identical FASTA entries using NCBI NR Ctrl+A style"""
-    #Try it in memory...
+    # Try it in memory...
     print("Deduplicating %s..." % input_fasta)
     by_seq = dict()
     total = 0
@@ -38,22 +39,22 @@ def dedup(input_fasta, output_fasta):
     handle = open(output_fasta, "w")
     for s in by_seq:
         titles = by_seq[s]
-        #chr(1) = CTRL+A
+        # chr(1) = CTRL+A
         handle.write(">%s\n%s\n" % (chr(1).join(sorted(titles)), s))
     handle.close()
 
 
-def get_nuc(seq, loc_string) :
+def get_nuc(seq, loc_string):
     reverse = False
-    if loc_string.startswith("complement(") :
-        assert loc_string[-1]==")"
+    if loc_string.startswith("complement("):
+        assert loc_string[-1] == ")"
         loc_string = loc_string[11:-1]
         reverse = True
     start, end = [int(x.strip("<").strip(">")) for x in loc_string.split("..")]
-    nuc = seq[start-1:end]
-    if reverse :
+    nuc = seq[start - 1:end]
+    if reverse:
         return nuc.reverse_complement()
-    else :
+    else:
         return nuc
 
 
@@ -67,11 +68,13 @@ def make_db(fasta, protein=False):
         t = "nucl"
         if os.path.isfile(stem + ".nin"):
             return
-    cmd = "makeblastdb -in %s -dbtype %s -out %s -parse_seqids" % (fasta, t, stem)
+    cmd = "makeblastdb -in %s -dbtype %s -out %s -parse_seqids" % (
+        fasta, t, stem)
     print(cmd)
     rc = os.system(cmd)
     if rc:
         raise RuntimeError("Return code %i from:\n%s" % (rc, cmd))
+
 
 def make_merged_genomes(genomes_file, names):
     count = 0
@@ -80,7 +83,7 @@ def make_merged_genomes(genomes_file, names):
         acc = (name + ".").split(".")[0]
         record = SeqIO.read("GenBank/%s.gbk" % acc, "gb")
         gi = record.annotations["gi"]
-        #Convert to NCBI style FASTA identifier...
+        # Convert to NCBI style FASTA identifier...
         record.id = "gi|%s|ref|%s" % (gi, record.id)
         count += SeqIO.write(record, handle, "fasta")
     handle.close()
@@ -91,10 +94,10 @@ for group in ["dsDnaViruses",
               "ssDnaViruses",
               "dsRnaViruses",
               "ssRnaViruses",
-              "allViruses"] :
-    print("="*len(group))
+              "allViruses"]:
+    print("=" * len(group))
     print(group)
-    print("="*len(group))
+    print("=" * len(group))
     names = open("GenBank/%s.txt" % group).read().split("\n")
     genomes_file = "%s_%s_genomes.fna" % (group, date_stamp)
     genomes_nr = "%s_%s_genomes_NR.fna" % (group, date_stamp)
@@ -103,7 +106,6 @@ for group in ["dsDnaViruses",
     nuc_file = "%s_%s_genes.ffn" % (group, date_stamp)
     nuc_nr = "%s_%s_genes_NR.ffn" % (group, date_stamp)
     print("Looking at %i %s" % (len(names), group))
-
 
     if os.path.isfile(genomes_file):
         print("Got %s" % genomes_file)
@@ -116,54 +118,58 @@ for group in ["dsDnaViruses",
         print("Got %s" % genomes_nr)
     else:
         dedup(genomes_file, genomes_nr)
-    
+
     make_db(genomes_nr, protein=False)
 
     if os.path.isfile(protein_file):
         print("Got %s" % protein_file)
-    else :
-        handle = open(protein_file,"w")
+    else:
+        handle = open(protein_file, "w")
         bad = 0
         count = 0
         for index, name in enumerate(names):
             name = name.split(".", 1)[0]
             filename = "GenBank/%s.gbk" % name
             parent = None
-            for record in SeqIO.parse(open(filename),"genbank-cds") :
-                if "pseudo" in record.annotations : continue
-                if "pseudogene" in record.annotations: continue
-                count+=1
-                try :
+            for record in SeqIO.parse(open(filename), "genbank-cds"):
+                if "pseudo" in record.annotations:
+                    continue
+                if "pseudogene" in record.annotations:
+                    continue
+                count += 1
+                try:
                     protein_id = record.annotations["protein_id"]
                 except KeyError:
                     print(filename)
                     print(record)
                     assert False
                 gi = None
-                for xref in record.dbxrefs :
-                    if xref.lower().startswith("gi:") :
+                for xref in record.dbxrefs:
+                    if xref.lower().startswith("gi:"):
                         gi = xref[3:]
                         break
                 assert gi and protein_id, str(record)
                 record.id = "gi|%s|ref|%s" % (gi, record.id)
-                if record.description=="<unknown description>":
-                    if "product" in record.annotations :
+                if record.description == "<unknown description>":
+                    if "product" in record.annotations:
                         record.description = record.annotations["product"]
-                    elif "note" in record.annotations :
+                    elif "note" in record.annotations:
                         record.description = record.annotations["note"]
-                if record.seq is None :
-                    bad+=1
-                    print("%s %s" % (filename, record.annotations["raw_location"]))
-                    if parent is None :
-                        parent = SeqIO.read(open(filename),"gb")
-                    nuc = get_nuc(parent.seq, record.annotations["raw_location"])
-                    if "transl_table" in record.annotations :
+                if record.seq is None:
+                    bad += 1
+                    print("%s %s" %
+                          (filename, record.annotations["raw_location"]))
+                    if parent is None:
+                        parent = SeqIO.read(open(filename), "gb")
+                    nuc = get_nuc(parent.seq, record.annotations[
+                                  "raw_location"])
+                    if "transl_table" in record.annotations:
                         table = int(record.annotations["transl_table"])
-                    else :
+                    else:
                         table = tables[name]
                     pro = nuc.translate(table)
-                    assert pro.endswith("*") and pro.count("*")==1
-                    record.seq = pro[:-1] #remove stop
+                    assert pro.endswith("*") and pro.count("*") == 1
+                    record.seq = pro[:-1]  # remove stop
                 SeqIO.write([record], handle, "fasta")
             #print("%i: %i in %s" % (index+1, count, name))
         handle.close()
@@ -177,40 +183,43 @@ for group in ["dsDnaViruses",
         dedup(protein_file, protein_nr)
 
     make_db(protein_nr, protein=True)
-        
+
     if os.path.isfile(nuc_file):
         print("Got %s" % nuc_file)
-    else :
-        handle = open(nuc_file,"w")
+    else:
+        handle = open(nuc_file, "w")
         count = 0
         for index, name in enumerate(names):
             name = name.split(".", 1)[0]
             filename = "GenBank/%s.gbk" % name
-            #print(name)
-            parent = SeqIO.read(open(filename),"genbank")
-            for f in parent.features :
-                if f.type != "CDS" : continue
-                if "pseudo" in f.qualifiers : continue
-                if "pseudogene" in f.qualifiers : continue
+            # print(name)
+            parent = SeqIO.read(open(filename), "genbank")
+            for f in parent.features:
+                if f.type != "CDS":
+                    continue
+                if "pseudo" in f.qualifiers:
+                    continue
+                if "pseudogene" in f.qualifiers:
+                    continue
                 nuc = f.extract(parent.seq)
                 protein_id = f.qualifiers["protein_id"][0]
                 gi = None
-                pro = nuc.translate(tables.get(name,1))
-                if not (pro.endswith("*") and pro.count("*")==1) :
+                pro = nuc.translate(tables.get(name, 1))
+                if not (pro.endswith("*") and pro.count("*") == 1):
                     print("%s %s lacks stop codon" % (name, protein_id))
-                for xref in f.qualifiers["db_xref"] :
-                    if xref.lower().startswith("gi:") :
+                for xref in f.qualifiers["db_xref"]:
+                    if xref.lower().startswith("gi:"):
                         gi = xref[3:]
                         break
-                if not (gi and protein_id) :
+                if not (gi and protein_id):
                     print(f)
                     assert False
-                #Bit of a hack, we are using the protein's ID here!
+                # Bit of a hack, we are using the protein's ID here!
                 record = SeqRecord(nuc, id="gi|%s|ref|%s" % (gi, protein_id),
-                                   description="; ".join(f.qualifiers.get("note",[])))
+                                   description="; ".join(f.qualifiers.get("note", [])))
                 SeqIO.write([record], handle, "fasta")
-                count +=1
-            #print "%i: %i in %s" % (index+1, count, name)
+                count += 1
+            # print "%i: %i in %s" % (index+1, count, name)
         handle.close()
         print("Done")
         print("%i genes" % count)
