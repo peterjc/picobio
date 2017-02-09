@@ -12,7 +12,7 @@ usage = """Annotation feature qualifier patch tool, for GFF3 format.
 
 Usage:
 
-$ ./annotation_patch.py old_vs_new.txt original.gff > updated.gff 
+$ ./annotation_patch.py old_vs_new.txt original.gff > updated.gff
 
 The output is printed to stdout, use Unix redirection to capture
 this to a file.

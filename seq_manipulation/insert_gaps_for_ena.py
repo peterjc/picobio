@@ -7,7 +7,7 @@ ENA validation:
 
 $ java -jar embl-api-validator-1.1.146.jar BXF1.embl
 ...
-ERROR: Sequence contains a stretch of 'n' characters between base {0} and {1} that is not represented with a "gap" feature (stretches of n greater than {2} gives a warning, greater than {3} gives an error). (26 occurrences) (SequenceToGapFeatureBasesCheck-1) 
+ERROR: Sequence contains a stretch of 'n' characters between base {0} and {1} that is not represented with a "gap" feature (stretches of n greater than {2} gives a warning, greater than {3} gives an error). (26 occurrences) (SequenceToGapFeatureBasesCheck-1)
 ...
 
 The validator reports a warning for any Ns without a gap feature, and an

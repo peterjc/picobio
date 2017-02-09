@@ -46,7 +46,7 @@ def convert(input_handle, output_handle):
 
 
     In both these examples, the columnation is clearly disturbed by the
-    long query names. 
+    long query names.
 
     For these tables the HMMER3 manual states: "... is columnated neatly
     for human readability, but you should not write parsers that rely on
