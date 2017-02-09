@@ -50,7 +50,7 @@ except ImportError:
         i = len(posixpath.commonprefix([start_list, path_list]))
         rel_list = [posixpath.pardir] * (len(start_list) - i) + path_list[i:]
         if not rel_list:
-            return curdir
+            return path
         return posixpath.join(*rel_list)
     assert relpath("/data/blast/ncbi/nr.pal", "/data/blast") == "ncbi/nr.pal"
 
