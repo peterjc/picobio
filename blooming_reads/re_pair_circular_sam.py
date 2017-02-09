@@ -44,8 +44,9 @@ end data, you might get two, three or even four lines in SAM
 (rather than the normal two lines, one for each half of the pair).
 """
 
-import sys
 import os
+import sys
+
 from optparse import OptionParser
 
 from Bio import SeqIO
@@ -503,7 +504,6 @@ def main():
     if args:
         parser.error("No arguments expected")
 
-    paired = True
     go(options.input_reads, options.output_reads, options.raw_reads,
        options.linear_references, options.circular_references,
        options.coverage_file)
