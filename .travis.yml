@@ -1,0 +1,16 @@
+# This is a special configuration file to run tests on Travis-CI via
+# GitHub notifications when changes are committed.
+#
+# For technical details, see http://travis-ci.org/
+
+language: python
+sudo: false
+
+before_install:
+ - pip install pep8
+
+script:
+ - pep8 --ignore E501,E402 .
+
+notifications:
+  email: false
