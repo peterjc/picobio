@@ -35,7 +35,7 @@ https://github.com/peterjc/picobio
 """
 
 import sys
-import os
+
 from optparse import OptionParser
 
 
@@ -43,6 +43,7 @@ def sys_exit(msg, error_level=1):
     """Print error message to stdout and quit with given error level."""
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
+
 
 VERSION = "0.0.1"
 
@@ -93,6 +94,7 @@ def decode_cigar(cigar):
                              (letter, cigar))
     return answer
 
+
 assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
     14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
 
@@ -103,6 +105,8 @@ def cigar_seq_len(cigar_str):
         if operator in "MIS=X":
             slen += count
     return slen
+
+
 assert cigar_seq_len("1I58M1I34M1I2M1D12M") == 109
 
 
@@ -198,6 +202,8 @@ def restore_seq(sam_lines):
     global seq_mod
     last_name = None
     last_frag = None
+    last_seq = None
+    last_qual = None
     for line in sam_lines:
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split(
             "\t", 11)
