@@ -70,6 +70,7 @@ def process_fastq(project, fastq_filename):
                 url = "ftp://" + url
             assert url.startswith("ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR"), url
             filename = url[len("ftp://ftp.sra.ebi.ac.uk/"):]
+            pending = filename + ".tmp"
             acc = parts[2]  # here using secondary_sample_accession
             if wanted and acc not in wanted:
                 print("Not interested in %s from %s" % (filename, acc))
@@ -84,20 +85,28 @@ def process_fastq(project, fastq_filename):
                 os.makedirs(d)
             if os.path.isfile(filename):
                 print("Already have %s" % filename)
-            else:
-                #Download file...
-                print("Downloading %s" % filename)
-                rc = os.system("wget -nv -O %s %s" % (filename, url))
-                assert not rc, rc
+                # Assume MD5 checked
+                continue
+            #Download file...
+            print("Downloading %s" % filename)
+            rc = os.system("wget -nv -O %s %s" % (pending, url))
+            assert not rc, rc
             #Now check the md5...
-            m = filename + ".md5"
+            m = pending + ".md5"
             if not os.path.isfile(m):
                 print("Creating %s with md5 %s" % (m, md5))
                 with open(m, "w") as handle:
-                    handle.write("%s  %s" % (md5, os.path.basename(filename)))
-            print("Confirming %s has checksum %s" % (filename, md5))
+                    handle.write("%s  %s" % (md5, os.path.basename(pending)))
+            print("Confirming %s has checksum %s" % (pending, md5))
             rc = os.system("cd %s && md5sum -c %s" % (d, os.path.split(m)[1]))
             assert not rc, rc
+            # Rename files now that MD5 confirmed
+            os.remove(m)
+            m = filename + ".md5"
+            with open(m, "w") as handle:
+                handle.write("%s  %s" % (md5, os.path.basename(filename)))
+            os.rename(pending, filename)
+            print("Renamed %s to %s" % (pending, filename))
     h.close()
 
 process_fastq(project, fastq_file)
