@@ -139,7 +139,7 @@ for db in names:
             handle = open(lock)
             sys.stderr.write(handle.read())
             handle.close()
-        except:
+        except Exception:
             pass
         sys.stderr.write("Aborting sync\n")
         sys.exit(2)
@@ -148,7 +148,7 @@ for db in names:
         handle.write(time.strftime(
             "%a, %d %b %Y %H:%M:%S +0000\n", time.gmtime()))
         handle.close()
-    except:
+    except Exception:
         sys.stderr.write("Could not create BLAST DB lock\n")
         sys.exit(1)
 
