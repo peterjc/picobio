@@ -7,6 +7,7 @@ binary which offers multiple (often independent) commands.
 Right now, samtools 1.1 still lacks some functionality from 0.1.19,
 for example "samtools index", "samtools depad" and "samtools rmdup"
 are not yet fully functional. e.g.
+
  - https://github.com/samtools/samtools/issues/199
  - https://github.com/samtools/samtools/issues/291
 
