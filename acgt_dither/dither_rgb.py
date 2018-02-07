@@ -9,6 +9,8 @@ The motivation and example images are described on this blog post:
 http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 """
 
+from __future__ import print_function
+
 import os
 
 from Bio import SeqIO
@@ -35,14 +37,14 @@ def run(im, seq, pdf_file, main_caption):
     shape = data.shape[0:2]
 
     pixels = np.product(shape)
-    print "Have %i base pairs, shape %r, and %i pixels" % (len(seq), shape, pixels)
+    print("Have %i base pairs, shape %r, and %i pixels" % (len(seq), shape, pixels))
 
     assert pixels <= len(seq)
     assert 0 <= data.min() <= data.max() <= 255
 
     # Open PDF
     width, height = page_size = h_scale * shape[1], v_scale * shape[0]
-    print "Creating %s, %i by %i mm" % (pdf_file, width / mm, height / mm)
+    print("Creating %s, %i by %i mm" % (pdf_file, width / mm, height / mm))
     c = canvas.Canvas(pdf_file, page_size)
     c.setTitle(main_caption)
     d = Drawing(*page_size)
@@ -67,15 +69,15 @@ def run(im, seq, pdf_file, main_caption):
     c.showPage()
     c.save()
 
-# print "A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale)
+# print("A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale))
 # --> A0: Suggest width 600, height 951 pixels
-# print "A1: Suggest width %i, height %i pixels" % (594 * mm / h_scale, 841 * mm / v_scale)
+# print("A1: Suggest width %i, height %i pixels" % (594 * mm / h_scale, 841 * mm / v_scale))
 # --> Suggest width 424, height 672 pixels
-# print "A2: Suggest width %i, height %i pixels" % (420 * mm / h_scale, 594 * mm / v_scale)
+# print("A2: Suggest width %i, height %i pixels" % (420 * mm / h_scale, 594 * mm / v_scale))
 # --> A2: Suggest width 300, height 475 pixels
-# print "A3: Suggest width %i, height %i pixels" % (297 * mm / h_scale, 420 * mm / v_scale)
+# print("A3: Suggest width %i, height %i pixels" % (297 * mm / h_scale, 420 * mm / v_scale))
 # --> A3: Suggest width 212, height 336 pixels
-# print "A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale)
+# print("A4: Suggest width %i, height %i pixels" % (210 * mm / h_scale, 297 * mm / v_scale))
 # --> A4: Suggest width 150, height 237 pixels
 
 
@@ -118,7 +120,7 @@ for name, seq_file in [
     while "NN" in seq:
         seq = seq.replace("NN", "N")
 
-    print "Drawing %s using %s" % (name, seq_file)
+    print("Drawing %s using %s" % (name, seq_file))
     for name, shape, png_file in [
         ("A4", (150, 237), png_fileB),
         ("A3", (212, 336), png_fileA),
@@ -127,12 +129,12 @@ for name, seq_file in [
         ("A0", (600, 951), png_fileB),
     ]:
         if not os.path.isfile(png_file):
-            print "Missing %s" % png_file
+            print("Missing %s" % png_file)
             continue
         if os.path.isfile(pdf_file % name):
-            print "Skipping as %s exists..." % (pdf_file % name)
+            print("Skipping as %s exists..." % (pdf_file % name))
             continue
-        print "Size %s, using %i by %i pixels from %s" \
-            % (name, shape[0], shape[1], png_file)
+        print("Size %s, using %i by %i pixels from %s"
+              % (name, shape[0], shape[1], png_file))
         im = Image.open(png_file).resize(shape)
         run(im, seq, pdf_file % name, name)

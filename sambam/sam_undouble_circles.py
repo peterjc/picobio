@@ -337,12 +337,12 @@ for batch in batch_by_qname(input_handle):
                         length = int(p[3:])
                 if rname in ref_len_linear:
                     assert length == ref_len_linear[rname]
-                    # print "Found @SQ line for linear reference %s" % rname
+                    # print("Found @SQ line for linear reference %s" % rname)
                 elif rname in ref_len_circles:
                     assert length == 2 * ref_len_circles[rname]
                     # Return the length to its correct value
-                    # print "Fixing @SQ line for %s, length %i --> %i" %
-                    # (rname, length, ref_len_circles[rname])
+                    # print("Fixing @SQ line for %s, length %i --> %i"
+                    #       % (rname, length, ref_len_circles[rname]))
                     line = "@SQ\tSN:%s\tLN:%i\n" % (
                         rname, ref_len_circles[rname])
                 elif rname is None:

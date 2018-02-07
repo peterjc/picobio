@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from Bio import SeqIO
 
 from PIL import Image
@@ -30,7 +32,7 @@ assert shape == im.getbbox()[2:]
 data = np.array(data).reshape(shape, order="F")
 assert shape == data.shape
 pixels = np.product(shape)
-print "Have %i base pairs, and %i pixels" % (len(seq), pixels)
+print("Have %i base pairs, and %i pixels" % (len(seq), pixels))
 
 assert pixels <= len(seq)
 assert 0 <= data.min() <= data.max() <= 255

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import sys
 
 from collections import OrderedDict
@@ -109,11 +111,11 @@ for sseqid in list(contig_mapping):  # list as editing dict during loop
     if len(contig_mapping[sseqid]) < min_bases:
         del contig_mapping[sseqid]
 
-# print "- Raw -"
+# print("- Raw -")
 # contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()), reverse=True)
 # for sseqid, bases in contig_mapping_counts:
-#    print sseqid, bases
-print "- Culling 1st hit -"
+#    print(sseqid, bases)
+print("- Culling 1st hit -")
 while contig_mapping:
     sseqid, count = pop_most_mapped()
-    print sseqid, count, contig_species.get(sseqid, "")
+    print(sseqid, count, contig_species.get(sseqid, ""))

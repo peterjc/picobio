@@ -6,7 +6,9 @@
 # Copyright 2010, Peter Cock.
 #
 # v001 - First version
+# v002 - Use print as function
 
+from __future__ import print_function
 
 # This gives us the list of databases and their type (nt vs aa):
 blastrc = "/var/www/html/blast/blast.rc"
@@ -43,8 +45,8 @@ def load_blast_db_list(filename):
     return nt, aa
 
 nt, aa = load_blast_db_list(blastrc)
-# print nt
-# print aa
+# print(nt)
+# print(aa)
 
 
 def load_blast_db_descr(html_filename, nt, aa):
@@ -64,7 +66,7 @@ def load_blast_db_descr(html_filename, nt, aa):
             if '"%s"' % db in attrs:
                 if descr.endswith(" (nt)"):
                     descr = descr[:-5].strip()
-                # print "NT: %s -> %s" % (db, descr)
+                # print("NT: %s -> %s" % (db, descr))
                 nt_list.append((db, descr))
                 nt.remove(db)
                 break
@@ -72,7 +74,7 @@ def load_blast_db_descr(html_filename, nt, aa):
             if '"%s"' % db in attrs:
                 if descr.endswith(" (aa)"):
                     descr = descr[:-5].strip()
-                # print "AA: %s -> %s" % (db, descr)
+                # print("AA: %s -> %s" % (db, descr))
                 aa_list.append((db, descr))
                 aa.remove(db)
                 break
@@ -80,8 +82,8 @@ def load_blast_db_descr(html_filename, nt, aa):
     return nt_list, aa_list
 
 nt_list, aa_list = load_blast_db_descr(blastwww, nt, aa)
-# print nt_list
-# print aa_list
+# print(nt_list)
+# print(aa_list)
 
 
 for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
@@ -93,12 +95,12 @@ for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
         handle.write(
             "\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
     handle.close()
-print "Done, %i nt and %i aa BLAST databases" % (len(aa_list), len(nt_list))
+print("Done, %i nt and %i aa BLAST databases" % (len(aa_list), len(nt_list)))
 if aa:
-    print "Missing protein databases:"
+    print("Missing protein databases:")
     for db in aa:
-        print db
+        print(db)
 if nt:
-    print "Missing nucleotide databases:"
+    print("Missing nucleotide databases:")
     for db in nt:
-        print db
+        print(db)

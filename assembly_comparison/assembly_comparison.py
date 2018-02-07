@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Python script for assembly comparison.
 """
+from __future__ import print_function
 
 import os
 import sys
@@ -136,7 +137,7 @@ def do_blast(query_fasta, db_fasta, blast_file):
     cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
                                 out=blast_file, outfmt=6,
                                 evalue=1e-5)
-    print cmd
+    print(cmd)
     stdout, stderr = cmd()
     return
 

@@ -1,5 +1,7 @@
 """Script to produce stacked coverage plot with matplotlib."""
 
+from __future__ import print_function
+
 import sys
 
 from matplotlib import pyplot as plt
@@ -48,11 +50,11 @@ def stack(data, filename, colors=None):
                                  np.array([0x90, 0x41, 0x50]),
                                  # np.array([0x20, 0xF0, 0x60]),
                                  data[0][1].shape[0])
-        print colors
+        print(colors)
     for i, (name, values) in enumerate(data):
         x = range(values.shape[1])
-        print i, name, values.shape, "coverage:"
-        print "\t".join("%0.1f" % v for v in values.sum(axis=1))
+        print(i, name, values.shape, "coverage:")
+        print("\t".join("%0.1f" % v for v in values.sum(axis=1)))
         y_stack = np.cumsum(values, axis=0)
         ax1 = fig.add_subplot(total, 1, i + 1)
         ax1.set_autoscaley_on(False)
@@ -70,9 +72,9 @@ def stack(data, filename, colors=None):
 for filename in sys.argv[1:]:
     if not filename.endswith(".cov"):
         continue
-    print "-" * 60
-    print filename
-    print "-" * 60
+    print("-" * 60)
+    print(filename)
+    print("-" * 60)
     data = list(load(filename))
     stack(data, filename + ".png")
-print "Done"
+print("Done")

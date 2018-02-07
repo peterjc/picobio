@@ -19,6 +19,8 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 """
 
+from __future__ import print_function
+
 import sys
 
 
@@ -136,4 +138,4 @@ if in_file != "-":
     inp.close()
 if out_file != "-":
     out.close()
-    print "Converted table with %i lines" % count
+    print("Converted table with %i lines" % count)

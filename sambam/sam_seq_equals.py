@@ -109,8 +109,8 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
             answer += pending[:op_len]
             pending = pending[op_len:]
         elif op in "MX=":
-            # print "%i%s - %s vs %s" % (op_len, op,
-            # ref_seq[pos:pos+op_len],pending[:op_len])
+            # print("%i%s - %s vs %s"
+            #       % (op_len, op, ref_seq[pos:pos+op_len],pending[:op_len]))
             if op_len > len(pending):
                 raise RuntimeError("Only %i bases left for %i%s" %
                                    (len(pending), op_len, op))

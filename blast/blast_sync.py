@@ -28,6 +28,8 @@ We avoid this by running BLAST jobs which take a whole node at once.
 # local = "/var/blast/galaxy"
 # db = "ncbi/nr"
 
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -78,7 +80,7 @@ if not os.path.isdir(local):
 
 
 def sync_blast_alias_db(master, local, db, index):
-    print "Syncing %s" % index
+    print("Syncing %s" % index)
     handle = open(index)
     for line in handle:
         if line.startswith("DBLIST "):
@@ -108,8 +110,8 @@ def sync_blast_db(master, local, db):
     cmd = "rsync -v -rtz --exclude=*.tar.gz --exclude=*.md5 %s %s"
     old = os.path.join(master, db + ".*")
     new = os.path.join(local, os.path.split(db)[0])  # Folder namer!
-    # print "%s -> %s" % (old, new)
-    print cmd % (old, new)
+    # print("%s -> %s" % (old, new))
+    print(cmd % (old, new))
     err = os.system(cmd % (old, new))
     if err:
         sys.stderr.write("Return code %i from rsync:\n%s\n" %
@@ -117,7 +119,7 @@ def sync_blast_db(master, local, db):
     return err
 
 for db in names:
-    print db
+    print(db)
     lock = os.path.join(local, db + ".lock")
     if not os.path.isdir(os.path.split(lock)[0]):
         os.makedirs(os.path.split(lock)[0], 0777)
@@ -165,7 +167,7 @@ for db in names:
     taken = time.time() - start
     os.remove(lock)
     if taken > 100:
-        print "%s done in %0.1fm" % (db, taken / 60.0)
+        print("%s done in %0.1fm" % (db, taken / 60.0))
     else:
-        print "%s done in %is" % (db, int(taken))
-print "Done"
+        print("%s done in %is" % (db, int(taken)))
+print("Done")

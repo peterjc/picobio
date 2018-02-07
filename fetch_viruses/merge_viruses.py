@@ -9,6 +9,8 @@
 # v005 - Handle feature extraction via Biopython
 #      - Tested under Python 3
 
+from __future__ import print_function
+
 import os
 
 from Bio import SeqIO
@@ -220,7 +222,7 @@ for group in ["dsDnaViruses",
                                    description="; ".join(f.qualifiers.get("note", [])))
                 SeqIO.write([record], handle, "fasta")
                 count += 1
-            # print "%i: %i in %s" % (index+1, count, name)
+            # print("%i: %i in %s" % (index+1, count, name))
         handle.close()
         print("Done")
         print("%i genes" % count)

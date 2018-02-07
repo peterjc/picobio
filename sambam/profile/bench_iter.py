@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import time
 
@@ -43,17 +45,17 @@ try:
 except ImportError:
     pass
 
-print "Will profile %i functions:" % len(to_profile)
+print("Will profile %i functions:" % len(to_profile))
 for p in to_profile:
-    print p.__doc__
+    print(p.__doc__)
 print
 for f in os.listdir("."):
     if f.endswith(".bam"):
-        print "Using %s" % f
+        print("Using %s" % f)
         for p in to_profile:
-            print "Profiling %s" % p.__doc__
+            print("Profiling %s" % p.__doc__)
             start = time.time()
             mapped, count = p(f, "/dev/null")
             taken = time.time() - start
-            print "%s - %0.1fs giving %i/%i mapped" \
-                % (p.__doc__, taken, mapped, count)
+            print("%s - %0.1fs giving %i/%i mapped"
+                  % (p.__doc__, taken, mapped, count))

@@ -43,6 +43,7 @@ fragments (i.e. two lines in SAM). This means that with paired
 end data, you might get two, three or even four lines in SAM
 (rather than the normal two lines, one for each half of the pair).
 """
+from __future__ import print_function
 
 import os
 import sys
@@ -87,7 +88,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     if circular_refs:
         for f in circular_refs:
             ref_len_circles.update(get_fasta_ids_and_lengths(f))
-    # print ref_len_circles
+    # print(ref_len_circles)
 
     if input is None:
         input_handle = sys.stdin
@@ -117,7 +118,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
                     length = int(p[3:])
             if rname in ref_len_linear:
                 assert length == ref_len_linear[rname]
-                # print "Found @SQ line for linear reference %s" % rname
+                # print("Found @SQ line for linear reference %s" % rname)
             elif rname in ref_len_circles:
                 if length == 2 * ref_len_circles[rname]:
                     # Return the length to its correct value (should have

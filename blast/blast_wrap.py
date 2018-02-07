@@ -35,6 +35,8 @@ TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
 
+from __future__ import print_function
+
 # Old naming,
 # master = "/mnt/shared/cluster/blast/galaxy"
 # local = "/var/local/blast/galaxy"
@@ -69,7 +71,7 @@ if master in cmd:
     db = cmd[i + len(master) + 1:].split(None, 1)[0]
     if db.endswith('"'):
         db = db.rstrip('"')
-    print "Synchronising database,"
+    print("Synchronising database,")
     assert master + "/" + db in cmd
     start = time.time()
     sync = os.path.join(os.path.dirname(
@@ -90,9 +92,9 @@ if master in cmd:
     # Update the command
     cmd = cmd.replace(master + "/" + db, local + "/" + db)
     if taken > 100:
-        print "%s done in %0.1fm" % (db, taken / 60.0)
+        print("%s done in %0.1fm" % (db, taken / 60.0))
     else:
-        print "%s done in %is" % (db, int(taken))
+        print("%s done in %is" % (db, int(taken)))
 
 # Run the command
 # print cmd

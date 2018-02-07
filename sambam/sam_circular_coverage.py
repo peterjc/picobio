@@ -102,8 +102,8 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                     sam_len_references[rname] = length
                     if rname in ref_len_linear:
                         assert length == ref_len_linear[rname]
-                        # print "Found @SQ line for linear reference %s" %
-                        # rname
+                        # print("Found @SQ line for linear reference %s"
+                        #       % rname)
                     elif rname in ref_len_circles:
                         if length == 2 * ref_len_circles[rname]:
                             # We will use the length from the FASTA file
