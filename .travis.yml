@@ -7,10 +7,9 @@ language: python
 sudo: false
 
 install:
- - pip install pep8 flake8
+ - pip install flake8
 
 script:
- - pep8 --ignore E501,E402 .
  - flake8 --ignore E501,E402,E305 .
 
 notifications:
