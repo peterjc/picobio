@@ -1,5 +1,6 @@
+from __future__ import print_function
+
 import os
-import sys
 import urllib
 
 project = "ERP000297"
@@ -9,7 +10,7 @@ submissions_file = "%s_submissions.tsv" % project
 
 
 def download_in_one(url, filename):
-    print "Fetching %s" % url
+    print("Fetching %s" % url)
     n = urllib.urlopen(url)
     data = n.read()
     n.close()
@@ -17,10 +18,11 @@ def download_in_one(url, filename):
     h = open(filename, "w")
     h.write(data)
     h.close()
-    print "Saved as %s" % filename
-
+    print("Saved as %s" % filename)
+print
 if not os.path.isfile(submissions_file):
     download_in_one(submissions_url, submissions_file)
+
 
 def process_submissions(project, submissions_filename):
     h = open(submissions_filename)
@@ -33,21 +35,21 @@ def process_submissions(project, submissions_filename):
         assert url.startswith("ftp://ftp.sra.ebi.ac.uk/vol1/ERA")
         filename = url[len("ftp://ftp.sra.ebi.ac.uk/"):]
         if os.path.isfile(filename):
-            print "Already have %s" % filename
+            print("Already have %s" % filename)
             continue
         if filename.endswith(".srf"):
-            print "Skipping %s" % filename
+            print("Skipping %s" % filename)
             continue
-        #Make directory...
+        # Make directory...
         d = os.path.split(filename)[0]
         if not os.path.isdir(d):
-            print "Making directory %s" % d
+            print("Making directory %s" % d)
             os.makedirs(d)
-        #Download file...
+        # Download file...
         rc = os.system("wget -O %s %s" % (filename, url))
         assert not rc, rc
-        #Now check the md5...
-        print filename
+        # Now check the md5...
+        print(filename)
     h.close()
 
 process_submissions(project, submissions_file)

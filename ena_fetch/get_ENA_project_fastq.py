@@ -1,5 +1,6 @@
+from __future__ import print_function
+
 import os
-import sys
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -54,6 +55,7 @@ def download_in_one(url, filename):
 if not os.path.isfile(fastq_file):
     download_in_one(fastq_url, fastq_file)
 
+
 def process_fastq(project, fastq_filename):
     h = open(fastq_filename)
     line = h.readline()
@@ -78,7 +80,7 @@ def process_fastq(project, fastq_filename):
             if not filename.endswith(".fastq.gz"):
                 print("Skipping %s" % filename)
                 continue
-            #Make directory...
+            # Make directory...
             d = os.path.split(filename)[0]
             if not os.path.isdir(d):
                 print("Making directory %s" % d)
@@ -87,11 +89,11 @@ def process_fastq(project, fastq_filename):
                 print("Already have %s" % filename)
                 # Assume MD5 checked
                 continue
-            #Download file...
+            # Download file...
             print("Downloading %s" % filename)
             rc = os.system("wget -nv -O %s %s" % (pending, url))
             assert not rc, rc
-            #Now check the md5...
+            # Now check the md5...
             m = pending + ".md5"
             if not os.path.isfile(m):
                 print("Creating %s with md5 %s" % (m, md5))
