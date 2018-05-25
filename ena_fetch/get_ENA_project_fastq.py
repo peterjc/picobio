@@ -21,7 +21,7 @@ fastq_url = 'https://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=%s&re
 
 fastq_file = "%s_metadata.tsv" % project
 
-
+# The Gp life-stages:
 wanted = """ERS091755
 ERS092427
 ERS001595
@@ -39,6 +39,10 @@ ERS002001
 ERS092351
 ERS091952
 ERS092525""".split()
+
+# A few populations of interest:
+#wanted += ["ERR202431", "ERR202432", "ERR202433", "ERR202434"]
+wanted += ["ERS092428", "ERS092429", "ERS092430", "ERS092431"]
 
 
 def download_in_one(url, filename):
