@@ -22,17 +22,20 @@ for r in reference_records:
     for f in r.features:
         if f.type == "CDS":
             name = f.qualifiers["gene"][0]
-            key = "%i:%s:%i-%i" % (reference_number_in_mauve, name, f.location.start + 1, f.location.end)
+            key = "%i:%s:%i-%i" % (reference_number_in_mauve,
+                                   name,
+                                   f.location.start + 1,
+                                   f.location.end)
             cds_dict[key] = f
-#print(list(cds_dict.keys()))
+# print(list(cds_dict.keys()))
 
 for line in open(mauve_orthologues_file, "rU"):
     parts = sorted(line.strip().split("\t"))
     key = None
-    #print(parts)
+    # print(parts)
     for x in parts:
-        if x in cds_dict:
         # if x.startswith("%i|" % reference_number_in_mauve):
+        if x in cds_dict:
             print("Using: %r" % parts)
             name = x.split(":")[1]
             names = [y.split(":")[1] for y in parts if y != x]
