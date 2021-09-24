@@ -2,6 +2,8 @@
 import os
 import sys
 
+from Bio.SeqIO.FastaIO import SimpleFastaParser
+
 tmp = "/tmp/primer_selection"
 if not os.path.isdir(tmp):
     os.mkdir(tmp)
@@ -24,6 +26,33 @@ def load_primers(tsv_filename):
     return answer
 
 
+def load_isprc(isprc_filename, primer_hits):
+    """Parse the FASTA output from Jim Kent's isPcr tool.
+
+    Adds (reference, sequence) entries for (left, right) in primer_hits dict.
+    """
+    ref_name = os.path.splitext(os.path.split(isprc_filename)[1])[0]
+    with open(isprc_filename) as handle:
+        for title, seq in SimpleFastaParser(handle):
+            amp_region, name, length, left, right = title.split()
+            assert (
+                left,
+                right,
+            ) in primer_hits, f"Stale cache? Why {name}, {left}, {right}"
+            assert (
+                length == f"{len(seq)}bp"
+            ), f"Expected length {len(seq)} from sequence, yet {length}"
+            seq = seq.upper()
+            # chrom, rest = region.rsplit(":", 1)
+            # if "+" in rest:
+            #    strand = "+"
+            #    start, end = rest.split("+")
+            # else:
+            #    strand = "-"
+            #    start, end = rest.split("-")
+            primer_hits[left, right].append((ref_name, seq))
+
+
 def main():
     if len(sys.argv) < 3:
         sys.exit(
@@ -39,6 +68,7 @@ def main():
             handle.write(f"{name}\t{left}\t{right}\n")
 
     fasta_list = sys.argv[2:]
+    primer_hits = {(left, right): [] for name, left, right in primers}
     for fasta in fasta_list:
         ispcr_file = os.path.join(tmp, os.path.basename(fasta) + ".tsv")
         if not os.path.isfile(ispcr_file):
@@ -46,6 +76,10 @@ def main():
             cmd = f"isPcr '{fasta}' '{primer_file}' '{ispcr_file}'"
             if os.system(cmd):
                 sys.exit("ERROR: Calling ispcr failed\n")
+        load_isprc(ispcr_file, primer_hits)
+
+    for left, right in primer_hits:
+        print(left, right, primer_hits[left, right])
 
 
 if __name__ == "__main__":
