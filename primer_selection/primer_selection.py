@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+from collections import defaultdict
+from string import ascii_uppercase
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
@@ -26,12 +28,11 @@ def load_primers(tsv_filename):
     return answer
 
 
-def load_isprc(isprc_filename, primer_hits):
+def load_isprc(isprc_filename, ref_name, primer_hits):
     """Parse the FASTA output from Jim Kent's isPcr tool.
 
     Adds (reference, sequence) entries for (left, right) in primer_hits dict.
     """
-    ref_name = os.path.splitext(os.path.split(isprc_filename)[1])[0]
     with open(isprc_filename) as handle:
         for title, seq in SimpleFastaParser(handle):
             amp_region, name, length, left, right = title.split()
@@ -68,18 +69,47 @@ def main():
             handle.write(f"{name}\t{left}\t{right}\n")
 
     fasta_list = sys.argv[2:]
+    ref_list = [os.path.splitext(os.path.split(_)[1])[0] for _ in fasta_list]
     primer_hits = {(left, right): [] for name, left, right in primers}
-    for fasta in fasta_list:
-        ispcr_file = os.path.join(tmp, os.path.basename(fasta) + ".tsv")
+    for fasta, ref_name in zip(fasta_list, ref_list):
+        ispcr_file = os.path.join(tmp, ref_name + ".tsv")
         if not os.path.isfile(ispcr_file):
             print(f"Calling isPrc on {fasta}")
             cmd = f"isPcr '{fasta}' '{primer_file}' '{ispcr_file}'"
             if os.system(cmd):
                 sys.exit("ERROR: Calling ispcr failed\n")
-        load_isprc(ispcr_file, primer_hits)
+        load_isprc(ispcr_file, ref_name, primer_hits)
 
-    for left, right in primer_hits:
-        print(left, right, primer_hits[left, right])
+    # print(f"Have {len(fasta_list)} references")
+    amplicons = defaultdict(dict)
+    for (left, right), values in primer_hits.items():
+        for ref_name, seq in values:
+            try:
+                amplicons[left, right][seq] += 1
+            except KeyError:
+                amplicons[left, right][seq] = 1
+
+    # Assign letters to each unique sequnce for each amplicon: A, B, ...
+    amplicon_alias = {}
+    for (left, right), seq_counts in amplicons.items():
+        for i, (count, seq) in enumerate(
+            reversed(sorted((count, seq) for seq, count in seq_counts.items()))
+        ):
+            amplicon_alias[left, right, seq] = ascii_uppercase[i]
+
+    print(f"Have {len(ref_list)} references, and {len(primer_hits)} primers")
+    for ref in ref_list:
+        print(
+            ";".join(
+                "".join(
+                    amplicon_alias[left, right, s]
+                    for (r, s) in primer_hits[left, right]
+                    if r == ref
+                )
+                for left, right in primer_hits
+            ),
+            ref,
+        )
 
 
 if __name__ == "__main__":
