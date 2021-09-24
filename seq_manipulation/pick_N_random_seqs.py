@@ -22,8 +22,7 @@ count = int(count)
 with open(input_fasta) as handle:
     # Using as faster than SeqIO.parse(...)
     ids = [title.split(None, 1)[0] for title, seq in SimpleFastaParser(handle)]
-print("Input FASTA file %s has %i sequences"
-      % (input_fasta, len(ids)))
+print("Input FASTA file %s has %i sequences" % (input_fasta, len(ids)))
 assert len(set(ids)) == len(ids), "You have duplicate identifiers"
 
 # seqs = SeqIO.index(input_fasta, "fasta")
@@ -41,5 +40,7 @@ wanted = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in picked)
 saved = SeqIO.write(wanted, output_fasta, "fasta")
 assert saved == count
 
-print("Saved %i randomly selected records from %s into %s"
-      % (count, input_fasta, output_fasta))
+print(
+    "Saved %i randomly selected records from %s into %s"
+    % (count, input_fasta, output_fasta)
+)

@@ -1,4 +1,5 @@
 import os
+
 try:
     from StringIO import StringIO  # Python 2
 except ImportError:
@@ -19,8 +20,9 @@ def download(acc, name, filename):
     assert data.rstrip().endswith("//"), data
     # Test we can parse it:
     record = SeqIO.read(StringIO(data), "gb")
-    assert name == record.name or record.id.startswith(name + "."), \
-        "Got %r and %r expected %r" % (record.id, record.name, name)
+    assert name == record.name or record.id.startswith(
+        name + "."
+    ), "Got %r and %r expected %r" % (record.id, record.name, name)
     # Save it:
     handle = open(filename, "w")
     handle.write(data)
@@ -53,8 +55,10 @@ def download_batch(acc_list, check=False):
 
 def check(acc, name, filename):
     record = SeqIO.read(open(filename), "gb")
-    assert name == record.name or record.id.startswith(name + "."), \
-        "Got %r and %r expected %r" % (record.id, record.name, name)
+    assert name == record.name or record.id.startswith(
+        name + "."
+    ), "Got %r and %r expected %r" % (record.id, record.name, name)
+
 
 # dsDNA viruses, no RNA stage, Taxonomy ID: 35237
 # dsRNA viruses, Taxonomy ID: 35325
@@ -83,7 +87,10 @@ for group, taxon_id in [
         names = []
 
     print("Running NCBI search...")
-    search_text = "txid%s[orgn] AND complete[Properties] AND genome NOT txid131567[orgn]" % taxon_id
+    search_text = (
+        "txid%s[orgn] AND complete[Properties] AND genome NOT txid131567[orgn]"
+        % taxon_id
+    )
     handle = Entrez.esearch("nucleotide", term=search_text, usehistory=True)
     search_results = Entrez.read(handle)
     handle.close()
@@ -102,9 +109,15 @@ for group, taxon_id in [
     for start in range(0, count, batch_size):
         end = min(count, start + batch_size)
         print("Getting accessions for record %i to %i" % (start + 1, end))
-        fetch_handle = Entrez.efetch(db="nucleotide", rettype="acc", retmode="xml",
-                                     retstart=start, retmax=batch_size,
-                                     webenv=webenv, query_key=query_key)
+        fetch_handle = Entrez.efetch(
+            db="nucleotide",
+            rettype="acc",
+            retmode="xml",
+            retstart=start,
+            retmax=batch_size,
+            webenv=webenv,
+            query_key=query_key,
+        )
         data = fetch_handle.read().strip().split()
         fetch_handle.close()
         assert len(data) == end - start

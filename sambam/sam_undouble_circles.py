@@ -47,25 +47,48 @@ def sys_exit(msg, error_level=1):
 
 VERSION = "0.0.1"
 
-parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
-                      version="%prog " + VERSION)
+parser = OptionParser(
+    usage="usage: %prog [options]\n\n" + usage, version="%prog " + VERSION
+)
 
 # References
-parser.add_option("-l", "--lref", dest="linear_references",
-                  type="string", metavar="FILE", action="append",
-                  help="FASTA file of linear reference sequence(s). "
-                       "Several files can be given if required.")
-parser.add_option("-c", "--cref", dest="circular_references",
-                  type="string", metavar="FILE", action="append",
-                  help="FASTA file of circular reference sequence(s). "
-                       "Several files can be given if required.")
+parser.add_option(
+    "-l",
+    "--lref",
+    dest="linear_references",
+    type="string",
+    metavar="FILE",
+    action="append",
+    help="FASTA file of linear reference sequence(s). "
+    "Several files can be given if required.",
+)
+parser.add_option(
+    "-c",
+    "--cref",
+    dest="circular_references",
+    type="string",
+    metavar="FILE",
+    action="append",
+    help="FASTA file of circular reference sequence(s). "
+    "Several files can be given if required.",
+)
 # Reads
-parser.add_option("-i", "--input", dest="input_reads",
-                  type="string", metavar="FILE",
-                  help="Input file of SAM format mapped reads to be processed (def. stdin)")
-parser.add_option("-o", "--output", dest="output_reads",
-                  type="string", metavar="FILE",
-                  help="Output file for processed SAM format mapping (def. stdout)")
+parser.add_option(
+    "-i",
+    "--input",
+    dest="input_reads",
+    type="string",
+    metavar="FILE",
+    help="Input file of SAM format mapped reads to be processed (def. stdin)",
+)
+parser.add_option(
+    "-o",
+    "--output",
+    dest="output_reads",
+    type="string",
+    metavar="FILE",
+    help="Output file for processed SAM format mapping (def. stdout)",
+)
 
 (options, args) = parser.parse_args()
 
@@ -90,13 +113,21 @@ def decode_cigar(cigar):
             answer.append((int(count), letter))
             count = ""
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" %
-                             (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
     return answer
 
 
-assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
-    14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [
+    (14, "S"),
+    (15, "M"),
+    (1, "P"),
+    (1, "D"),
+    (3, "P"),
+    (54, "M"),
+    (1, "D"),
+    (34, "M"),
+    (5, "S"),
+]
 
 
 def cigar_seq_len(cigar_str):
@@ -150,14 +181,14 @@ ref_len_linear = dict()
 if options.linear_references:
     for f in options.linear_references:
         ref_len_linear.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i linear references loaded\n" %
-                     len(ref_len_linear))
+    sys.stderr.write("Lengths of %i linear references loaded\n" % len(ref_len_linear))
 ref_len_circles = dict()
 if options.circular_references:
     for f in options.circular_references:
         ref_len_circles.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i circular references loaded\n" %
-                     len(ref_len_circles))
+    sys.stderr.write(
+        "Lengths of %i circular references loaded\n" % len(ref_len_circles)
+    )
 
 
 def batch_by_qname(input_handle):
@@ -175,8 +206,9 @@ def batch_by_qname(input_handle):
         if line[0] == "@":
             # SAM Header
             if batch_qname or (batch and batch[-1][0] != "@"):
-                sys_exit("Bad SAM file, stay header lines?:\n%s%s" %
-                         ("".join(batch), line))
+                sys_exit(
+                    "Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line)
+                )
             batch.append(line)
         else:
             # SAM read
@@ -205,8 +237,20 @@ def restore_seq(sam_lines):
     last_seq = None
     last_qual = None
     for line in sam_lines:
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split(
-            "\t", 11)
+        (
+            qname,
+            flag,
+            rname,
+            pos,
+            mapq,
+            cigar,
+            rnext,
+            pnext,
+            tlen,
+            seq,
+            qual,
+            rest,
+        ) = line.split("\t", 11)
         if seq == "*":
             if qname == last_name and get_frag(flag) == last_frag:
                 assert last_seq
@@ -215,15 +259,30 @@ def restore_seq(sam_lines):
                     # Ought to work if record it as soft trimming...
                     cigar = cigar.replace("H", "S")
                     exp_len = cigar_seq_len(cigar)
-                assert exp_len == len(last_seq), \
-                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s" \
+                assert exp_len == len(last_seq), (
+                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s"
                     % (last_seq, len(last_seq), cigar_seq_len(cigar), line)
+                )
                 seq = last_seq
                 if qual == "*":
                     qual = last_qual
                 seq_mod += 1
                 line = "\t".join(
-                    [qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
+                    [
+                        qname,
+                        flag,
+                        rname,
+                        pos,
+                        mapq,
+                        cigar,
+                        rnext,
+                        pnext,
+                        tlen,
+                        seq,
+                        qual,
+                        rest,
+                    ]
+                )
         elif "H" not in cigar:
             # Cache the SEQ
             last_name = qname
@@ -238,14 +297,20 @@ def undouble_circle_mappings(sam_lines):
     global ref_len_circles
     for line in sam_lines:
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest = line.split(
-            "\t", 9)
+            "\t", 9
+        )
         if rname in ref_len_circles:
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
             if int_pos != -1 and length <= int_pos:
-                assert int_pos < length * 2, \
-                    "Have POS %s yet length is %i or %i when doubled!\n%r" \
-                    % (pos, length, length * 2, line)
+                assert (
+                    int_pos < length * 2
+                ), "Have POS %s yet length is %i or %i when doubled!\n%r" % (
+                    pos,
+                    length,
+                    length * 2,
+                    line,
+                )
                 int_pos -= length
                 pos = str(int_pos + 1)
                 tlen = "0"  # old value invalidated
@@ -253,9 +318,14 @@ def undouble_circle_mappings(sam_lines):
             length = ref_len_circles[rnext]
             int_pnext = int(pnext) - 1
             if int_pnext != -1 and length <= int_pnext:
-                assert int_pnext < length * 2, \
-                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r" \
-                    % (pnext, length, length * 2, line)
+                assert (
+                    int_pnext < length * 2
+                ), "Have PNEXT %s yet length is %i or %i when doubled!\n%r" % (
+                    pnext,
+                    length,
+                    length * 2,
+                    line,
+                )
                 int_pnext -= length
                 pnext = str(int_pnext + 1)
                 tlen = "0"  # old value invalidated
@@ -263,13 +333,21 @@ def undouble_circle_mappings(sam_lines):
             length = ref_len_circles[rname]
             int_pnext = int(pnext) - 1
             if int_pnext != -1 and length <= int_pnext:
-                assert int_pnext < length * 2, \
-                    "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r" \
-                    % (pnext, rname, length, length * 2, line)
+                assert (
+                    int_pnext < length * 2
+                ), "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r" % (
+                    pnext,
+                    rname,
+                    length,
+                    length * 2,
+                    line,
+                )
                 int_pnext -= length
                 pnext = str(int_pnext + 1)
                 tlen = "0"  # old value invalidated
-        yield "\t".join([qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest])
+        yield "\t".join(
+            [qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest]
+        )
 
 
 def dedup_batch(sam_lines):
@@ -343,8 +421,7 @@ for batch in batch_by_qname(input_handle):
                     # Return the length to its correct value
                     # print("Fixing @SQ line for %s, length %i --> %i"
                     #       % (rname, length, ref_len_circles[rname]))
-                    line = "@SQ\tSN:%s\tLN:%i\n" % (
-                        rname, ref_len_circles[rname])
+                    line = "@SQ\tSN:%s\tLN:%i\n" % (rname, ref_len_circles[rname])
                 elif rname is None:
                     sys_exit("Bad @SQ line:\n%s" % line)
                 else:
@@ -365,4 +442,5 @@ if options.output_reads:
 sys.stderr.write("Processed %i reads\n" % count)
 sys.stderr.write("Restored missing SEQ for %i reads\n" % seq_mod)
 sys.stderr.write(
-    "Undoubling the circles removed %i duplicate alignments\n" % dup_reads_removed)
+    "Undoubling the circles removed %i duplicate alignments\n" % dup_reads_removed
+)

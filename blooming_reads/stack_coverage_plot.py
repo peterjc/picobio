@@ -45,11 +45,13 @@ def stack(data, filename, colors=None):
         elif data[0][1].shape[0] == 5:
             colors = ["#CDCDC1", "#8B8B83", "#FF6A6A", "#F0E68C", "#CDC673"]
         else:
-            colors = make_colors(np.array([0xCC, 0x66, 0x66]),
-                                 # np.array([0x6E, 0x51, 0x60]),
-                                 np.array([0x90, 0x41, 0x50]),
-                                 # np.array([0x20, 0xF0, 0x60]),
-                                 data[0][1].shape[0])
+            colors = make_colors(
+                np.array([0xCC, 0x66, 0x66]),
+                # np.array([0x6E, 0x51, 0x60]),
+                np.array([0x90, 0x41, 0x50]),
+                # np.array([0x20, 0xF0, 0x60]),
+                data[0][1].shape[0],
+            )
         print(colors)
     for i, (name, values) in enumerate(data):
         x = range(values.shape[1])
@@ -60,10 +62,11 @@ def stack(data, filename, colors=None):
         ax1.set_autoscaley_on(False)
         ax1.set_ylim([0, max_value])
         ax1.set_title(name.split(None, 1)[0], fontsize="xx-small")
-        ax1.fill_between(x, 0, y_stack[0, :], facecolor=colors[0], alpha=.7)
+        ax1.fill_between(x, 0, y_stack[0, :], facecolor=colors[0], alpha=0.7)
         for i in range(0, values.shape[0] - 1):
-            ax1.fill_between(x, y_stack[i, :], y_stack[
-                             i + 1, :], facecolor=colors[i + 1], alpha=.7)
+            ax1.fill_between(
+                x, y_stack[i, :], y_stack[i + 1, :], facecolor=colors[i + 1], alpha=0.7
+            )
     # fig.tight_layout()
     plt.show()
     plt.savefig(filename)

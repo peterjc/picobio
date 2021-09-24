@@ -27,20 +27,40 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
 
+
 parser = OptionParser(usage=usage)
-parser.add_option("-m", "--min-contig-len", dest="max_contig", type="int",
-                  help="Max contig length to re-use as is (default 2000)",
-                  default=2000)
-parser.add_option("-l", "--shred-length", dest="shred_length", type="int",
-                  help="Length of fake reads to generate (default 1000 bp)",
-                  default=1000)
-parser.add_option("-s", "--shred-step", dest="shred_step", type="int",
-                  help="Offset between fake reads (default 500 bp)",
-                  default=500)
-parser.add_option("-o", "--output", dest="output_filename",
-                  help="FASTA output filename for fake reads (required)",
-                  default=None,
-                  metavar="FILE")
+parser.add_option(
+    "-m",
+    "--min-contig-len",
+    dest="max_contig",
+    type="int",
+    help="Max contig length to re-use as is (default 2000)",
+    default=2000,
+)
+parser.add_option(
+    "-l",
+    "--shred-length",
+    dest="shred_length",
+    type="int",
+    help="Length of fake reads to generate (default 1000 bp)",
+    default=1000,
+)
+parser.add_option(
+    "-s",
+    "--shred-step",
+    dest="shred_step",
+    type="int",
+    help="Offset between fake reads (default 500 bp)",
+    default=500,
+)
+parser.add_option(
+    "-o",
+    "--output",
+    dest="output_filename",
+    help="FASTA output filename for fake reads (required)",
+    default=None,
+    metavar="FILE",
+)
 (options, args) = parser.parse_args()
 if not args:
     sys_exit("Requires at least one input FASTA filename\n\n" + usage)
@@ -56,8 +76,10 @@ if shred_length < shred_step:
     sys_exit("Shred step should be less than shred length")
 
 print("Accepting contigs up to length %i as they are (option -m)" % max_contig)
-print("Shredding longer contigs into reads of %i bp (option -l), step %i (option -s)" %
-      (shred_length, shred_step))
+print(
+    "Shredding longer contigs into reads of %i bp (option -l), step %i (option -s)"
+    % (shred_length, shred_step)
+)
 
 for assembly_fasta in args:
     if not os.path.isfile(assembly_fasta):
@@ -75,7 +97,7 @@ def shred(input_filename):
             # Shred it!
             shredded += 1
             for i, start in enumerate(range(0, length - shred_step, shred_step)):
-                fragment = record[start:start + shred_length]
+                fragment = record[start : start + shred_length]
                 fragment.id = "%s_fragment%i" % (record.id, i + 1)
                 yield fragment
 
@@ -86,7 +108,8 @@ shredded = 0
 with open(output_fasta, "w") as output_handle:
     for assembly_fasta in args:
         count += SeqIO.write(shred(assembly_fasta), output_handle, "fasta")
-print("Shredded %i FASTA files, containing %i contigs" %
-      (len(args), as_is + shredded))
-print("Accepted %i short contigs, shredded %i long contigs, giving %i reads" %
-      (as_is, shredded, count))
+print("Shredded %i FASTA files, containing %i contigs" % (len(args), as_is + shredded))
+print(
+    "Accepted %i short contigs, shredded %i long contigs, giving %i reads"
+    % (as_is, shredded, count)
+)

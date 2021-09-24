@@ -17,34 +17,52 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
 
+
 try:
     from Bio import SeqIO
 except ImportError:
     sys_exit("This script requires Biopython")
 
 parser = OptionParser(usage=usage)
-parser.add_option("-i", "--input", dest="input_filename",
-                  help="Input sequence file (default is stdin)",
-                  default=None,
-                  metavar="FILE")
-parser.add_option("-o", "--output", dest="output_filename",
-                  help="Output sequence file (fefault is stdout)",
-                  default=None,
-                  metavar="FILE")
-parser.add_option("-f", "--format", dest="sequence_format",
-                  help='Sequence format (as named in Biopython SeqIO, default "fasta")',
-                  default="fasta")
-parser.add_option("-c", "--chars", dest="characters",
-                  help='Characters to trim (default "Nn" covering upper and lower case)',
-                  default="Nn",
-                  metavar="FILE")
+parser.add_option(
+    "-i",
+    "--input",
+    dest="input_filename",
+    help="Input sequence file (default is stdin)",
+    default=None,
+    metavar="FILE",
+)
+parser.add_option(
+    "-o",
+    "--output",
+    dest="output_filename",
+    help="Output sequence file (fefault is stdout)",
+    default=None,
+    metavar="FILE",
+)
+parser.add_option(
+    "-f",
+    "--format",
+    dest="sequence_format",
+    help='Sequence format (as named in Biopython SeqIO, default "fasta")',
+    default="fasta",
+)
+parser.add_option(
+    "-c",
+    "--chars",
+    dest="characters",
+    help='Characters to trim (default "Nn" covering upper and lower case)',
+    default="Nn",
+    metavar="FILE",
+)
 (options, args) = parser.parse_args()
 
 chars = options.characters
 format = options.sequence_format.lower()
 
 sys.stderr.write(
-    "Removing %s characters from start/end of %s format file...\n" % (chars, format))
+    "Removing %s characters from start/end of %s format file...\n" % (chars, format)
+)
 
 if options.input_filename:
     input_handle = open(options.input_filename)
@@ -71,9 +89,9 @@ def strip_seq(records):
         #    sys.stderr.write("Trimmed %s from %i to %i\n" % (record.id, old_len, new_len))
         yield record
 
+
 # Do the work,
-count = SeqIO.write(strip_seq(SeqIO.parse(
-    input_handle, format)), output_handle, format)
+count = SeqIO.write(strip_seq(SeqIO.parse(input_handle, format)), output_handle, format)
 
 if options.input_filename:
     input_handle.close()

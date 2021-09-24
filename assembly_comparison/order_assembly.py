@@ -10,6 +10,7 @@ import warnings
 from optparse import OptionParser
 
 from Bio import BiopythonExperimentalWarning
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", BiopythonExperimentalWarning)
     from Bio import SearchIO
@@ -58,17 +59,32 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg.rstrip())
     sys.exit(error_level)
 
+
 parser = OptionParser(usage=usage)
-parser.add_option("-b", "--blast", dest="blast_filename",
-                  help="Use/write BLAST tabular output to FILE (default automatic)",
-                  default=None,
-                  metavar="FILE")
-parser.add_option("-m", "--min-len", dest="min_len", type="int",
-                  help="Minimum contig length for FASTA output (if no BLAST hit)",
-                  default=0)
-parser.add_option("-l", "--min-hit-len", dest="min_hit", type="int",
-                  help="Minimum BLAST hit length to consider",
-                  default=5000)
+parser.add_option(
+    "-b",
+    "--blast",
+    dest="blast_filename",
+    help="Use/write BLAST tabular output to FILE (default automatic)",
+    default=None,
+    metavar="FILE",
+)
+parser.add_option(
+    "-m",
+    "--min-len",
+    dest="min_len",
+    type="int",
+    help="Minimum contig length for FASTA output (if no BLAST hit)",
+    default=0,
+)
+parser.add_option(
+    "-l",
+    "--min-hit-len",
+    dest="min_hit",
+    type="int",
+    help="Minimum BLAST hit length to consider",
+    default=5000,
+)
 # parser.add_option("-u", "--unmapped", dest="unmapped",
 #                  help="Included unmapped contigs at the end",
 #                  action="store_true")
@@ -81,8 +97,10 @@ blast_file = options.blast_filename
 min_len = int(options.min_len)
 min_hit = int(options.min_hit)
 
-output_stem = "%s_vs_%s" % (os.path.splitext(os.path.basename(assembly_fasta))[0],
-                            os.path.splitext(os.path.basename(reference_fasta))[0])
+output_stem = "%s_vs_%s" % (
+    os.path.splitext(os.path.basename(assembly_fasta))[0],
+    os.path.splitext(os.path.basename(reference_fasta))[0],
+)
 output_stem = os.path.join(os.path.dirname(output_fasta), output_stem)
 
 if not blast_file:
@@ -98,16 +116,19 @@ if not os.path.isfile(reference_fasta):
 def do_blast(query_fasta, db_fasta, blast_file):
     assert os.path.isfile(query_fasta)
     assert os.path.isfile(db_fasta)
-    if not (os.path.isfile(db_fasta + ".nhr") and
-            os.path.isfile(db_fasta + ".nin") and
-            os.path.isfile(db_fasta + ".nsq")):
+    if not (
+        os.path.isfile(db_fasta + ".nhr")
+        and os.path.isfile(db_fasta + ".nin")
+        and os.path.isfile(db_fasta + ".nsq")
+    ):
         sys_exit("Missing BLAST database for %s" % db_fasta)
-    cmd = NcbiblastnCommandline(query=query_fasta, db=db_fasta,
-                                out=blast_file, outfmt=6,
-                                evalue=1e-5)
+    cmd = NcbiblastnCommandline(
+        query=query_fasta, db=db_fasta, out=blast_file, outfmt=6, evalue=1e-5
+    )
     print(cmd)
     stdout, stderr = cmd()
     return
+
 
 if not os.path.isfile(blast_file):
     do_blast(assembly_fasta, reference_fasta, blast_file)
@@ -145,15 +166,20 @@ def reverse_complement_hsp_fragment(frag, query_length):
 
 
 def reverse_complement_hsp(hsp, query_length):
-    rev = SearchIO.HSP(fragments=[reverse_complement_hsp_fragment(frag, query_length)
-                                  for frag in hsp.fragments[::-1]])
+    rev = SearchIO.HSP(
+        fragments=[
+            reverse_complement_hsp_fragment(frag, query_length)
+            for frag in hsp.fragments[::-1]
+        ]
+    )
     rev.ident_pct = hsp.ident_pct
     return rev
 
 
 def filter_blast(blast_result, query_length):
-    hsps = [hsp for hsp in blast_result.hsps if (
-        hsp.query_end - hsp.query_start) >= min_hit]
+    hsps = [
+        hsp for hsp in blast_result.hsps if (hsp.query_end - hsp.query_start) >= min_hit
+    ]
     hsps = sorted(hsps, key=lambda hsp: hsp.hit_start)
     plus = 0
     minus = 0
@@ -180,7 +206,7 @@ def weighted_median(values_and_weights, tie_break=True):
         # This can give the mean of the mid-points,
         # with side effect of sometimes using an artifical
         # offset not present in the data
-        return (x[count / 2] + x[(count - 1) / 2]) / 2.
+        return (x[count / 2] + x[(count - 1) / 2]) / 2.0
     else:
         # Approximiately the median - avoids mean of
         # mid two values by taking the lower.
@@ -191,9 +217,18 @@ def make_offset(blast_hsps, contig_len):
     if not blast_hsps:
         return 0
     # Weighted by the HSP length:
-    offset = int(weighted_median([(ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start,
-                                   hsp.hit_end - hsp.hit_start)
-                                  for hsp in blast_hsps], tie_break=False))
+    offset = int(
+        weighted_median(
+            [
+                (
+                    ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)] + hsp.hit_start,
+                    hsp.hit_end - hsp.hit_start,
+                )
+                for hsp in blast_hsps
+            ],
+            tie_break=False,
+        )
+    )
     return offset
 
 
@@ -203,8 +238,9 @@ contig_total_bp = sum(len(contigs[contig_id]) for contig_id in contigs)
 # Sort the contigs by horizontal position on the diagram
 # (yes, this does mean parsing the entire BLAST output)
 # (and yes, also the FASTA file to get the query lengths)
-blast_data = sorted(filter_blast(b, len(contigs[b.id]))
-                    for b in SearchIO.parse(blast_file, "blast-tab"))
+blast_data = sorted(
+    filter_blast(b, len(contigs[b.id])) for b in SearchIO.parse(blast_file, "blast-tab")
+)
 contigs_shown = set()
 contigs_shown_bp = 0
 contig_tracks = []
@@ -220,12 +256,15 @@ for offset, contig_id, blast_hsps, flipped in blast_data:
     contigs_shown.add(contig_id)
     contigs_shown_bp += contig_len
     if contig_len < min_len:
-        print("Note %s had BLAST hit but was only length %i" %
-              (contig_id, contig_len))
+        print("Note %s had BLAST hit but was only length %i" % (contig_id, contig_len))
     if flipped:
-        SeqIO.write(contigs[contig_id].reverse_complement(id=True, name=True,
-                                                          description="reversed"),
-                    fasta_handle, "fasta")
+        SeqIO.write(
+            contigs[contig_id].reverse_complement(
+                id=True, name=True, description="reversed"
+            ),
+            fasta_handle,
+            "fasta",
+        )
     else:
         # Fast provided don't need to take reverse complement
         fasta_handle.write(contigs.get_raw(contig_id))
@@ -248,20 +287,27 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
         fasta_short_dropped += 1
 
 
-assert unplaced == len(contigs) - len(contigs_shown), \
-    "Only processed %i unplaced contigs, expected %i" % (
-        unplaced, len(contigs) - len(contigs_shown))
+assert unplaced == len(contigs) - len(
+    contigs_shown
+), "Only processed %i unplaced contigs, expected %i" % (
+    unplaced,
+    len(contigs) - len(contigs_shown),
+)
 
-print("Placed: %i of the %i contigs/scaffolds, %i bp"
-      % (len(contigs_shown), len(contigs), contigs_shown_bp))
-print("Unplaced: %i contigs/scaffolds, %i bp"
-      % (len(contigs) - len(contigs_shown), contig_total_bp - contigs_shown_bp))
-print("i.e. Placed %0.f%% of the assembly"
-      % (contigs_shown_bp * 100.0 / contig_total_bp))
+print(
+    "Placed: %i of the %i contigs/scaffolds, %i bp"
+    % (len(contigs_shown), len(contigs), contigs_shown_bp)
+)
+print(
+    "Unplaced: %i contigs/scaffolds, %i bp"
+    % (len(contigs) - len(contigs_shown), contig_total_bp - contigs_shown_bp)
+)
+print(
+    "i.e. Placed %0.f%% of the assembly" % (contigs_shown_bp * 100.0 / contig_total_bp)
+)
 
 print("Wrote %i records to %r" % (fasta_saved_count, output_fasta))
 print("Dropped %i short records" % fasta_short_dropped)
 fasta_handle.close()
 if fasta_saved_count + fasta_short_dropped != len(contigs):
-    sys_exit("Should have written %i records!" %
-             (len(contigs) - fasta_short_dropped))
+    sys_exit("Should have written %i records!" % (len(contigs) - fasta_short_dropped))

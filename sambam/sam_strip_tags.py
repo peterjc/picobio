@@ -39,11 +39,40 @@ if "-v" in sys.argv[1:]:
     for line in sys.stdin:
         if line[0] != "@":
             # Should be a read
-            qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
-            tags = "\t".join(t for t in tags.split("\t")
-                             if t[:2] not in black_list)
-            line = "\t".join([qname, flag, rname, pos, mapq,
-                              cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
+            (
+                qname,
+                flag,
+                rname,
+                pos,
+                mapq,
+                cigar,
+                rnext,
+                pnext,
+                tlen,
+                seq,
+                qual,
+                tags,
+            ) = line.rstrip().split("\t", 11)
+            tags = "\t".join(t for t in tags.split("\t") if t[:2] not in black_list)
+            line = (
+                "\t".join(
+                    [
+                        qname,
+                        flag,
+                        rname,
+                        pos,
+                        mapq,
+                        cigar,
+                        rnext,
+                        pnext,
+                        tlen,
+                        seq,
+                        qual,
+                        tags,
+                    ]
+                )
+                + "\n"
+            )
         sys.stdout.write(line)
 else:
     white_list = set(x.strip() for x in sys.argv[1:])
@@ -51,9 +80,38 @@ else:
     for line in sys.stdin:
         if line[0] != "@":
             # Should be a read
-            qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, tags = line.rstrip().split("\t", 11)
-            tags = "\t".join(t for t in tags.split("\t")
-                             if t[:2] in white_list)
-            line = "\t".join([qname, flag, rname, pos, mapq,
-                              cigar, rnext, pnext, tlen, seq, qual, tags]) + "\n"
+            (
+                qname,
+                flag,
+                rname,
+                pos,
+                mapq,
+                cigar,
+                rnext,
+                pnext,
+                tlen,
+                seq,
+                qual,
+                tags,
+            ) = line.rstrip().split("\t", 11)
+            tags = "\t".join(t for t in tags.split("\t") if t[:2] in white_list)
+            line = (
+                "\t".join(
+                    [
+                        qname,
+                        flag,
+                        rname,
+                        pos,
+                        mapq,
+                        cigar,
+                        rnext,
+                        pnext,
+                        tlen,
+                        seq,
+                        qual,
+                        tags,
+                    ]
+                )
+                + "\n"
+            )
         sys.stdout.write(line)

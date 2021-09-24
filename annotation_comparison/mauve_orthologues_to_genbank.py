@@ -22,10 +22,12 @@ for r in reference_records:
     for f in r.features:
         if f.type == "CDS":
             name = f.qualifiers["gene"][0]
-            key = "%i:%s:%i-%i" % (reference_number_in_mauve,
-                                   name,
-                                   f.location.start + 1,
-                                   f.location.end)
+            key = "%i:%s:%i-%i" % (
+                reference_number_in_mauve,
+                name,
+                f.location.start + 1,
+                f.location.end,
+            )
             cds_dict[key] = f
 # print(list(cds_dict.keys()))
 

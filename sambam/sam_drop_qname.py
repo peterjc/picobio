@@ -36,8 +36,7 @@ if len(sys.argv) == 1:
 elif len(sys.argv) == 2:
     prefix = sys.argv[1]
 else:
-    sys.stderr.write(
-        "Error, expect one optional parameter only (read name prefix)")
+    sys.stderr.write("Error, expect one optional parameter only (read name prefix)")
     sys.exit(1)
 
 count = 0

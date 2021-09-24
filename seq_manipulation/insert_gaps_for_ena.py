@@ -54,14 +54,17 @@ def insert_feature(record, feature):
 
 def insert_gaps(record):
     seq = str(record.seq).upper()
-    sys.stderr.write("Record %s (length %i bp) has %i N characters\n" %
-                     (record.id, len(seq), seq.count("N")))
+    sys.stderr.write(
+        "Record %s (length %i bp) has %i N characters\n"
+        % (record.id, len(seq), seq.count("N"))
+    )
     gap = "N" * MIN_GAP
     try:
         i = seq.find(gap)
     except IndexError:
-        sys.stderr.write("No long gaps in record %s (length %i bp)\n" %
-                         (record.id, len(seq)))
+        sys.stderr.write(
+            "No long gaps in record %s (length %i bp)\n" % (record.id, len(seq))
+        )
         return record
 
     count = 0
@@ -69,17 +72,22 @@ def insert_gaps(record):
         j = i + len(gap)
         while seq[j] == "N":
             j += 1
-        sys.stderr.write("Record %s (length %i bp) has run of %i N from %i to %i\n" %
-                         (record.id, len(seq), j - i, i + 1, j))
+        sys.stderr.write(
+            "Record %s (length %i bp) has run of %i N from %i to %i\n"
+            % (record.id, len(seq), j - i, i + 1, j)
+        )
         # WARNING - I suspect the validator is broken for features of one,
         # where I think the location is just X, rather than X..X instead?
-        gap_feature = SeqFeature(FeatureLocation(i, j), type="gap",
-                                 qualifiers={"estimated_length": j - i})
+        gap_feature = SeqFeature(
+            FeatureLocation(i, j), type="gap", qualifiers={"estimated_length": j - i}
+        )
         insert_feature(record, gap_feature)
         count += 1
         i = seq.find(gap, j)
-    sys.stderr.write("Added %i gap features to record %s (length %i bp)\n" %
-                     (count, record.id, len(seq)))
+    sys.stderr.write(
+        "Added %i gap features to record %s (length %i bp)\n"
+        % (count, record.id, len(seq))
+    )
     return record
 
 

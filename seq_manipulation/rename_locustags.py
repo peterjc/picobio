@@ -65,11 +65,13 @@ import sys
 # TODO - Proper API
 if len(sys.argv) != 5:
     sys.exit(
-        "Expects four arguments: Old prefix, new prefix, input filename, output filename")
+        "Expects four arguments: Old prefix, new prefix, input filename, output filename"
+    )
 old_prefix, new_prefix, in_filename, out_filename = sys.argv[1:]
 
-sys.stderr.write('Replacing /locus_tag="%s..." with /locus_tag="%s..."\n'
-                 % (old_prefix, new_prefix))
+sys.stderr.write(
+    'Replacing /locus_tag="%s..." with /locus_tag="%s..."\n' % (old_prefix, new_prefix)
+)
 
 if in_filename == "-":
     in_handle = sys.stdin
@@ -82,15 +84,18 @@ else:
     out_handle = open(out_filename, "w")
 
 # Accept either EMBL or GenBank format
-patterns = ('FT                   /locus_tag="%s' % old_prefix,
-            '                     /locus_tag="%s' % old_prefix)
+patterns = (
+    'FT                   /locus_tag="%s' % old_prefix,
+    '                     /locus_tag="%s' % old_prefix,
+)
 count = 0
 locus_tags = set()
 for line in in_handle:
     if line.startswith(patterns):
         count += 1
-        line = line.replace('/locus_tag="%s' % old_prefix,
-                            '/locus_tag="%s' % new_prefix)
+        line = line.replace(
+            '/locus_tag="%s' % old_prefix, '/locus_tag="%s' % new_prefix
+        )
         locus_tags.add(line[32:].strip())  # left quotes in place
     out_handle.write(line)
 
@@ -100,9 +105,9 @@ if out_filename != "-":
     out_handle.close()
 
 if not count:
-    sys.stderr.write(
-        "Original locus tag prefix %s_... not found\n" % old_prefix)
+    sys.stderr.write("Original locus tag prefix %s_... not found\n" % old_prefix)
     sys.exit(1)
-sys.stderr.write("Edited %s_... -> %s_... in %i lines.\n" %
-                 (old_prefix, new_prefix, count))
+sys.stderr.write(
+    "Edited %s_... -> %s_... in %i lines.\n" % (old_prefix, new_prefix, count)
+)
 sys.stderr.write("Saw %i unique locus tags\n" % len(locus_tags))

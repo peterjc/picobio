@@ -34,8 +34,11 @@ def load_blast_db_list(filename):
             continue
         elif line.startswith("NumCpuToUse"):
             continue
-        elif line.startswith("blastn ") or line.startswith("tblastn") \
-                or line.startswith("tblastx "):
+        elif (
+            line.startswith("blastn ")
+            or line.startswith("tblastn")
+            or line.startswith("tblastx ")
+        ):
             nt.update(line.rstrip().split()[1:])
         elif line.startswith("blastp ") or line.startswith("blastx"):
             aa.update(line.rstrip().split()[1:])
@@ -43,6 +46,7 @@ def load_blast_db_list(filename):
             raise ValueError(line)
     handle.close()
     return nt, aa
+
 
 nt, aa = load_blast_db_list(blastrc)
 # print(nt)
@@ -55,12 +59,11 @@ def load_blast_db_descr(html_filename, nt, aa):
     handle = open(html_filename)
     for line in handle:
         line = line.strip()
-        if not line.startswith("<option ") \
-                or not line.endswith("</option>"):
+        if not line.startswith("<option ") or not line.endswith("</option>"):
             continue
         i = line.find(">")
         assert i != -1, line
-        descr = line[i + 1:-9].strip()
+        descr = line[i + 1 : -9].strip()
         attrs = line[8:i]
         for db in nt:
             if '"%s"' % db in attrs:
@@ -81,6 +84,7 @@ def load_blast_db_descr(html_filename, nt, aa):
     handle.close()
     return nt_list, aa_list
 
+
 nt_list, aa_list = load_blast_db_descr(blastwww, nt, aa)
 # print(nt_list)
 # print(aa_list)
@@ -92,8 +96,7 @@ for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
     handle.write("#file %s\n" % blastrc)
     handle.write("#and %s\n" % blastwww)
     for db, descr in dbs:
-        handle.write(
-            "\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
+        handle.write("\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
     handle.close()
 print("Done, %i nt and %i aa BLAST databases" % (len(aa_list), len(nt_list)))
 if aa:

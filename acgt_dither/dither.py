@@ -47,9 +47,14 @@ for row in range(shape[1]):
     for col in range(shape[0]):
         color = colors.CMYKColor(black=(255 - data[col, row]) / 255.0)
         # From top left?
-        s = String((col + 0.5) * scale, (shape[1] - row) * scale,
-                   seq[base], fillColor=color,
-                   fontSize=4, textAnchor="middle")
+        s = String(
+            (col + 0.5) * scale,
+            (shape[1] - row) * scale,
+            seq[base],
+            fillColor=color,
+            fontSize=4,
+            textAnchor="middle",
+        )
         d.add(s)
         base += 1
 renderPDF.draw(d, c, 0, 0)

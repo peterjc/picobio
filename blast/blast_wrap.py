@@ -63,22 +63,22 @@ def wrap(text):
         return '"%s"' % text
     else:
         return text
+
+
 cmd = " ".join(wrap(arg) for arg in sys.argv[1:])
 
 if master in cmd:
     # We have syncing to do!
     i = cmd.find(master + "/")
-    db = cmd[i + len(master) + 1:].split(None, 1)[0]
+    db = cmd[i + len(master) + 1 :].split(None, 1)[0]
     if db.endswith('"'):
         db = db.rstrip('"')
     print("Synchronising database,")
     assert master + "/" + db in cmd
     start = time.time()
-    sync = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), "blast_sync.py")
+    sync = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blast_sync.py")
     if not os.path.isfile(sync):
-        sys.stderr.write(
-            "Syncing %s failed (missing %s script)\n" % (master, sync))
+        sys.stderr.write("Syncing %s failed (missing %s script)\n" % (master, sync))
         sys.exit(1)
     err = os.system("%s %s %s %s > /dev/null" % (sync, master, local, db))
     taken = time.time() - start
@@ -86,8 +86,7 @@ if master in cmd:
         sys.stderr.write("Syncing %s failed (error code %i)\n" % (db, err))
         sys.exit(err)
     elif err:
-        sys.stderr.write(
-            "Syncing %s failed (error code %i --> 1)\n" % (db, err))
+        sys.stderr.write("Syncing %s failed (error code %i --> 1)\n" % (db, err))
         sys.exit(1)
     # Update the command
     cmd = cmd.replace(master + "/" + db, local + "/" + db)

@@ -55,6 +55,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
+
 try:
     from Bio.Seq import reverse_complement
 except ImportError:
@@ -63,8 +64,10 @@ except ImportError:
 try:
     import pydablooms
 except ImportError:
-    sys_exit("Missing 'dablooms' Python bindings, available from "
-             "https://github.com/bitly/dablooms")
+    sys_exit(
+        "Missing 'dablooms' Python bindings, available from "
+        "https://github.com/bitly/dablooms"
+    )
 
 VERSION = "0.0.5"
 
@@ -143,20 +146,22 @@ def fastq_batched_iterator(handle):
             raise ValueError("Expected FASTQ @ line, got %r" % title2)
         id2 = title2.split(None, 1)[0]
         if not id2.endswith("/2"):
-            raise ValueError(
-                "Expected FASTQ record ending /2, got %r" % title2)
+            raise ValueError("Expected FASTQ record ending /2, got %r" % title2)
         if id[:-2] != id2[:-2]:
             raise ValueError(
-                "Expected paired FASTQ records, got %r and %r" % (title, title2))
+                "Expected paired FASTQ records, got %r and %r" % (title, title2)
+            )
         seq2 = handle.readline()
         plus = handle.readline()
         if not plus[0] == "+":
             raise ValueError("Expected FASTQ + line, got %r" % plus)
         qual2 = handle.readline()
         if len(seq) != len(qual):  # both include newline
-            raise ValueError(
-                "Different FASTQ seq/qual lengths for %r" % title2)
-        yield [seq.strip().upper(), seq2.strip().upper()], title + seq + "+\n" + qual + title2 + seq2 + "+\n" + qual2
+            raise ValueError("Different FASTQ seq/qual lengths for %r" % title2)
+        yield [
+            seq.strip().upper(),
+            seq2.strip().upper(),
+        ], title + seq + "+\n" + qual + title2 + seq2 + "+\n" + qual2
 
 
 def sam_iterator(handle):
@@ -168,13 +173,26 @@ def sam_iterator(handle):
     for line in handle:
         if line[0] == "@":
             continue
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split(
-            "\t", 10)
+        (
+            qname,
+            flag,
+            rname,
+            pos,
+            mapq,
+            cigar,
+            rnext,
+            pnext,
+            tlen,
+            seq,
+            rest,
+        ) = line.split("\t", 10)
         if flag in good_flags:
             yield seq.upper(), line
         else:
-            sys_exit("Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
-                     "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair).")
+            sys_exit(
+                "Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
+                "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair)."
+            )
 
 
 def sam_batched_iterator(handle):
@@ -190,27 +208,53 @@ def sam_batched_iterator(handle):
         line = handle.readline()
 
     while line:
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, rest = line.split(
-            "\t", 10)
+        (
+            qname,
+            flag,
+            rname,
+            pos,
+            mapq,
+            cigar,
+            rnext,
+            pnext,
+            tlen,
+            seq,
+            rest,
+        ) = line.split("\t", 10)
         if flag == "0":
             # Unpaired unmapped read
             yield [seq.upper()], line
         elif flag == "77":
             # Paired read one
             line2 = handle.readline()
-            qname2, flag2, rname2, pos2, mapq2, cigar2, rnext2, pnext2, tlen2, seq2, rest2 = line2.split(
-                "\t", 10)
+            (
+                qname2,
+                flag2,
+                rname2,
+                pos2,
+                mapq2,
+                cigar2,
+                rnext2,
+                pnext2,
+                tlen2,
+                seq2,
+                rest2,
+            ) = line2.split("\t", 10)
             if qname != qname2:
                 sys_exit("Missing second half of %s" % qname)
             if flag2 != "141":
                 sys_exit(
-                    "Expected FLAG 141 (0x8d) for second part of %s, got %r" % (qname, flag2))
+                    "Expected FLAG 141 (0x8d) for second part of %s, got %r"
+                    % (qname, flag2)
+                )
             yield [seq.upper(), seq2.upper()], line + line2
         elif flag == "141":
             sys_exit("Missing first half of %s" % qname)
         else:
-            sys_exit("Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
-                     "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair).")
+            sys_exit(
+                "Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
+                "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair)."
+            )
         line = handle.readline()
     raise StopIteration
 
@@ -222,20 +266,21 @@ def make_variants(seq, changes):
     # Simple SNPs:
     for i in range(len(seq)):
         for letter in "ACGT":
-            yield seq[:i] + letter + seq[i + 1:]
+            yield seq[:i] + letter + seq[i + 1 :]
 
 
 def make_inserts(seq):
     """Given a k-mer, returns possible k-mers with single inserts."""
     for i in range(1, len(seq)):
         for letter in "ACGT":
-            yield seq[:i] + letter + seq[i + 1:-1]
+            yield seq[:i] + letter + seq[i + 1 : -1]
 
 
 def make_deletions(seq):
     """Given a (k+1)-mer, returns possible k-mers with single deletions."""
     for i in range(len(seq)):
-        yield seq[:i] + seq[i + 1:]
+        yield seq[:i] + seq[i + 1 :]
+
 
 ambiguous_dna_values = {
     "A": "A",
@@ -262,22 +307,35 @@ def disambiguate(seq):
     if good.issuperset(seq):
         yield seq
     else:
-        assert len(seq) - sum(seq.count(letter) for letter in good) < 10, \
-            "Have %i ambiguous chars in this %i sequence: %s" \
-            % (len(seq) - sum(seq.count(letter) for letter in good), len(seq), seq)
+        assert (
+            len(seq) - sum(seq.count(letter) for letter in good) < 10
+        ), "Have %i ambiguous chars in this %i sequence: %s" % (
+            len(seq) - sum(seq.count(letter) for letter in good),
+            len(seq),
+            seq,
+        )
         for i, letter in enumerate(seq):
             if letter not in good:
                 for alt in ambiguous_dna_values[letter]:
                     # Now do some recursion...
                     # Would like to use Python 3.3+ syntax 'yield from ...'
                     # here
-                    for new in disambiguate(seq[:i] + alt + seq[i + 1:]):
+                    for new in disambiguate(seq[:i] + alt + seq[i + 1 :]):
                         yield new
                 break
 
 
-def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
-                 mismatches, inserts, deletions, error_rate=0.01, rc=True):
+def build_filter(
+    bloom_filename,
+    linear_refs,
+    circular_refs,
+    kmer,
+    mismatches,
+    inserts,
+    deletions,
+    error_rate=0.01,
+    rc=True,
+):
     # Using 5e-06 is close to a set for my example, both in run time
     # (a fraction more) and the number of reads kept (9528 vs 8058
     # with sets).
@@ -295,7 +353,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 # Note we do the disambiguate call on the fragments rather than
                 # the whole reference to avoid too many levels of recursion.
                 for i in range(0, len(upper_seq) - kmer):
-                    for fragment in disambiguate(upper_seq[i:i + kmer]):
+                    for fragment in disambiguate(upper_seq[i : i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
                         # bloom.add(fragment, kmer)
@@ -303,7 +361,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         count += 1
                 if deletions:
                     for i in range(0, len(upper_seq) - kmer + 1):
-                        for fragment in make_deletions(upper_seq[i:i + kmer + 1]):
+                        for fragment in make_deletions(upper_seq[i : i + kmer + 1]):
                             del_hashes.add(fragment)
             handle.close()
 
@@ -317,7 +375,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                 # Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
                 for i in range(0, len(upper_seq) - kmer):
-                    for fragment in disambiguate(upper_seq[i:i + kmer]):
+                    for fragment in disambiguate(upper_seq[i : i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
                         # bloom.add(fragment, kmer)
@@ -325,7 +383,7 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
                         count += 1
                 if deletions:
                     for i in range(0, len(upper_seq) - kmer + 1):
-                        for fragment in make_deletions(upper_seq[i:i + kmer + 1]):
+                        for fragment in make_deletions(upper_seq[i : i + kmer + 1]):
                             del_hashes.add(fragment)
             handle.close()
     if rc:
@@ -335,44 +393,64 @@ def build_filter(bloom_filename, linear_refs, circular_refs, kmer,
             simple.add(reverse_complement(fragment))
         del temp
     if mismatches or inserts or deletions:
-        sys.stderr.write("Have %i unique k-mers before consider fuzzy matches\n"
-                         % (len(simple)))
+        sys.stderr.write(
+            "Have %i unique k-mers before consider fuzzy matches\n" % (len(simple))
+        )
         if deletions:
             # Do this first to avoid 3 large sets in memory!
             new = del_hashes
             del del_hashes
             new.update(simple)
-            sys.stderr.write("Adding deletions brings this to %i unique k-mers\n"
-                             % len(new))
+            sys.stderr.write(
+                "Adding deletions brings this to %i unique k-mers\n" % len(new)
+            )
         else:
             new = simple.copy()
         if mismatches:
             for fragment in simple:
                 for var in make_variants(fragment, mismatches):
                     new.add(var)
-            sys.stderr.write("Adding %i mis-matches per k-mer, have %i unique k-mers\n"
-                             % (mismatches, len(new)))
+            sys.stderr.write(
+                "Adding %i mis-matches per k-mer, have %i unique k-mers\n"
+                % (mismatches, len(new))
+            )
         if inserts:
             for fragment in simple:
                 for var in make_inserts(fragment):
                     new.add(var)
-            sys.stderr.write("Adding inserts brings this to %i unique k-mers\n"
-                             % len(new))
+            sys.stderr.write(
+                "Adding inserts brings this to %i unique k-mers\n" % len(new)
+            )
         simple = new
     capacity = len(simple)
     bloom = pydablooms.Dablooms(capacity, error_rate, bloom_filename)
     for fragment in simple:
         bloom.add(fragment)
     bloom.flush()
-    sys.stderr.write("Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n" %
-                     (kmer, count, len(simple)))
-    sys.stderr.write("Using Bloom filter with capacity %i and error rate %r\n" % (
-        capacity, error_rate))
+    sys.stderr.write(
+        "Set and bloom filter of %i-mers created (%i k-mers considered, %i unique)\n"
+        % (kmer, count, len(simple))
+    )
+    sys.stderr.write(
+        "Using Bloom filter with capacity %i and error rate %r\n"
+        % (capacity, error_rate)
+    )
     sys.stderr.write("Building filters took %0.1fs\n" % (time.time() - t0))
     return simple, bloom
 
 
-def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatches, inserts, deletions):
+def go(
+    input,
+    output,
+    format,
+    paired,
+    linear_refs,
+    circular_refs,
+    kmer,
+    mismatches,
+    inserts,
+    deletions,
+):
     if paired:
         if format == "fasta":
             # read_iterator = fasta_batched_iterator
@@ -396,8 +474,9 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
     # Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")
     # sys.stderr.write("Using %s\n" %  bloom_filename)
-    simple, bloom = build_filter(bloom_filename, linear_refs, circular_refs,
-                                 kmer, mismatches, inserts, deletions)
+    simple, bloom = build_filter(
+        bloom_filename, linear_refs, circular_refs, kmer, mismatches, inserts, deletions
+    )
 
     # Now loop over the input, write the output
     if output:
@@ -426,7 +505,7 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
             filter_t0 = time.time()
             for upper_seq in upper_seqs:
                 for i in range(0, len(upper_seq) - kmer):
-                    fragment = upper_seq[i:i + kmer]
+                    fragment = upper_seq[i : i + kmer]
                     if fragment in bloom and fragment in simple:
                         wanted = True
                         # Don't need to check rest of this read
@@ -439,15 +518,23 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
                 out_handle.write(raw_reads)
                 out_count += len(upper_seqs)
             if in_count % 1000000 == 0:
-                sys.stderr.write("Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n"
-                                 % (in_count, out_count, (100.0 * out_count) / in_count, time.time() - t0, filter_time))
+                sys.stderr.write(
+                    "Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n"
+                    % (
+                        in_count,
+                        out_count,
+                        (100.0 * out_count) / in_count,
+                        time.time() - t0,
+                        filter_time,
+                    )
+                )
     else:
         for upper_seq, raw_read in read_iterator(in_handle):
             in_count += 1
             wanted = False
             filter_t0 = time.time()
             for i in range(0, len(upper_seq) - kmer):
-                fragment = upper_seq[i:i + kmer]
+                fragment = upper_seq[i : i + kmer]
                 # Can modify code to allow this syntax, see:
                 # https://github.com/bitly/dablooms/pull/50
                 # if bloom.check(fragment) and fragment in simple:
@@ -460,61 +547,121 @@ def go(input, output, format, paired, linear_refs, circular_refs, kmer, mismatch
                 out_handle.write(raw_read)
                 out_count += 1
             if in_count % 100000 == 0:
-                sys.stderr.write("Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n"
-                                 % (in_count, out_count, (100.0 * out_count) / in_count, time.time() - t0, filter_time))
+                sys.stderr.write(
+                    "Processed %i reads, kept %i (%0.1f%%), taken %0.1fs (of which %0.1fs in filter)\n"
+                    % (
+                        in_count,
+                        out_count,
+                        (100.0 * out_count) / in_count,
+                        time.time() - t0,
+                        filter_time,
+                    )
+                )
     if input:
         in_handle.close()
     if output:
         out_handle.close()
     total_time = time.time() - t0
-    sys.stderr.write("Running filter took %0.1fs, overhead %0.1fs, total %0.1fs\n"
-                     % (filter_time, total_time - filter_time, total_time))
+    sys.stderr.write(
+        "Running filter took %0.1fs, overhead %0.1fs, total %0.1fs\n"
+        % (filter_time, total_time - filter_time, total_time)
+    )
 
     # Remove the bloom file
     del bloom
     os.remove(bloom_filename)
-    sys.stderr.write("Kept %i out of %i reads (%0.1f%%)\n" %
-                     (out_count, in_count, out_count * 100.0 / in_count))
+    sys.stderr.write(
+        "Kept %i out of %i reads (%0.1f%%)\n"
+        % (out_count, in_count, out_count * 100.0 / in_count)
+    )
 
 
 def main():
-    parser = OptionParser(usage="""usage: %prog [options]
+    parser = OptionParser(
+        usage="""usage: %prog [options]
 
 You should add -s (single reads) or -p (interlaced paired reads).""",
-                          version="%prog " + VERSION)
+        version="%prog " + VERSION,
+    )
     # References
-    parser.add_option("-l", "--lref", dest="linear_references",
-                      type="string", metavar="FILE", action="append",
-                      help="""FASTA file of linear reference sequence(s)
-                           Several files can be given if required.""")
-    parser.add_option("-c", "--cref", dest="circular_references",
-                      type="string", metavar="FILE", action="append",
-                      help="""FASTA file of circular reference sequence(s)
-                           Several files can be given if required.""")
+    parser.add_option(
+        "-l",
+        "--lref",
+        dest="linear_references",
+        type="string",
+        metavar="FILE",
+        action="append",
+        help="""FASTA file of linear reference sequence(s)
+                           Several files can be given if required.""",
+    )
+    parser.add_option(
+        "-c",
+        "--cref",
+        dest="circular_references",
+        type="string",
+        metavar="FILE",
+        action="append",
+        help="""FASTA file of circular reference sequence(s)
+                           Several files can be given if required.""",
+    )
     # Matching
-    parser.add_option("-k", "--kmer", dest="kmer",
-                      type="int", metavar="KMER", default=35,
-                      help="k-mer size for filtering (def. 35)")
-    parser.add_option("-m", "--mismatches", dest="mismatches",
-                      type="int", metavar="MM", default=0,
-                      help="Number of mismatches per kmer (def. 0, max 1)")
+    parser.add_option(
+        "-k",
+        "--kmer",
+        dest="kmer",
+        type="int",
+        metavar="KMER",
+        default=35,
+        help="k-mer size for filtering (def. 35)",
+    )
+    parser.add_option(
+        "-m",
+        "--mismatches",
+        dest="mismatches",
+        type="int",
+        metavar="MM",
+        default=0,
+        help="Number of mismatches per kmer (def. 0, max 1)",
+    )
 
     # Reads
-    parser.add_option("-s", action="store_false", dest="paired",
-                      help="Single end mode (see also -p)")
-    parser.add_option("-p", action="store_true", dest="paired", default=True,
-                      help="Paired mode (overrides -s mode; default)")
-    parser.add_option("-f", "--format", dest="format",
-                      type="string", metavar="FORMAT", default="fasta",
-                      help="Input (and output) read file format, one of 'fasta',"
-                           " 'fastq' or 'sam' (unmapped reads only please).")
+    parser.add_option(
+        "-s", action="store_false", dest="paired", help="Single end mode (see also -p)"
+    )
+    parser.add_option(
+        "-p",
+        action="store_true",
+        dest="paired",
+        default=True,
+        help="Paired mode (overrides -s mode; default)",
+    )
+    parser.add_option(
+        "-f",
+        "--format",
+        dest="format",
+        type="string",
+        metavar="FORMAT",
+        default="fasta",
+        help="Input (and output) read file format, one of 'fasta',"
+        " 'fastq' or 'sam' (unmapped reads only please).",
+    )
     # TODO - Make paired mode or single mode the default?
-    parser.add_option("-i", "--input", dest="input_reads",
-                      type="string", metavar="FILE",
-                      help="Input file of unmapped reads to be filtered (def. stdin)")
-    parser.add_option("-o", "--output", dest="output_reads",
-                      type="string", metavar="FILE",
-                      help="Output file to write filtered reads to (def. stdout)")
+    parser.add_option(
+        "-i",
+        "--input",
+        dest="input_reads",
+        type="string",
+        metavar="FILE",
+        help="Input file of unmapped reads to be filtered (def. stdin)",
+    )
+    parser.add_option(
+        "-o",
+        "--output",
+        dest="output_reads",
+        type="string",
+        metavar="FILE",
+        help="Output file to write filtered reads to (def. stdout)",
+    )
 
     (options, args) = parser.parse_args()
 
@@ -523,15 +670,18 @@ You should add -s (single reads) or -p (interlaced paired reads).""",
         sys.exit(1)
 
     if not (10 <= options.kmer <= 100):
-        parser.error("Using a k-mer value of %i is not sensible" %
-                     options.kmer)
+        parser.error("Using a k-mer value of %i is not sensible" % options.kmer)
 
     if options.mismatches < 0:
         parser.error(
-            "Number of mismatches per k-mer (here %i) cannot be negative" % options.mismatches)
+            "Number of mismatches per k-mer (here %i) cannot be negative"
+            % options.mismatches
+        )
     if options.mismatches > 1:
-        parser.error("Number of mismatches per k-mer (here %i) currently limited to one"
-                     % options.mismatches)
+        parser.error(
+            "Number of mismatches per k-mer (here %i) currently limited to one"
+            % options.mismatches
+        )
     # TODO - Make substitions/inserts/deletions separate command line options?
     if options.mismatches:
         inserts = True
@@ -547,9 +697,19 @@ You should add -s (single reads) or -p (interlaced paired reads).""",
         parser.error("No arguments expected")
 
     paired = options.paired
-    go(options.input_reads, options.output_reads, options.format, paired,
-       options.linear_references, options.circular_references,
-       options.kmer, options.mismatches, inserts, deletions)
+    go(
+        options.input_reads,
+        options.output_reads,
+        options.format,
+        paired,
+        options.linear_references,
+        options.circular_references,
+        options.kmer,
+        options.mismatches,
+        inserts,
+        deletions,
+    )
+
 
 if __name__ == "__main__":
     main()

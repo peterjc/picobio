@@ -41,10 +41,11 @@ def sys_exit(msg, return_code=1):
 
 
 def check_bam(filename):
-    header = "\x1f\x8b\x08\x04\x00\x00\x00\x00" + \
-             "\x00\xff\x06\x00\x42\x43\x02\x00"
-    eof = "\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC" + \
-          "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    header = "\x1f\x8b\x08\x04\x00\x00\x00\x00" + "\x00\xff\x06\x00\x42\x43\x02\x00"
+    eof = (
+        "\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC"
+        + "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
     if not os.path.isfile(filename):
         sys_exit("Missing file %s" % filename, 2)
     size = os.path.getsize(filename)
@@ -64,6 +65,7 @@ def check_bam(filename):
         sys.stderr.write("Good, BGZF EOF already present in %s\n" % filename)
     else:
         sys_exit("Missing EOF marker in BGZF/BAM file %s" % filename, 5)
+
 
 if len(sys.argv) == 1:
     sys_exit("Takes one or more BGZF/BAM filenames as arguments (edits in place)", 1)

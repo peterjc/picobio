@@ -6,7 +6,9 @@ import urllib
 project = "ERP000297"
 strain_file = "%s_strain.tsv" % project  # output file
 
-fastq_url = "http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/internal/%s" % project
+fastq_url = (
+    "http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/internal/%s" % project
+)
 fastq_file = "%s_fastq.tsv" % project
 
 
@@ -46,7 +48,10 @@ def process_meta(project, fastq_filename, strain_file):
     h = open(fastq_filename)
     out = open(strain_file, "w")
     line = h.readline()
-    assert line == 'Study\tSample\tExperiment\tRun\tOrganism\tInstrument Platform\tInstrument Model\tLibrary Name\tLibrary Layout\tLibrary Source\tLibrary Selection\tRun Read Count\tRun Base Count\tFile Name\tFile Size\tmd5\tFtp\n', repr(line)
+    assert (
+        line
+        == "Study\tSample\tExperiment\tRun\tOrganism\tInstrument Platform\tInstrument Model\tLibrary Name\tLibrary Layout\tLibrary Source\tLibrary Selection\tRun Read Count\tRun Base Count\tFile Name\tFile Size\tmd5\tFtp\n"
+    ), repr(line)
     out.write(line[:-1] + "\tStrain\n")
     for line in h:
         parts = line.rstrip("\n").split("\t")

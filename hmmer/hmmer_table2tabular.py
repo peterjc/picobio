@@ -66,43 +66,104 @@ def convert(input_handle, output_handle):
     # Hard code our expected header names (but allow for differences
     # in the spacing):
     if columns == 19:
-        names = ["target name", "accession", "query name", "accession",
-                 "E-value", "score", "bias", "E-value", "score", "bias",
-                 "exp", "reg", "clu", "ov", "env", "dom", "rep", "inc",
-                 "description of target"]
+        names = [
+            "target name",
+            "accession",
+            "query name",
+            "accession",
+            "E-value",
+            "score",
+            "bias",
+            "E-value",
+            "score",
+            "bias",
+            "exp",
+            "reg",
+            "clu",
+            "ov",
+            "env",
+            "dom",
+            "rep",
+            "inc",
+            "description of target",
+        ]
         assert " ".join(h2[2:-1].split()) == " ".join(names)
         # Now switch to longer names (including line one information):
-        names = ["target name", "accession", "query name", "accession",
-                 "full sequence E-value", "full sequence score",
-                 "full sequence bias", "best 1 domain E-value",
-                 "best 1 domain score", "best 1 domain bias",
-                 "domain number estimation exp",
-                 "domain number estimation reg",
-                 "domain number estimation clu",
-                 "domain number estimation ov",
-                 "domain number estimation env",
-                 "domain number estimation dom",
-                 "domain number estimation rep",
-                 "domain number estimation inc",
-                 "description of target"]
+        names = [
+            "target name",
+            "accession",
+            "query name",
+            "accession",
+            "full sequence E-value",
+            "full sequence score",
+            "full sequence bias",
+            "best 1 domain E-value",
+            "best 1 domain score",
+            "best 1 domain bias",
+            "domain number estimation exp",
+            "domain number estimation reg",
+            "domain number estimation clu",
+            "domain number estimation ov",
+            "domain number estimation env",
+            "domain number estimation dom",
+            "domain number estimation rep",
+            "domain number estimation inc",
+            "description of target",
+        ]
     else:
-        names = ["target name", "accession", "tlen", "query name",
-                 "accession", "qlen", "E-value", "score", "bias",
-                 "#", "of", "c-Evalue", "i-Evalue", "score", "bias",
-                 "from", "to", "from", "to", "from", "to",
-                 "acc", "description of target"]
+        names = [
+            "target name",
+            "accession",
+            "tlen",
+            "query name",
+            "accession",
+            "qlen",
+            "E-value",
+            "score",
+            "bias",
+            "#",
+            "of",
+            "c-Evalue",
+            "i-Evalue",
+            "score",
+            "bias",
+            "from",
+            "to",
+            "from",
+            "to",
+            "from",
+            "to",
+            "acc",
+            "description of target",
+        ]
         assert " ".join(h2[2:-1].split()) == " ".join(names)
         # Now switch to longer names (including line one information):
-        names = ["target name", "accession", "tlen", "query name",
-                 "accession", "qlen", "full sequence E-value",
-                 "full sequence score", "full sequence bias",
-                 # The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
-                 "dom#", "ndom",
-                 "c-Evalue", "i-Evalue", "score", "bias",
-                 "hmm coord from", "hmm coord to",
-                 "ali coord from", "ali coord to",
-                 "env coord from", "env coord to",
-                 "acc", "description of target"]
+        names = [
+            "target name",
+            "accession",
+            "tlen",
+            "query name",
+            "accession",
+            "qlen",
+            "full sequence E-value",
+            "full sequence score",
+            "full sequence bias",
+            # The next two columns are for e.g. 1 of 3, 2 of 3, 3 of 3.
+            "dom#",
+            "ndom",
+            "c-Evalue",
+            "i-Evalue",
+            "score",
+            "bias",
+            "hmm coord from",
+            "hmm coord to",
+            "ali coord from",
+            "ali coord to",
+            "env coord from",
+            "env coord to",
+            "acc",
+            "description of target",
+        ]
     assert len(names) == columns
     output_handle.write("#%s\n" % "\t".join(names))
 
@@ -117,6 +178,7 @@ def convert(input_handle, output_handle):
         output_handle.write("\t".join(parts) + "\n")
         count += 1
     return count
+
 
 if len(sys.argv) != 3:
     sys_exit("Expect two argument: input HMMER table, output tabular file")

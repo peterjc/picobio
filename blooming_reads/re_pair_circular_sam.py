@@ -59,6 +59,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
+
 VERSION = "0.0.2"
 
 solo0 = solo1 = solo2 = solo12 = 0
@@ -75,8 +76,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         else:
             sys.stderr.write("Creating %s\n" % idx)
             raw = SeqIO.index_db(idx, raw_reads, "fastq")
-        sys.stderr.write(
-            "Have %i raw reads (used for unmapped partners)\n" % len(raw))
+        sys.stderr.write("Have %i raw reads (used for unmapped partners)\n" % len(raw))
     else:
         raw = dict()
 
@@ -123,10 +123,11 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
                 if length == 2 * ref_len_circles[rname]:
                     # Return the length to its correct value (should have
                     # happened already)
-                    sys.stderr.write("Fixing @SQ line for %s, length %i --> %i\n" %
-                                     (rname, length, ref_len_circles[rname]))
-                    line = "@SQ\tSN:%s\tLN:%i\n" % (
-                        rname, ref_len_circles[rname])
+                    sys.stderr.write(
+                        "Fixing @SQ line for %s, length %i --> %i\n"
+                        % (rname, length, ref_len_circles[rname])
+                    )
+                    line = "@SQ\tSN:%s\tLN:%i\n" % (rname, ref_len_circles[rname])
                 else:
                     assert length == ref_len_circles[rname]
             elif rname is None:
@@ -143,6 +144,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     coverage = dict()
     if coverage_file:
         import numpy
+
         for lengths in [ref_len_linear, ref_len_circles]:
             for ref, length in lengths.iteritems():
                 coverage[ref] = numpy.zeros((5, length), numpy.float)
@@ -159,13 +161,17 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             if length <= int(pos) - 1:
-                sys_exit("Have POS %s yet length of %s is %i (circular)\n" %
-                         (pos, rname, length))
+                sys_exit(
+                    "Have POS %s yet length of %s is %i (circular)\n"
+                    % (pos, rname, length)
+                )
         elif rname in ref_len_linear and pos != "0":
             length = ref_len_linear[rname]
             if length <= int(pos) - 1:
-                sys_exit("Have POS %s yet length of %s is %i (linear)\n" %
-                         (pos, rname, length))
+                sys_exit(
+                    "Have POS %s yet length of %s is %i (linear)\n"
+                    % (pos, rname, length)
+                )
         if qname[-2:] == "/1":
             qname = qname[:-2]
             frag = 1
@@ -187,8 +193,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         else:
             if coverage_file:
                 count_coverage(coverage, reads)
-            flush_cache(output_handle, reads, raw,
-                        ref_len_linear, ref_len_circles)
+            flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
             reads = set([(qname, frag, rname, pos, flag, rest)])
             cur_read_name = qname
         # Next line...
@@ -213,8 +218,10 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
                     assert len(row) == length
                     handle.write("\t".join("%.1f" % v for v in row) + "\n")
         handle.close()
-    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both present\n" %
-                     (solo0, solo1, solo2, solo12))
+    sys.stderr.write(
+        "%i singletons; %i where only /1, %i where only /2, %i where both present\n"
+        % (solo0, solo1, solo2, solo12)
+    )
 
 
 def cigar_tuples(cigar_str):
@@ -233,8 +240,9 @@ def cigar_tuples(cigar_str):
             count += letter  # string addition
         else:
             if letter not in "MIDNSHP=X":
-                raise ValueError("Invalid character %s in CIGAR %s"
-                                 % (letter, cigar_str))
+                raise ValueError(
+                    "Invalid character %s in CIGAR %s" % (letter, cigar_str)
+                )
             answer.append((letter, int(count)))
             count = ""
     return answer
@@ -250,23 +258,32 @@ def cigar_alen(cigar_str):
 
 def count_coverage(coverage, reads):
     """Update coverage (dict of arrays) using given mapping of a read/pair."""
-    reads1 = [(flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 1 and not (flag & 0x4)]
-    reads2 = [(flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 2 and not (flag & 0x4)]
-    reads0 = [(flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 0 and not (flag & 0x4)]
+    reads1 = [
+        (flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 1 and not (flag & 0x4)
+    ]
+    reads2 = [
+        (flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 2 and not (flag & 0x4)
+    ]
+    reads0 = [
+        (flag, rname, int(pos) - 1, rest.split("\t", 2)[1])
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 0 and not (flag & 0x4)
+    ]
     if reads0:
         # Singleton
         assert not reads1 and not reads2
         field = 0
         for ref, values in coverage.iteritems():
             length = values.shape[1]
-            r0 = [(pos, pos + cigar_alen(cigar)) for (flag, rname, pos,
-                                                      cigar) in reads0 if ref == rname and not (flag & 0x4)]
+            r0 = [
+                (pos, pos + cigar_alen(cigar))
+                for (flag, rname, pos, cigar) in reads0
+                if ref == rname and not (flag & 0x4)
+            ]
             if len(r0) == len(reads0):
                 # All on this ref
                 field = 0
@@ -282,10 +299,16 @@ def count_coverage(coverage, reads):
         assert not reads0
         for ref, values in coverage.iteritems():
             length = values.shape[1]
-            r1 = [(pos, pos + cigar_alen(cigar)) for (flag, rname, pos,
-                                                      cigar) in reads1 if ref == rname and not (flag & 0x4)]
-            r2 = [(pos, pos + cigar_alen(cigar)) for (flag, rname, pos,
-                                                      cigar) in reads2 if ref == rname and not (flag & 0x4)]
+            r1 = [
+                (pos, pos + cigar_alen(cigar))
+                for (flag, rname, pos, cigar) in reads1
+                if ref == rname and not (flag & 0x4)
+            ]
+            r2 = [
+                (pos, pos + cigar_alen(cigar))
+                for (flag, rname, pos, cigar) in reads2
+                if ref == rname and not (flag & 0x4)
+            ]
             if r1 and r2:
                 # Both read parts /1 and /2 map to same ref, good
                 if len(r1) == len(reads1) and len(r2) == len(reads2):
@@ -325,10 +348,16 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
             assert ref in ref_len_circles
             circular = True
             ref_lengths = ref_len_circles
-        r1 = [(qname, flag, rname, pos, rest)
-              for qname, flag, rname, pos, rest in reads1 if rname == ref]
-        r2 = [(qname, flag, rname, pos, rest)
-              for qname, flag, rname, pos, rest in reads2 if rname == ref]
+        r1 = [
+            (qname, flag, rname, pos, rest)
+            for qname, flag, rname, pos, rest in reads1
+            if rname == ref
+        ]
+        r2 = [
+            (qname, flag, rname, pos, rest)
+            for qname, flag, rname, pos, rest in reads2
+            if rname == ref
+        ]
         if ref in refs1 and ref in refs2:
             assert r1 and r2
             f1, f2 = fixup_same_ref_pairs(r1, r2, ref_lengths[ref], circular)
@@ -393,18 +422,24 @@ def flush_cache(handle, set_of_read_tuples, raw_dict, ref_len_linear, ref_len_ci
         return
 
     # 0x41 = 0x1 + 0x40 = paired, first in pair
-    reads1 = [(qname, flag | 0x41, rname, pos, rest)
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 1]
+    reads1 = [
+        (qname, flag | 0x41, rname, pos, rest)
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 1
+    ]
 
     # 0x81 = 0x1 + 0x80 = paired, second in pair
-    reads2 = [(qname, flag | 0x81, rname, pos, rest)
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 2]
+    reads2 = [
+        (qname, flag | 0x81, rname, pos, rest)
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 2
+    ]
 
-    reads0 = [(qname, flag, rname, pos, rest)
-              for (qname, frag, rname, pos, flag, rest)
-              in reads if frag == 0]
+    reads0 = [
+        (qname, flag, rname, pos, rest)
+        for (qname, frag, rname, pos, flag, rest) in reads
+        if frag == 0
+    ]
 
     assert len(reads1) + len(reads2) + len(reads0) == len(reads)
 
@@ -419,31 +454,34 @@ def flush_cache(handle, set_of_read_tuples, raw_dict, ref_len_linear, ref_len_ci
         if not reads1:
             solo2 += 1
             # 0x8 = partner unmapped
-            reads2 = [(qname, flag | 0x8, rname, pos, rest)
-                      for (qname, flag, rname, pos, rest) in reads2]
+            reads2 = [
+                (qname, flag | 0x8, rname, pos, rest)
+                for (qname, flag, rname, pos, rest) in reads2
+            ]
             # Assume first read2 is best one
             qname, rname, pos, flag, rest = reads2[0]
             flag = 0x1 + 0x4 + 0x40  # Paired, this is unmapped, first in pair
             rec = raw_dict[qname + "/1"]
-            rest = "255\t*\t%s\t%s\t0\t%s\t%s\n" % (
-                rname, pos, rec.seq, qual_str(rec))
+            rest = "255\t*\t%s\t%s\t0\t%s\t%s\n" % (rname, pos, rec.seq, qual_str(rec))
             reads1 = [(qname, flag, "*", "0", rest)]
         elif not reads2:
             solo1 += 1
             # 0x8 = partner unmapped
-            reads1 = [(qname, flag | 0x8, rname, pos, rest)
-                      for (qname, flag, rname, pos, rest) in reads1]
+            reads1 = [
+                (qname, flag | 0x8, rname, pos, rest)
+                for (qname, flag, rname, pos, rest) in reads1
+            ]
             # Assume first read1 is best one:
             qname, rname, pos, flag, rest = reads1[0]
             flag = 0x1 + 0x4 + 0x80  # Paired, this is unmapped, second in pair
             rec = raw_dict[qname + "/2"]
-            rest = "255\t*\t%s\t%s\t0\t%s\t%s\n" % (
-                rname, pos, rec.seq, qual_str(rec))
+            rest = "255\t*\t%s\t%s\t0\t%s\t%s\n" % (rname, pos, rec.seq, qual_str(rec))
             reads2 = [(qname, flag, "*", "0", rest)]
         else:
             solo12 += 1
             reads1, reads2 = fixup_pairs(
-                reads1, reads2, ref_len_linear, ref_len_circles)
+                reads1, reads2, ref_len_linear, ref_len_circles
+            )
 
     for qname, flag, rname, pos, rest in reads0 + reads1 + reads2:
         # Assume that 'rest' has the trailing \n
@@ -468,30 +506,61 @@ def get_fasta_ids_and_lengths(fasta_filename):
 
 
 def main():
-    parser = OptionParser(usage="usage: %prog [options]",
-                          version="%prog " + VERSION)
+    parser = OptionParser(usage="usage: %prog [options]", version="%prog " + VERSION)
     # References
-    parser.add_option("-l", "--lref", dest="linear_references",
-                      type="string", metavar="FILE", action="append",
-                      help="""FASTA file of linear reference sequence(s)
-                           Several files can be given if required.""")
-    parser.add_option("-c", "--cref", dest="circular_references",
-                      type="string", metavar="FILE", action="append",
-                      help="""FASTA file of circular reference sequence(s)
-                           Several files can be given if required.""")
-    parser.add_option("-v", "--coverage", dest="coverage_file",
-                      type="string", metavar="FILE",
-                      help="Option file to record coverage to (JSON)."),
+    parser.add_option(
+        "-l",
+        "--lref",
+        dest="linear_references",
+        type="string",
+        metavar="FILE",
+        action="append",
+        help="""FASTA file of linear reference sequence(s)
+                           Several files can be given if required.""",
+    )
+    parser.add_option(
+        "-c",
+        "--cref",
+        dest="circular_references",
+        type="string",
+        metavar="FILE",
+        action="append",
+        help="""FASTA file of circular reference sequence(s)
+                           Several files can be given if required.""",
+    )
+    parser.add_option(
+        "-v",
+        "--coverage",
+        dest="coverage_file",
+        type="string",
+        metavar="FILE",
+        help="Option file to record coverage to (JSON).",
+    ),
     # Reads
-    parser.add_option("-i", "--input", dest="input_reads",
-                      type="string", metavar="FILE",
-                      help="Input file of SAM format mapped reads to be processed (def. stdin)")
-    parser.add_option("-r", "--reads", dest="raw_reads",
-                      type="string", metavar="FILE",
-                      help="Input file of FASTQ format unmapped reads (for finding unmapped partners)")
-    parser.add_option("-o", "--output", dest="output_reads",
-                      type="string", metavar="FILE",
-                      help="Output file for processed SAM format mapping (def. stdout)")
+    parser.add_option(
+        "-i",
+        "--input",
+        dest="input_reads",
+        type="string",
+        metavar="FILE",
+        help="Input file of SAM format mapped reads to be processed (def. stdin)",
+    )
+    parser.add_option(
+        "-r",
+        "--reads",
+        dest="raw_reads",
+        type="string",
+        metavar="FILE",
+        help="Input file of FASTQ format unmapped reads (for finding unmapped partners)",
+    )
+    parser.add_option(
+        "-o",
+        "--output",
+        dest="output_reads",
+        type="string",
+        metavar="FILE",
+        help="Output file for processed SAM format mapping (def. stdout)",
+    )
 
     (options, args) = parser.parse_args()
 
@@ -505,9 +574,15 @@ def main():
     if args:
         parser.error("No arguments expected")
 
-    go(options.input_reads, options.output_reads, options.raw_reads,
-       options.linear_references, options.circular_references,
-       options.coverage_file)
+    go(
+        options.input_reads,
+        options.output_reads,
+        options.raw_reads,
+        options.linear_references,
+        options.circular_references,
+        options.coverage_file,
+    )
+
 
 if __name__ == "__main__":
     main()

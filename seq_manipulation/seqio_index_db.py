@@ -24,6 +24,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
+
 try:
     from Bio import SeqIO
 except ImportError:
@@ -49,20 +50,33 @@ def main():
     By default (if not using the -i or --index argument), one index
     will be created for each sequence file with ".idx" appended.
     """
-    parser = OptionParser(usage=usage,
-                          version="%prog " + VERSION)
-    parser.add_option("-f", "--format", dest="format",
-                      type="string", metavar="FORMAT",
-                      help="""Sequence format supported by Biopython's SeqIO.
+    parser = OptionParser(usage=usage, version="%prog " + VERSION)
+    parser.add_option(
+        "-f",
+        "--format",
+        dest="format",
+        type="string",
+        metavar="FORMAT",
+        help="""Sequence format supported by Biopython's SeqIO.
 
                       Common examples would be 'fasta' or 'fastq' (required).
-                      """)
-    parser.add_option("-i", "--index", dest="index_filename",
-                      type="string", metavar="FILE",
-                      help="Created one combined index using this filename.")
-    parser.add_option("-r", "--reindex", dest="reindex",
-                      action="store_true",
-                      help="Delete pre-existing indexes and rebuild them.")
+                      """,
+    )
+    parser.add_option(
+        "-i",
+        "--index",
+        dest="index_filename",
+        type="string",
+        metavar="FILE",
+        help="Created one combined index using this filename.",
+    )
+    parser.add_option(
+        "-r",
+        "--reindex",
+        dest="reindex",
+        action="store_true",
+        help="Delete pre-existing indexes and rebuild them.",
+    )
     (options, filenames) = parser.parse_args()
 
     if not filenames:
@@ -86,8 +100,9 @@ def main():
         d = index_db(idx_filename, filenames, format)
         if len(d) == 0 and at_least_one_record(filenames, format):
             sys_exit("Index %s wrongly reports zero records" % idx_filename)
-        print("%s - OK, %i records in %i files" %
-              (idx_filename, len(d), len(filenames)))
+        print(
+            "%s - OK, %i records in %i files" % (idx_filename, len(d), len(filenames))
+        )
     else:
         # One index per sequence file
         for filename in filenames:
@@ -99,8 +114,7 @@ def main():
                 print("%s - indexing..." % filename)
             d = index_db(idx_filename, filename, format)
             if len(d) == 0 and at_least_one_record([filename], format):
-                sys_exit("Index %s wrongly reports zero records" %
-                         idx_filename)
+                sys_exit("Index %s wrongly reports zero records" % idx_filename)
             print("%s - OK, %i records" % (idx_filename, len(d)))
 
 

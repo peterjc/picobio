@@ -33,26 +33,50 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
+
 VERSION = "0.0.2"
 
-parser = OptionParser(usage="usage: %prog [options]\n\n" + usage,
-                      version="%prog " + VERSION)
+parser = OptionParser(
+    usage="usage: %prog [options]\n\n" + usage, version="%prog " + VERSION
+)
 # References
-parser.add_option("-l", "--lref", dest="linear_references",
-                  type="string", metavar="FILE", action="append",
-                  help="FASTA file of linear reference sequence(s). "
-                       "Several files can be given if required.")
-parser.add_option("-c", "--cref", dest="circular_references",
-                  type="string", metavar="FILE", action="append",
-                  help="FASTA file of circular reference sequence(s). "
-                       "Several files can be given if required.")
+parser.add_option(
+    "-l",
+    "--lref",
+    dest="linear_references",
+    type="string",
+    metavar="FILE",
+    action="append",
+    help="FASTA file of linear reference sequence(s). "
+    "Several files can be given if required.",
+)
+parser.add_option(
+    "-c",
+    "--cref",
+    dest="circular_references",
+    type="string",
+    metavar="FILE",
+    action="append",
+    help="FASTA file of circular reference sequence(s). "
+    "Several files can be given if required.",
+)
 # Reads
-parser.add_option("-i", "--input", dest="input_reads",
-                  type="string", metavar="FILE",
-                  help="Input file of SAM format mapped reads to be processed (def. stdin)")
-parser.add_option("-o", "--output", dest="coverage_file",
-                  type="string", metavar="FILE",
-                  help="Output file for coverage report (def. stdout)")
+parser.add_option(
+    "-i",
+    "--input",
+    dest="input_reads",
+    type="string",
+    metavar="FILE",
+    help="Input file of SAM format mapped reads to be processed (def. stdin)",
+)
+parser.add_option(
+    "-o",
+    "--output",
+    dest="coverage_file",
+    type="string",
+    metavar="FILE",
+    help="Output file for coverage report (def. stdout)",
+)
 
 (options, args) = parser.parse_args()
 
@@ -107,8 +131,10 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                     elif rname in ref_len_circles:
                         if length == 2 * ref_len_circles[rname]:
                             # We will use the length from the FASTA file
-                            sys.stderr.write("WARNING: @SQ line for %s gives length %i, double %i in FASTA\n"
-                                             % (rname, length, ref_len_circles[rname]))
+                            sys.stderr.write(
+                                "WARNING: @SQ line for %s gives length %i, double %i in FASTA\n"
+                                % (rname, length, ref_len_circles[rname])
+                            )
                         else:
                             assert length == ref_len_circles[rname]
                     elif rname is None or length is None:
@@ -138,8 +164,9 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
         # Now get weighted coverage
         if r0:
             # This QNAME is a single read (perhaps multiply mapped)
-            assert not r1 and not r2, \
+            assert not r1 and not r2, (
                 "Inconsistent FLAG for %s, is it paired or unpaired?" % qname
+            )
             solo0 += 1
             if len(rnames) == 1:
                 field = 0
@@ -181,14 +208,15 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                 assert len(row) == length
                 row_max = max(row)
                 if row_max:
-                    output_handle.write("\t".join("%.1f" %
-                                                  v for v in row) + "\n")
+                    output_handle.write("\t".join("%.1f" % v for v in row) + "\n")
                 else:
                     output_handle.write("None\n")
                 m = max(m, row_max)
             sys.stderr.write("%s length %i max depth %i\n" % (ref, length, m))
-    sys.stderr.write("%i singletons; %i where only /1, %i where only /2, %i where both mapped\n" %
-                     (solo0, solo1, solo2, solo12))
+    sys.stderr.write(
+        "%i singletons; %i where only /1, %i where only /2, %i where both mapped\n"
+        % (solo0, solo1, solo2, solo12)
+    )
 
 
 def cigar_tuples(cigar_str):
@@ -207,8 +235,9 @@ def cigar_tuples(cigar_str):
             count += letter  # string addition
         else:
             if letter not in "MIDNSHP=X":
-                raise ValueError("Invalid character %s in CIGAR %s"
-                                 % (letter, cigar_str))
+                raise ValueError(
+                    "Invalid character %s in CIGAR %s" % (letter, cigar_str)
+                )
             answer.append((letter, int(count)))
             count = ""
     return answer
@@ -270,14 +299,14 @@ ref_len_linear = dict()
 if options.linear_references:
     for f in options.linear_references:
         ref_len_linear.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i linear references loaded\n" %
-                     len(ref_len_linear))
+    sys.stderr.write("Lengths of %i linear references loaded\n" % len(ref_len_linear))
 ref_len_circles = dict()
 if options.circular_references:
     for f in options.circular_references:
         ref_len_circles.update(get_fasta_ids_and_lengths(f))
-    sys.stderr.write("Lengths of %i circular references loaded\n" %
-                     len(ref_len_circles))
+    sys.stderr.write(
+        "Lengths of %i circular references loaded\n" % len(ref_len_circles)
+    )
 
 
 def batch_by_qname(input_handle):
@@ -295,8 +324,9 @@ def batch_by_qname(input_handle):
         if line[0] == "@":
             # SAM Header
             if batch_qname or (batch and batch[-1][0] != "@"):
-                sys_exit("Bad SAM file, stay header lines?:\n%s%s" %
-                         ("".join(batch), line))
+                sys_exit(
+                    "Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line)
+                )
             batch.append(line)
         else:
             # SAM read

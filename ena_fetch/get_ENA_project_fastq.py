@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -15,9 +16,14 @@ project = "PRJEB2896"
 # Or goto https://www.ebi.ac.uk/ena/data/view/PRJEB2896 and click on "TEXT" download link
 #
 # This includes important metadata including the fastq_md5 information,
-fields = "study_accession,sample_accession,secondary_sample_accession,experiment_accession,run_accession,tax_id,scientific_name,instrument_model,library_name,nominal_length,library_layout,read_count,experiment_title,study_title,study_alias,experiment_alias,run_alias,fastq_md5,fastq_ftp,submitted_md5,submitted_ftp,sra_md5,sra_ftp,cram_index_ftp".split(",")
+fields = "study_accession,sample_accession,secondary_sample_accession,experiment_accession,run_accession,tax_id,scientific_name,instrument_model,library_name,nominal_length,library_layout,read_count,experiment_title,study_title,study_alias,experiment_alias,run_alias,fastq_md5,fastq_ftp,submitted_md5,submitted_ftp,sra_md5,sra_ftp,cram_index_ftp".split(
+    ","
+)
 
-fastq_url = 'https://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=%s&result=read_run&fields=%s&download=txt' % (project, ",".join(fields))
+fastq_url = (
+    "https://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=%s&result=read_run&fields=%s&download=txt"
+    % (project, ",".join(fields))
+)
 
 fastq_file = "%s_metadata.tsv" % project
 
@@ -56,6 +62,7 @@ def download_in_one(url, filename):
     h.close()
     print("Saved as %s" % filename)
 
+
 if not os.path.isfile(fastq_file):
     download_in_one(fastq_url, fastq_file)
 
@@ -75,7 +82,7 @@ def process_fastq(project, fastq_filename):
             elif url.startswith("ftp.sra.ebi.ac.uk/vol1/fastq/ERR"):
                 url = "ftp://" + url
             assert url.startswith("ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR"), url
-            filename = url[len("ftp://ftp.sra.ebi.ac.uk/"):]
+            filename = url[len("ftp://ftp.sra.ebi.ac.uk/") :]
             pending = filename + ".tmp"
             acc = parts[2]  # here using secondary_sample_accession
             if wanted and acc not in wanted:
@@ -114,5 +121,6 @@ def process_fastq(project, fastq_filename):
             os.rename(pending, filename)
             print("Renamed %s to %s" % (pending, filename))
     h.close()
+
 
 process_fastq(project, fastq_file)

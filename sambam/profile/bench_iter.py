@@ -22,6 +22,7 @@ try:
         h.close()
         out_h.close()
         return mapped, count
+
     to_profile.append(peter_iter)
 except ImportError:
     pass
@@ -41,6 +42,7 @@ try:
                 out_h.write("%s\t%s\n" % (read.rname, read.pos))
         out_h.close()
         return mapped, count
+
     to_profile.append(pysam_iter)
 except ImportError:
     pass
@@ -57,5 +59,4 @@ for f in os.listdir("."):
             start = time.time()
             mapped, count = p(f, "/dev/null")
             taken = time.time() - start
-            print("%s - %0.1fs giving %i/%i mapped"
-                  % (p.__doc__, taken, mapped, count))
+            print("%s - %0.1fs giving %i/%i mapped" % (p.__doc__, taken, mapped, count))

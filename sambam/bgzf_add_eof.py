@@ -39,10 +39,11 @@ def sys_exit(msg, return_code=1):
 
 
 def fix_bam(filename):
-    header = "\x1f\x8b\x08\x04\x00\x00\x00\x00" + \
-             "\x00\xff\x06\x00\x42\x43\x02\x00"
-    eof = "\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC" + \
-          "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    header = "\x1f\x8b\x08\x04\x00\x00\x00\x00" + "\x00\xff\x06\x00\x42\x43\x02\x00"
+    eof = (
+        "\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC"
+        + "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
     if not os.path.isfile(filename):
         sys_exit("Missing file %s" % filename)
     size = os.path.getsize(filename)
@@ -63,6 +64,7 @@ def fix_bam(filename):
         h = open(filename, "ab")
         h.write(eof)
         h.close()
+
 
 if len(sys.argv) == 1:
     sys_exit("Takes one or more BGZF/BAM filenames as arguments (edits in place)")

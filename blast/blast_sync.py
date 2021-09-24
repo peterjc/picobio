@@ -54,6 +54,7 @@ except ImportError:
         if not rel_list:
             return path
         return posixpath.join(*rel_list)
+
     assert relpath("/data/blast/ncbi/nr.pal", "/data/blast") == "ncbi/nr.pal"
 
 if len(sys.argv) < 4:
@@ -74,7 +75,8 @@ if not os.path.isdir(local):
         os.makedirs(local, 0777)
     except OSError, e:
         sys.stderr.write(
-            "Local directory %s not found and couldn't create it\n" % local)
+            "Local directory %s not found and couldn't create it\n" % local
+        )
         sys.stderr.write(str(e) + "\n")
         sys.exit(1)
 
@@ -87,8 +89,7 @@ def sync_blast_alias_db(master, local, db, index):
             dbs = line[7:].strip().split()
             for d in dbs:
                 if d.startswith("/"):
-                    sys.stderr.write(
-                        "ERROR: Abolute paths in %s index file?\n" % index)
+                    sys.stderr.write("ERROR: Abolute paths in %s index file?\n" % index)
                     return 1
                 d = os.path.join(os.path.split(index)[0], d)
                 err = sync_blast_db(master, local, relpath(d, master))
@@ -99,8 +100,7 @@ def sync_blast_alias_db(master, local, db, index):
 
 
 def sync_blast_db(master, local, db):
-    for index in [os.path.join(master, db + ".nal"),
-                  os.path.join(master, db + ".pal")]:
+    for index in [os.path.join(master, db + ".nal"), os.path.join(master, db + ".pal")]:
         if os.path.isfile(index):
             err = sync_blast_alias_db(master, local, db, index)
             if err:
@@ -114,9 +114,9 @@ def sync_blast_db(master, local, db):
     print(cmd % (old, new))
     err = os.system(cmd % (old, new))
     if err:
-        sys.stderr.write("Return code %i from rsync:\n%s\n" %
-                         (err, cmd % (old, new)))
+        sys.stderr.write("Return code %i from rsync:\n%s\n" % (err, cmd % (old, new)))
     return err
+
 
 for db in names:
     print(db)
@@ -146,9 +146,8 @@ for db in names:
         sys.stderr.write("Aborting sync\n")
         sys.exit(2)
     try:
-        handle = open(lock, 'w')
-        handle.write(time.strftime(
-            "%a, %d %b %Y %H:%M:%S +0000\n", time.gmtime()))
+        handle = open(lock, "w")
+        handle.write(time.strftime("%a, %d %b %Y %H:%M:%S +0000\n", time.gmtime()))
         handle.close()
     except Exception:
         sys.stderr.write("Could not create BLAST DB lock\n")

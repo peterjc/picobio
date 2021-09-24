@@ -18,8 +18,14 @@ from Bio.SeqRecord import SeqRecord
 
 date_stamp = "20131114"
 
-tables = {"NC_008956": 1, "NC_008954": 1, "NC_008949": 1, "NC_008948": 1,
-          "NC_011452": 1, "NC_008956": 1}
+tables = {
+    "NC_008956": 1,
+    "NC_008954": 1,
+    "NC_008949": 1,
+    "NC_008948": 1,
+    "NC_011452": 1,
+    "NC_008956": 1,
+}
 
 
 def dedup(input_fasta, output_fasta):
@@ -36,9 +42,16 @@ def dedup(input_fasta, output_fasta):
             by_seq[s].append(t)
         except KeyError:
             by_seq[s] = [t]
-    print("Reduced %s from %i to %i records as %s (%0.1f%%)"
-          % (input_fasta, total, len(by_seq), output_fasta,
-             len(by_seq) * 100.0 / float(total)))
+    print(
+        "Reduced %s from %i to %i records as %s (%0.1f%%)"
+        % (
+            input_fasta,
+            total,
+            len(by_seq),
+            output_fasta,
+            len(by_seq) * 100.0 / float(total),
+        )
+    )
     handle = open(output_fasta, "w")
     for s in by_seq:
         titles = by_seq[s]
@@ -54,7 +67,7 @@ def get_nuc(seq, loc_string):
         loc_string = loc_string[11:-1]
         reverse = True
     start, end = [int(x.strip("<").strip(">")) for x in loc_string.split("..")]
-    nuc = seq[start - 1:end]
+    nuc = seq[start - 1 : end]
     if reverse:
         return nuc.reverse_complement()
     else:
@@ -71,8 +84,7 @@ def make_db(fasta, protein=False):
         t = "nucl"
         if os.path.isfile(stem + ".nin"):
             return
-    cmd = "makeblastdb -in %s -dbtype %s -out %s -parse_seqids" % (
-        fasta, t, stem)
+    cmd = "makeblastdb -in %s -dbtype %s -out %s -parse_seqids" % (fasta, t, stem)
     print(cmd)
     rc = os.system(cmd)
     if rc:
@@ -93,11 +105,13 @@ def make_merged_genomes(genomes_file, names):
     return count
 
 
-for group in ["dsDnaViruses",
-              "ssDnaViruses",
-              "dsRnaViruses",
-              "ssRnaViruses",
-              "allViruses"]:
+for group in [
+    "dsDnaViruses",
+    "ssDnaViruses",
+    "dsRnaViruses",
+    "ssRnaViruses",
+    "allViruses",
+]:
     print("=" * len(group))
     print(group)
     print("=" * len(group))
@@ -160,12 +174,10 @@ for group in ["dsDnaViruses",
                         record.description = record.annotations["note"]
                 if record.seq is None:
                     bad += 1
-                    print("%s %s" %
-                          (filename, record.annotations["raw_location"]))
+                    print("%s %s" % (filename, record.annotations["raw_location"]))
                     if parent is None:
                         parent = SeqIO.read(open(filename), "gb")
-                    nuc = get_nuc(parent.seq, record.annotations[
-                                  "raw_location"])
+                    nuc = get_nuc(parent.seq, record.annotations["raw_location"])
                     if "transl_table" in record.annotations:
                         table = int(record.annotations["transl_table"])
                     else:
@@ -218,8 +230,11 @@ for group in ["dsDnaViruses",
                     print(f)
                     assert False
                 # Bit of a hack, we are using the protein's ID here!
-                record = SeqRecord(nuc, id="gi|%s|ref|%s" % (gi, protein_id),
-                                   description="; ".join(f.qualifiers.get("note", [])))
+                record = SeqRecord(
+                    nuc,
+                    id="gi|%s|ref|%s" % (gi, protein_id),
+                    description="; ".join(f.qualifiers.get("note", [])),
+                )
                 SeqIO.write([record], handle, "fasta")
                 count += 1
             # print("%i: %i in %s" % (index+1, count, name))

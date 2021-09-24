@@ -60,14 +60,20 @@ def run(im, seq, pdf_file, main_caption):
             # a good idea to maximize contrast for use as a background
             # image:
             color = colors.Color(r / r_max, g / g_max, b / b_max)
-            s = String((col + 0.5) * h_scale, (shape[0] - row) * v_scale,
-                       seq[base], fillColor=color,
-                       fontSize=4, textAnchor="middle")
+            s = String(
+                (col + 0.5) * h_scale,
+                (shape[0] - row) * v_scale,
+                seq[base],
+                fillColor=color,
+                fontSize=4,
+                textAnchor="middle",
+            )
             d.add(s)
             base += 1
     renderPDF.draw(d, c, 0, 0)
     c.showPage()
     c.save()
+
 
 # print("A0: Suggest width %i, height %i pixels" % (841 * mm / h_scale, 1189 * mm / v_scale))
 # --> A0: Suggest width 600, height 951 pixels
@@ -134,7 +140,9 @@ for name, seq_file in [
         if os.path.isfile(pdf_file % name):
             print("Skipping as %s exists..." % (pdf_file % name))
             continue
-        print("Size %s, using %i by %i pixels from %s"
-              % (name, shape[0], shape[1], png_file))
+        print(
+            "Size %s, using %i by %i pixels from %s"
+            % (name, shape[0], shape[1], png_file)
+        )
         im = Image.open(png_file).resize(shape)
         run(im, seq, pdf_file % name, name)

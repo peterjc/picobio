@@ -58,9 +58,9 @@ def cigar_length(cigar):
         elif letter in "MIDNSHP=X":
             answer += 1
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" %
-                             (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
     return answer
+
 
 count = 0
 longs = 0
@@ -74,7 +74,8 @@ for line in sys.stdin:
             if len_cigar > 65535:
                 longs += 1
                 sys.stderr.write(
-                    "Dropping read %s with %i CIGAR operators\n" % (qname, len_cigar))
+                    "Dropping read %s with %i CIGAR operators\n" % (qname, len_cigar)
+                )
                 continue
     sys.stdout.write(line)
 sys.stderr.write("Dropped %i out of %i reads\n" % (longs, count))

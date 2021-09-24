@@ -51,15 +51,18 @@ elif len(sys.argv) == 3:
         drop_seq = True
     else:
         sys.stderr.write(
-            "ERROR: Second (optional) argument must be 'add' (default) or 'remove' (no quotes)\n\n")
+            "ERROR: Second (optional) argument must be 'add' (default) or 'remove' (no quotes)\n\n"
+        )
         sys.stderr.write(usage)
         sys.exit(1)
 else:
     sys.stderr.write("ERROR: Bad arguments.\n\n")
     sys.stderr.write(
-        "Expects SAM on stdin, and writes SAM to stdout. Requires the FASTA\n")
+        "Expects SAM on stdin, and writes SAM to stdout. Requires the FASTA\n"
+    )
     sys.stderr.write(
-        "reference filename as the first argument, with an optional second\n")
+        "reference filename as the first argument, with an optional second\n"
+    )
     sys.stderr.write("argument of the mode (add, drop, or full).\n\n")
     sys.stderr.write("Read the start of the script for more details.\n")
     sys.exit(1)
@@ -82,12 +85,21 @@ def decode_cigar(cigar):
             answer.append((int(count), letter))
             count = ""
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" %
-                             (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
     return answer
 
-assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
-    14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
+
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [
+    (14, "S"),
+    (15, "M"),
+    (1, "P"),
+    (1, "D"),
+    (3, "P"),
+    (54, "M"),
+    (1, "D"),
+    (34, "M"),
+    (5, "S"),
+]
 
 
 def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
@@ -96,8 +108,9 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
     Assumes both ref_seq and read_seq are using the same case.
     """
     if pos >= len(ref_seq):
-        raise ValueError("Bad POS %i for a reference of length %i"
-                         % (pos, len(ref_seq)))
+        raise ValueError(
+            "Bad POS %i for a reference of length %i" % (pos, len(ref_seq))
+        )
     pending = read_seq
     answer = ""
     cigar_ops = decode_cigar(cigar)
@@ -112,12 +125,15 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
             # print("%i%s - %s vs %s"
             #       % (op_len, op, ref_seq[pos:pos+op_len],pending[:op_len]))
             if op_len > len(pending):
-                raise RuntimeError("Only %i bases left for %i%s" %
-                                   (len(pending), op_len, op))
+                raise RuntimeError(
+                    "Only %i bases left for %i%s" % (len(pending), op_len, op)
+                )
             if pos + op_len - 1 >= len(ref_seq):
                 # TODO - Treat this as an error and terminate?
-                sys.stderr.write("Warning, ran off end of %i bp reference by %i bp, pos %i, CIGAR %s\n"
-                                 % (len(ref_seq), pos + op_len - len(ref_seq), pos, cigar))
+                sys.stderr.write(
+                    "Warning, ran off end of %i bp reference by %i bp, pos %i, CIGAR %s\n"
+                    % (len(ref_seq), pos + op_len - len(ref_seq), pos, cigar)
+                )
                 # e.g. NA12878.chromMT.SLX.maq.SRP000032.2009_07.bam read
                 # SRR010937.2897481
                 ref_seq += "?" * op_len  # Hack
@@ -144,16 +160,15 @@ def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
         elif op in "DN":
             pos += op_len
         else:
-            raise ValueError(
-                "Unsupported CIGAR operator %s in %s" % (op, cigar))
+            raise ValueError("Unsupported CIGAR operator %s in %s" % (op, cigar))
     if pending:
         raise RuntimeError("Still had %i bases left" % len(pending))
-    assert len(answer) == len(
-        read_seq), "%s -> %s with %s" % (read_seq, answer, cigar)
+    assert len(answer) == len(read_seq), "%s -> %s with %s" % (read_seq, answer, cigar)
     if drop and answer == "=" * len(answer) and len(answer) > 1:
         # Don't need the sequence at all!
         return "*", cigar.replace("M", "=")
     return answer, cigar
+
 
 temp = add_or_remove_equals("ACGTWWWACGT", "TWW==", 3, "5M", True)
 assert temp == ("=====", "5M"), temp
@@ -177,11 +192,13 @@ temp = add_or_remove_equals("ACGTWWWACGT", "==A==", 3, "2=1X2=", False)
 assert temp == ("TWAWA", "2=1X2="), temp
 
 temp_mt = "GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCTCCATGCATTTGGTATTTTCGTCTGGGGGGTGTGCACGCGATAGCATTGCGAGACGCTGGAGCCGGAGCACCCTATGTCGCAGTATCTGTCTTTGATTCCTGCCTCATTCTATTATTTATCGCACCTACGTTCAATATTACAGGCGAACATACCTACTAAAGTGTGTTAATTAATTAATGCTTGTAGGACATAATAATA"  # etc
-temp = add_or_remove_equals(temp_mt, "GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCNCCAAT",
-                            0, "47M", True)
+temp = add_or_remove_equals(
+    temp_mt, "GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCNCCAAT", 0, "47M", True
+)
 assert ("=========================================N===AT", "47M") == temp, temp
-temp = add_or_remove_equals(temp_mt, "TATTAACCCCTCACGTGATCTCTCCCTGCATTTTATTTTT",
-                            19, "33M2D7M", True)
+temp = add_or_remove_equals(
+    temp_mt, "TATTAACCCCTCACGTGATCTCTCCCTGCATTTTATTTTT", 19, "33M2D7M", True
+)
 assert ("========C======T==T======C=============T", "33M2D7M") == temp, temp
 # temp = add_or_remove_equals(temp_mt, "CGAAATCTGGTTCGTACTTCAGGGTCATAAAGCCTAAATAGCCCACCCGTTCCGCTTAGATAAGACATCACGATGG",
 #                            86, "76M", True)
@@ -192,14 +209,15 @@ del temp_mt, temp
 sys.stderr.write("Loading reference sequences from %s\n" % reference_filename)
 try:
     import sqlite3
+
     del sqlite3
-    reference = SeqIO.index_db(
-        reference_filename + ".idx", reference_filename, "fasta")
+    reference = SeqIO.index_db(reference_filename + ".idx", reference_filename, "fasta")
 except ImportError:
     reference = SeqIO.index(reference_filename, "fasta")
 if not reference:
     sys.stderr.write(
-        "No sequences found in FASTA reference file %s\n" % reference_filename)
+        "No sequences found in FASTA reference file %s\n" % reference_filename
+    )
     sys.exit(1)
 sys.stderr.write("Sequences for %i reference(s) available\n" % len(reference))
 
@@ -213,8 +231,20 @@ for line in sys.stdin:
     if line[0] != "@":
         # Should be a read
         count += 1
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split(
-            "\t", 11)
+        (
+            qname,
+            flag,
+            rname,
+            pos,
+            mapq,
+            cigar,
+            rnext,
+            pnext,
+            tlen,
+            seq,
+            qual,
+            rest,
+        ) = line.split("\t", 11)
         if seq != "*":
             bases += len(seq)
             # TODO - Look at CIGAR or qual if SEQ is missing?
@@ -224,14 +254,17 @@ for line in sys.stdin:
                 try:
                     ref_seq = str(reference[rname].seq).upper()
                 except KeyError:
-                    sys.stderr.write("Reference %s for read %s not in %s\n"
-                                     % (rname, qname, reference_filename))
+                    sys.stderr.write(
+                        "Reference %s for read %s not in %s\n"
+                        % (rname, qname, reference_filename)
+                    )
                     sys.exit(2)
                 ref_name = rname
             # Add/remove equals signs in the read's sequence:
             try:
                 seq, cigar = add_or_remove_equals(
-                    ref_seq, seq, int(pos) - 1, cigar, add_equals, drop_seq)
+                    ref_seq, seq, int(pos) - 1, cigar, add_equals, drop_seq
+                )
                 if seq == "*":
                     # According to spec, if omit SEQ must also omit QUAL (and
                     # samtools complains)
@@ -240,8 +273,22 @@ for line in sys.stdin:
                 sys.stderr.write(line)
                 raise
             mod += 1
-            line = "\t".join([qname, flag, rname, pos, mapq,
-                              cigar, rnext, pnext, tlen, seq, qual, rest])
+            line = "\t".join(
+                [
+                    qname,
+                    flag,
+                    rname,
+                    pos,
+                    mapq,
+                    cigar,
+                    rnext,
+                    pnext,
+                    tlen,
+                    seq,
+                    qual,
+                    rest,
+                ]
+            )
     sys.stdout.write(line)
 sys.stderr.write("Modified %i out of %i reads\n" % (mod, count))
 sys.stderr.write("In total %i bases in all %i reads\n" % (bases, count))

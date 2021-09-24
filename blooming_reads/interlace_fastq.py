@@ -13,6 +13,7 @@ def sys_exit(msg, error_level=1):
     sys.stderr.write("%s\n" % msg)
     sys.exit(error_level)
 
+
 try:
     from Bio.SeqIO.QualityIO import FastqGeneralIterator
 except ImportError:
@@ -44,8 +45,7 @@ for title1, seq1, qual1 in iter1:
     try:
         title2, seq2, qual2 = iter2.next()
     except StopIteration:
-        sys_exit("More records in %s than %s, e.g. %s" %
-                 (fastq1, fastq2, title1))
+        sys_exit("More records in %s than %s, e.g. %s" % (fastq1, fastq2, title1))
     id1, descr1 = title1.split(None, 1)
     id2, descr2 = title2.split(None, 1)
     if id1 == id2:
@@ -54,11 +54,15 @@ for title1, seq1, qual1 in iter1:
             descr1 = " " + descr1
         if descr2:
             descr2 = " " + descr2
-        out_handle.write("@%s/1%s\n%s\n+\n%s\n@%s/2%s\n%s\n+\n%s\n"
-                         % (id1, descr1, seq1, qual1, id2, descr2, seq2, qual2))
+        out_handle.write(
+            "@%s/1%s\n%s\n+\n%s\n@%s/2%s\n%s\n+\n%s\n"
+            % (id1, descr1, seq1, qual1, id2, descr2, seq2, qual2)
+        )
     elif id1.endswith("/1") and id2.endswith("/2") and id1[:-2] == id2[:-2]:
-        out_handle.write("@%s\n%s\n+\n%s\n@%s\n%s\n+\n%s\n"
-                         % (title1, seq1, qual1, title2, seq2, qual2))
+        out_handle.write(
+            "@%s\n%s\n+\n%s\n@%s\n%s\n+\n%s\n"
+            % (title1, seq1, qual1, title2, seq2, qual2)
+        )
     else:
         sys_exit("Mismatched records %r vs %r" % (title1, title2))
 

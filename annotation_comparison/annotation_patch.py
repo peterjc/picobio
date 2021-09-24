@@ -58,7 +58,17 @@ def patch_gff(handle, diffs):
             out_handle.write(line)
             continue
         elif line.count("\t") == 8:
-            seqid, source, ftype, start, end, score, strand, phase, attributes = line.rstrip().split("\t")
+            (
+                seqid,
+                source,
+                ftype,
+                start,
+                end,
+                score,
+                strand,
+                phase,
+                attributes,
+            ) = line.rstrip().split("\t")
             # assert seqid in references, seqid
             start = int(start)  # Leave this as one-based
             end = int(end)
@@ -143,6 +153,7 @@ def apply_diffs(handle, diffs):
         raise NotImplementedError
     else:
         sys.exit("Could not guess file type from first line:\n%s" % line)
+
 
 # TODO: Proper command line API
 try:

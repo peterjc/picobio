@@ -51,6 +51,7 @@ def pick_binary():
     else:
         return samtools_new
 
+
 # argv[0] is this python script
 # Turn the argv list into a string, escaping as needed
 
@@ -60,6 +61,7 @@ def wrap(text):
         return '"%s"' % text
     else:
         return text
+
 
 cmd = pick_binary() + " " + " ".join(wrap(arg) for arg in sys.argv[1:])
 

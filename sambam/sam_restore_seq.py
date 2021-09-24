@@ -42,12 +42,21 @@ def decode_cigar(cigar):
             answer.append((int(count), letter))
             count = ""
         else:
-            raise ValueError("Invalid character %s in CIGAR %s" %
-                             (letter, cigar))
+            raise ValueError("Invalid character %s in CIGAR %s" % (letter, cigar))
     return answer
 
-assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [(
-    14, 'S'), (15, 'M'), (1, 'P'), (1, 'D'), (3, 'P'), (54, 'M'), (1, 'D'), (34, 'M'), (5, 'S')]
+
+assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [
+    (14, "S"),
+    (15, "M"),
+    (1, "P"),
+    (1, "D"),
+    (3, "P"),
+    (54, "M"),
+    (1, "D"),
+    (34, "M"),
+    (5, "S"),
+]
 
 
 def cigar_seq_len(cigar_str):
@@ -56,6 +65,8 @@ def cigar_seq_len(cigar_str):
         if operator in "MIS=X":
             slen += count
     return slen
+
+
 assert cigar_seq_len("1I58M1I34M1I2M1D12M") == 109
 
 
@@ -76,6 +87,7 @@ def get_frag(flag):
     else:
         return None
 
+
 last_seq = None
 last_qual = None
 last_name = None
@@ -86,8 +98,20 @@ for line in sys.stdin:
     if line[0] != "@":
         # Should be a read
         count += 1
-        qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest = line.split(
-            "\t", 11)
+        (
+            qname,
+            flag,
+            rname,
+            pos,
+            mapq,
+            cigar,
+            rnext,
+            pnext,
+            tlen,
+            seq,
+            qual,
+            rest,
+        ) = line.split("\t", 11)
         if seq == "*":
             if qname == last_name and get_frag(flag) == last_frag:
                 assert last_seq
@@ -96,15 +120,30 @@ for line in sys.stdin:
                     # Ought to work if record it as sort trimming...
                     cigar = cigar.replace("H", "S")
                     exp_len = cigar_seq_len(cigar)
-                assert exp_len == len(last_seq), \
-                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s" \
+                assert exp_len == len(last_seq), (
+                    "Cached SEQ %r length %i, but this read CIGAR expects length %i:\n%s"
                     % (last_seq, len(last_seq), cigar_seq_len(cigar), line)
+                )
                 seq = last_seq
                 if qual == "*":
                     qual = last_qual
                 mod += 1
                 line = "\t".join(
-                    [qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual, rest])
+                    [
+                        qname,
+                        flag,
+                        rname,
+                        pos,
+                        mapq,
+                        cigar,
+                        rnext,
+                        pnext,
+                        tlen,
+                        seq,
+                        qual,
+                        rest,
+                    ]
+                )
         elif "H" not in cigar:
             # Cache the SEQ
             last_name = qname

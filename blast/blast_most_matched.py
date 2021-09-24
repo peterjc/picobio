@@ -37,20 +37,23 @@ def cull_runs(set_of_points, min_run):
         answer.update(range(start, end + 1))
     return answer
 
+
 assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 5) == set()
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]),
-                 4) == set([10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]),
-                 3) == set([1, 2, 3, 10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]),
-                 2) == set([1, 2, 3, 5, 6, 10, 11, 12, 13])
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 4) == set([10, 11, 12, 13])
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 3) == set(
+    [1, 2, 3, 10, 11, 12, 13]
+)
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 2) == set(
+    [1, 2, 3, 5, 6, 10, 11, 12, 13]
+)
 assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 5) == set()
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]),
-                 4) == set([10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]),
-                 3) == set([1, 2, 3, 10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]),
-                 2) == set([1, 2, 3, 5, 6, 10, 11, 12, 13])
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 4) == set([10, 11, 12, 13])
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 3) == set(
+    [1, 2, 3, 10, 11, 12, 13]
+)
+assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 2) == set(
+    [1, 2, 3, 5, 6, 10, 11, 12, 13]
+)
 
 # key = contig id
 # value = length of contig
@@ -75,8 +78,20 @@ contig_species = dict()
 for line in open(contig_blast):
     parts = line.rstrip("\n").split("\t")
     assert len(parts) > 12
-    qseqid, sseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = parts[
-        :12]
+    (
+        qseqid,
+        sseqid,
+        pident,
+        length,
+        mismatch,
+        gapopen,
+        qstart,
+        qend,
+        sstart,
+        send,
+        evalue,
+        bitscore,
+    ) = parts[:12]
     if len(parts) >= 14:
         contig_species[sseqid] = parts[14]
     start = int(qstart) - 1
@@ -91,8 +106,7 @@ for line in open(contig_blast):
 def pop_most_mapped():
     global contig_mapping
     # Sort by most bases mapped to each subject
-    contig_mapping_counts = sorted(((len(v), k)
-                                    for k, v in contig_mapping.items()))
+    contig_mapping_counts = sorted(((len(v), k) for k, v in contig_mapping.items()))
     most_mapped_count, most_mapped = contig_mapping_counts[-1]
     # Now remove all those bases from consideration!
     taken_bases = contig_mapping[most_mapped]
