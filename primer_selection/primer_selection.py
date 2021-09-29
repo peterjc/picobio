@@ -61,6 +61,9 @@ def main():
     parser.add_argument(
         "references", nargs="+", metavar="FASTA", help="One or more FASTA files"
     )
+    parser.add_argument(
+        "-n", "--names", metavar="TSV", help="TSV file mapping FASTA files to names"
+    )
     args = parser.parse_args()
 
     if not args.primers:
@@ -75,6 +78,19 @@ def main():
     with open(primer_file, "w") as handle:
         for name, left, right in primers:
             handle.write(f"{name}\t{left}\t{right}\n")
+
+    ref_names = {}
+    if args.names:
+        with open(args.names) as handle:
+            for line in handle:
+                if line.startswith("#"):
+                    continue
+                try:
+                    fasta, name, _ = line.split("\t", 2)
+                except ValueError:
+                    fasta, name = line.split("\t", 1)
+                name = name.strip()  # drops \n if 2 column
+                ref_names[fasta] = name
 
     fasta_list = args.references
     ref_list = [os.path.splitext(os.path.split(_)[1])[0] for _ in fasta_list]
@@ -116,7 +132,7 @@ def main():
                 )
                 for left, right in primer_hits
             ),
-            ref,
+            ref_names.get(ref, ref),
         )
 
 
