@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import os
 import sys
 from collections import defaultdict
@@ -55,20 +56,27 @@ def load_isprc(isprc_filename, ref_name, primer_hits):
 
 
 def main():
-    if len(sys.argv) < 3:
-        sys.exit(
-            "ERROR: At least two arguments required, primer TSV and one or more FASTA"
-        )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("primers", metavar="TSV", help="TSV file of primers")
+    parser.add_argument(
+        "references", nargs="+", metavar="FASTA", help="One or more FASTA files"
+    )
+    args = parser.parse_args()
 
-    primers = load_primers(sys.argv[1])
+    if not args.primers:
+        sys.exit("ERROR: Missing primer TSV file")
+    if not args.references:
+        sys.exit("ERROR: Missing FASTA file(s)")
+
+    primers = load_primers(args.primers)
     if not primers:
-        sys.exit(f"ERROR: No primers identified in {sys.argv[1]}")
+        sys.exit(f"ERROR: No primers identified in {args.primers}")
     primer_file = os.path.join(tmp, "primers.tsv")
     with open(primer_file, "w") as handle:
         for name, left, right in primers:
             handle.write(f"{name}\t{left}\t{right}\n")
 
-    fasta_list = sys.argv[2:]
+    fasta_list = args.references
     ref_list = [os.path.splitext(os.path.split(_)[1])[0] for _ in fasta_list]
     primer_hits = {(left, right): [] for name, left, right in primers}
     for fasta, ref_name in zip(fasta_list, ref_list):
