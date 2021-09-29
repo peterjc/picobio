@@ -98,10 +98,17 @@ def main():
     for fasta, ref_name in zip(fasta_list, ref_list):
         ispcr_file = os.path.join(tmp, ref_name + ".tsv")
         if not os.path.isfile(ispcr_file):
+            if fasta.endswith(".gz"):
+                print(f"Decompressing {fasta}")
+                cmd = f"cat '{fasta}' | gunzip > "
+                fasta = os.path.join(tmp, os.path.split(ref_name)[1] + ".fasta")
+                cmd += fasta
+                if os.system(cmd):
+                    sys.exit(f"ERROR: Calling gunzip failed:\n{cmd}")
             print(f"Calling isPrc on {fasta}")
             cmd = f"isPcr '{fasta}' '{primer_file}' '{ispcr_file}'"
             if os.system(cmd):
-                sys.exit("ERROR: Calling ispcr failed\n")
+                sys.exit(f"ERROR: Calling isPcr failed:\n{cmd}")
         load_isprc(ispcr_file, ref_name, primer_hits)
 
     # print(f"Have {len(fasta_list)} references")
