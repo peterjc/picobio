@@ -122,7 +122,7 @@ def main():
             amplicon_alias[left, right, seq] = ascii_uppercase[i]
 
     print(f"Have {len(ref_list)} references, and {len(primer_hits)} primers")
-    for ref in ref_list:
+    for name, ref in sorted((ref_names.get(ref, ref), ref) for ref in ref_list):
         print(
             ";".join(
                 "".join(
@@ -132,7 +132,7 @@ def main():
                 )
                 for left, right in primer_hits
             ),
-            ref_names.get(ref, ref),
+            name,
         )
 
 
