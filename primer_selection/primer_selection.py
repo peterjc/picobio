@@ -124,16 +124,23 @@ def main():
     print(f"Have {len(ref_list)} references, and {len(primer_hits)} primers")
     for name, ref in sorted((ref_names.get(ref, ref), ref) for ref in ref_list):
         print(
-            ";".join(
-                "".join(
-                    amplicon_alias[left, right, s]
-                    for (r, s) in primer_hits[left, right]
-                    if r == ref
-                )
-                for left, right in primer_hits
-            ),
+            pretty(amplicon_alias, primer_hits, ref),
             name,
         )
+
+
+def pretty(amplicon_alias, primer_hits, ref):
+    values = [
+        "".join(
+            amplicon_alias[left, right, s]
+            for (r, s) in primer_hits[left, right]
+            if r == ref
+        )
+        for left, right in primer_hits
+    ]
+    values = [str(len(_)) if len(_) > 1 else _ for _ in values]
+    values = [_ if _ else "-" for _ in values]
+    return "".join(values)
 
 
 if __name__ == "__main__":
