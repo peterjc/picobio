@@ -92,16 +92,19 @@ def main():
                 name = name.strip()  # drops \n if 2 column
                 ref_names[fasta] = name
 
-    fasta_list = args.references
-    ref_list = [os.path.splitext(os.path.split(_)[1])[0] for _ in fasta_list]
+    ref_list = []
     primer_hits = {(left, right): [] for name, left, right in primers}
-    for fasta, ref_name in zip(fasta_list, ref_list):
+    for fasta in args.references:
+        ref_name = os.path.splitext(os.path.split(fasta)[1])[0]
         ispcr_file = os.path.join(tmp, ref_name + ".tsv")
+        if fasta.endswith(".gz"):
+            # It was a double extension!
+            ref_name = os.path.splitext(ref_name)[0]
         if not os.path.isfile(ispcr_file):
             if fasta.endswith(".gz"):
                 print(f"Decompressing {fasta}")
                 cmd = f"cat '{fasta}' | gunzip > "
-                fasta = os.path.join(tmp, os.path.split(ref_name)[1] + ".fasta")
+                fasta = os.path.join(tmp, ref_name + ".fasta")
                 cmd += fasta
                 if os.system(cmd):
                     sys.exit(f"ERROR: Calling gunzip failed:\n{cmd}")
@@ -110,6 +113,7 @@ def main():
             if os.system(cmd):
                 sys.exit(f"ERROR: Calling isPcr failed:\n{cmd}")
         load_isprc(ispcr_file, ref_name, primer_hits)
+        ref_list.append(ref_name)
 
     # print(f"Have {len(fasta_list)} references")
     amplicons = defaultdict(dict)
