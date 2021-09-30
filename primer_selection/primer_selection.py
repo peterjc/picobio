@@ -19,7 +19,7 @@ def load_primers(tsv_filename):
         for line in handle:
             if line.startswith("#"):
                 continue
-            parts = line.split("\t")
+            parts = line.rstrip("\n").split("\t")
             if len(parts) == 2:
                 left, right = parts
                 name = f"P{len(answer)}"
