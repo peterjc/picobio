@@ -137,12 +137,19 @@ def main():
         }
 
     print(
-        f"The {len(primer_hits)} primers, unique amplicons, references which amplify:"
+        f"The {len(primer_hits)} primers, unique amplicons, lengths, references which amplify:"
     )
     for name, left, right in primers:
         if (left, right) in primer_hits:
             ref_count = len({r for (r, s) in primer_hits[left, right]})
-            print(f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}\t{ref_count}")
+            sizes = {len(s) for (r, s) in primer_hits[left, right]}
+            if len(sizes) == 1:
+                size = f"{max(sizes)}bp"
+            else:
+                size = f"{min(sizes)}-{max(sizes)}bp"
+            print(
+                f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}\t{size}\t{ref_count}"
+            )
 
     # Assign letters to each unique sequnce for each amplicon: A, B, ...
     amplicon_alias = {}
