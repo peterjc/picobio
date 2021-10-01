@@ -64,6 +64,13 @@ def main():
     parser.add_argument(
         "-n", "--names", metavar="TSV", help="TSV file mapping FASTA files to names"
     )
+    parser.add_argument(
+        "-m",
+        "--minvars",
+        type=int,
+        metavar="INT",
+        help="Minimum number of amplicon variants to report on",
+    )
     args = parser.parse_args()
 
     if not args.primers:
@@ -124,6 +131,16 @@ def main():
             except KeyError:
                 amplicons[left, right][seq] = 1
 
+    if args.minvars:
+        primer_hits = {
+            k: v for (k, v) in primer_hits.items() if len(amplicons[k]) >= args.minvars
+        }
+
+    print(f"The {len(primer_hits)} primers and number of unique amplicons:")
+    for name, left, right in primers:
+        if (left, right) in primer_hits:
+            print(f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}")
+
     # Assign letters to each unique sequnce for each amplicon: A, B, ...
     amplicon_alias = {}
     for (left, right), seq_counts in amplicons.items():
@@ -132,7 +149,7 @@ def main():
         ):
             amplicon_alias[left, right, seq] = ascii_uppercase[i]
 
-    print(f"Have {len(ref_list)} references, and {len(primer_hits)} primers")
+    print(f"The {len(ref_list)} references and their amplicon variants:")
     for name, ref in sorted((ref_names.get(ref, ref), ref) for ref in ref_list):
         print(
             pretty(amplicon_alias, primer_hits, ref),
