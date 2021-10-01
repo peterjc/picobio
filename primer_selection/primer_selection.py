@@ -136,10 +136,13 @@ def main():
             k: v for (k, v) in primer_hits.items() if len(amplicons[k]) >= args.minvars
         }
 
-    print(f"The {len(primer_hits)} primers and number of unique amplicons:")
+    print(
+        f"The {len(primer_hits)} primers, unique amplicons, references which amplify:"
+    )
     for name, left, right in primers:
         if (left, right) in primer_hits:
-            print(f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}")
+            ref_count = len({r for (r, s) in primer_hits[left, right]})
+            print(f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}\t{ref_count}")
 
     # Assign letters to each unique sequnce for each amplicon: A, B, ...
     amplicon_alias = {}
