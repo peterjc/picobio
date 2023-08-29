@@ -93,7 +93,6 @@ solo0 = solo1 = solo2 = solo12 = 0
 
 
 def go(input_handle, output_handle, linear_refs, circular_refs):
-
     sam_len_references = dict()
 
     # Should be a batch of reads...

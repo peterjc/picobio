@@ -65,7 +65,6 @@ solo0 = solo1 = solo2 = solo12 = 0
 
 
 def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
-
     if raw_reads:
         assert os.path.isfile(raw_reads)
         idx = raw_reads + ".idx"
