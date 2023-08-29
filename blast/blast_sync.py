@@ -71,8 +71,8 @@ if not os.path.isdir(master):
 
 if not os.path.isdir(local):
     try:
-        os.makedirs(local, 0777)
-    except OSError, e:
+        os.makedirs(local, 0o777)  # Octal 777
+    except OSError as e:
         sys.stderr.write(
             "Local directory %s not found and couldn't create it\n" % local
         )
@@ -88,7 +88,9 @@ def sync_blast_alias_db(master, local, db, index):
             dbs = line[7:].strip().split()
             for d in dbs:
                 if d.startswith("/"):
-                    sys.stderr.write("ERROR: Absolute paths in %s index file?\n" % index)
+                    sys.stderr.write(
+                        "ERROR: Absolute paths in %s index file?\n" % index
+                    )
                     return 1
                 d = os.path.join(os.path.split(index)[0], d)
                 err = sync_blast_db(master, local, relpath(d, master))
@@ -121,7 +123,7 @@ for db in names:
     print(db)
     lock = os.path.join(local, db + ".lock")
     if not os.path.isdir(os.path.split(lock)[0]):
-        os.makedirs(os.path.split(lock)[0], 0777)
+        os.makedirs(os.path.split(lock)[0], 0o777)
     # Wait a little, enough for other copies of the script
     # to finish the sync check if the files are current
     if os.path.isfile(lock):
@@ -155,7 +157,7 @@ for db in names:
     start = time.time()
     try:
         err = sync_blast_db(master, local, db)
-    except Exception, e:
+    except Exception as e:
         # Want to catch this and remove the lock file
         sys.stderr.write("Unexpected failure: %s" % e)
         err = True
