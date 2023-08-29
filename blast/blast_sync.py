@@ -89,7 +89,7 @@ def sync_blast_alias_db(master, local, db, index):
             dbs = line[7:].strip().split()
             for d in dbs:
                 if d.startswith("/"):
-                    sys.stderr.write("ERROR: Abolute paths in %s index file?\n" % index)
+                    sys.stderr.write("ERROR: Absolute paths in %s index file?\n" % index)
                     return 1
                 d = os.path.join(os.path.split(index)[0], d)
                 err = sync_blast_db(master, local, relpath(d, master))

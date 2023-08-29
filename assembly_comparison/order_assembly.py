@@ -204,7 +204,7 @@ def weighted_median(values_and_weights, tie_break=True):
     map(x.extend, ([v] * w for v, w in values_and_weights))
     if tie_break:
         # This can give the mean of the mid-points,
-        # with side effect of sometimes using an artifical
+        # with side effect of sometimes using an artificial
         # offset not present in the data
         return (x[count / 2] + x[(count - 1) / 2]) / 2.0
     else:

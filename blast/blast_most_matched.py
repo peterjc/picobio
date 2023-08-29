@@ -60,7 +60,7 @@ assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 2) == set(
 contig_lengths = OrderedDict()
 
 # key = contig id
-# value = length of preceeding contigs
+# value = length of preceding contigs
 contig_starts = dict()
 
 offset = 0
@@ -71,7 +71,7 @@ for record in SeqIO.parse(contig_fasta, "fasta"):
     offset += length
 
 # key = subject id
-# value = set of base coordinates (cummulative along all contigs)
+# value = set of base coordinates (cumulative along all contigs)
 contig_mapping = dict()
 
 contig_species = dict()

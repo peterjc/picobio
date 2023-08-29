@@ -157,7 +157,7 @@ def main():
                 f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}\t{size}\t{ref_count}"
             )
 
-    # Assign letters to each unique sequnce for each amplicon: A, B, ...
+    # Assign letters to each unique sequence for each amplicon: A, B, ...
     amplicon_alias = {}
     for (left, right), seq_counts in amplicons.items():
         for i, (count, seq) in enumerate(

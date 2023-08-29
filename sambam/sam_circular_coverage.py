@@ -4,7 +4,7 @@ usage = """Calculate SAM read coverage allowing for circular genomes.
 Assumes your SAM file where reads mapping over the origin of a
 circular reference spill over (aligned end exceeds length), or
 are directly from mapping against a doubled-reference - and thus
-caculates coverage at each position modulo the circle length.
+calculates coverage at each position modulo the circle length.
 
 Currently calculates coverage split into these five categories:
 - Single reads all mapped to same reference

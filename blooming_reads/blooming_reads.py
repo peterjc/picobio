@@ -24,7 +24,7 @@ not perform a full alignment).
 
 We search reads against both the forward and reverse strand of the
 reference. Currently this is done when building the filter, which
-is problably faster at the cost of more memory (bigger filter). The
+is probably faster at the cost of more memory (bigger filter). The
 alternative would be to make a filter from the reference forward
 strands only, and to check the reads and the reverse complement of
 each read against it. I expect that to be slower.
@@ -682,7 +682,7 @@ You should add -s (single reads) or -p (interlaced paired reads).""",
             "Number of mismatches per k-mer (here %i) currently limited to one"
             % options.mismatches
         )
-    # TODO - Make substitions/inserts/deletions separate command line options?
+    # TODO - Make substitutions/inserts/deletions separate command line options?
     if options.mismatches:
         inserts = True
         deletions = True

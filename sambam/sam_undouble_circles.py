@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 usage = """Post-process SAM mappings onto doubled circular references.
 
-Most read mappers do not support cicular reference sequences. One
-workarround is to make a doubled FASTA file and map onto that, then
+Most read mappers do not support circular reference sequences. One
+workaround is to make a doubled FASTA file and map onto that, then
 post process to ensure POS is in the range 1 to circle length, and
 remove any artifact duplicated mappings.
 

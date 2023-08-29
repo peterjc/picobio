@@ -11,7 +11,7 @@ Input:
 SAM file: Read name sorted SAM file, where the read names (QNAME)
 may have traditional FASTQ style /1 and /2 suffices indicating a
 matched pair. Expects one SAM line where the mapping spans the
-origin (with POS in range 1 to reference length, caculated
+origin (with POS in range 1 to reference length, calculated
 alignment end point would spill over).
 
 FASTQ file: Used to add missing unmapped reads, often left out

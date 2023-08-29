@@ -62,7 +62,7 @@ Multiple Comparison
 
 The script ``multi_comparison.py`` comparing several assemblies/references.
 It produces output a bit like Mauve, showing several genomes - each drawn
-as a linear track - with cross-links between them for similiar regions.
+as a linear track - with cross-links between them for similar regions.
 
 
 Dependencies
@@ -125,7 +125,7 @@ You can now run this script using this command:
     i.e. Placed 34% of the assembly
     ...
 
-This will call ``blastn`` to produce tabluar output, then produce a PDF diagram
+This will call ``blastn`` to produce tabular output, then produce a PDF diagram
 comparing the TY-2482 assembly to the full circle of the reference *E. coli*
 strain.
 

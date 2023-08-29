@@ -12,7 +12,7 @@ Some early tools output valid BAM files without this optional
 
 This script will add the EOF marker is not already present.
 
-WARNING: If your BAM or BGZF file is truely truncated, this will
+WARNING: If your BAM or BGZF file is truly truncated, this will
 not magically fix it. It may hide or obscure the true problem.
 
 WARNING: To avoid excessive data writing, this script modifies

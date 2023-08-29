@@ -83,7 +83,7 @@ def strip_seq(records):
         # FASTQ etc will be a problem, must trim quality too!
         # old_len = len(record.seq)
         record.seq = record.seq.strip(chars)
-        # TODO Minium length!
+        # TODO Minimum length!
         # new_len = len(record.seq)
         # if new_len < old_len:
         #    sys.stderr.write("Trimmed %s from %i to %i\n" % (record.id, old_len, new_len))

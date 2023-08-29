@@ -19,7 +19,7 @@ paired end data is correctly encoded using the FLAG field rather than
 read name suffices. It also generates a library file to use with this.
 
 Assuming your SAM/BAM file(s) have read groups, one tab file is created
-for each read group - plus a libary file with the observed fragment
+for each read group - plus a library file with the observed fragment
 size information (taken from the TLEN field).
 
 Simple usage with a paired-end SAM file:
@@ -43,7 +43,7 @@ $ SSPACE_Basic_v2.0.pl -l converted.libraries -s original.fasta ...
 
 TODO:
 
- * Accept library information (size, orienation) via command line?
+ * Accept library information (size, orientation) via command line?
  * Output to a subdirectory? Would need relative paths...
 
 Copyright Peter Cock 2014. All rights reserved. See:
