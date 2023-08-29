@@ -1,3 +1,10 @@
+.. image:: https://img.shields.io/github/license/peterjc/picobio.svg?label=License
+   :alt: MIT License
+   :target: https://github.com/peterjc/picobio/blob/master/LICENSE.rst
+.. image:: https://img.shields.io/badge/Code%20style-black-000000.svg
+   :alt: Code style: black
+   :target: https://github.com/python/black
+
 This is the README file for the picobio repository,
 https://github.com/peterjc/picobio
 
