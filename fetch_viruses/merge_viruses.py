@@ -8,7 +8,6 @@
 # v004 - fixed missing | in fna names
 # v005 - Handle feature extraction via Biopython
 #      - Tested under Python 3
-
 from __future__ import print_function
 
 import os

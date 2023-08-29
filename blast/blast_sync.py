@@ -27,7 +27,6 @@ We avoid this by running BLAST jobs which take a whole node at once.
 # master = "/mnt/gfs/blast/galaxy"
 # local = "/var/blast/galaxy"
 # db = "ncbi/nr"
-
 from __future__ import print_function
 
 import os

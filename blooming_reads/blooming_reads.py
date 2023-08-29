@@ -41,12 +41,10 @@ TODO:
 * FASTA paired support
 
 """
-
 import os
 import sys
 import tempfile
 import time
-
 from optparse import OptionParser
 
 

@@ -7,7 +7,6 @@
 #
 # v001 - First version
 # v002 - Use print as function
-
 from __future__ import print_function
 
 # This gives us the list of databases and their type (nt vs aa):

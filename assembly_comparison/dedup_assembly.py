@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """Python script for assembly contig de-duplication using BLASTN.
 """
-
 import os
 import shutil
 import sys
 import tempfile
-
 from optparse import OptionParser
 
 from Bio import SeqIO

@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """Python script for assembly comparison."""
-
 from __future__ import print_function
 
 import os
 import sys
 import warnings
-
 from optparse import OptionParser
 
 from Bio import BiopythonExperimentalWarning

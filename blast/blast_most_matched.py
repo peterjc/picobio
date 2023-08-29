@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import sys
-
 from collections import OrderedDict
 
 from Bio import SeqIO

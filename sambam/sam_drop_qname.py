@@ -28,7 +28,6 @@ Copyright Peter Cock 2012. All rights reserved. See:
 https://github.com/peterjc/picobio
 http://blastedbio.blogspot.co.uk/2012/03/bam-verus-cram-07.html
 """
-
 import sys
 
 if len(sys.argv) == 1:

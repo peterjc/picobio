@@ -5,7 +5,6 @@
 # Want to copy the sister genome's gene identifiers
 # into a reference GenBank file (as gene aliases, notes,
 # etc) so they can be viewed/searched for easily.
-
 from __future__ import print_function
 
 from Bio import SeqIO

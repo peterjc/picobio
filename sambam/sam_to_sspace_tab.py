@@ -49,7 +49,6 @@ TODO:
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
 import sys
 
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import sys
-
 from collections import OrderedDict
 
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Seq import UnknownSeq
-from Bio.SeqFeature import FeatureLocation, SeqFeature
-
-# TODO - expose this as a public API in Biopython:
+from Bio.SeqFeature import FeatureLocation
+from Bio.SeqFeature import SeqFeature
 from Bio.SeqIO.InsdcIO import _insdc_location_string as location_string
 from Bio.SeqRecord import SeqRecord
+
+# TODO - expose location_string as a public API in Biopython
 
 FEATURE_TYPE_TO_IGNORE = ["source"]
 # Empty/None for any not in FEATURE_TYPE_TO_IGNORE

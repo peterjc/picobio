@@ -40,7 +40,6 @@ TODO:
 Copyright Peter Cock 2015. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
 import sys
 
 if "-v" in sys.argv or "--version" in sys.argv:

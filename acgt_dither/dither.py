@@ -1,13 +1,11 @@
 from __future__ import print_function
 
-from Bio import SeqIO
-
-from PIL import Image
-
 import numpy as np
-
+from Bio import SeqIO
+from PIL import Image
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing, String
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.shapes import String
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas

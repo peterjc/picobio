@@ -34,7 +34,6 @@ $ blastx -query=example.fasta -db=/var/blast/galaxy/ncbi/nr ...
 TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
-
 from __future__ import print_function
 
 # Old naming,

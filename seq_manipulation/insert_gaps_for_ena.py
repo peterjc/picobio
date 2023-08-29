@@ -25,7 +25,6 @@ and https://github.com/enasequence/sequencetools
 
 This script: https://github.com/peterjc/picobio/tree/master/seq_manipulation
 """
-
 import sys
 
 if len(sys.argv) != 3:

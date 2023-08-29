@@ -8,21 +8,19 @@ PDF output image using ReportLab.
 The motivation and example images are described on this blog post:
 http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 """
-
 from __future__ import print_function
 
 import os
 
-from Bio import SeqIO
-
-from PIL import Image
-
 import numpy as np
-
+from Bio import SeqIO
+from PIL import Image
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing, String
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.shapes import String
 from reportlab.lib import colors
-from reportlab.lib.units import cm, mm
+from reportlab.lib.units import cm
+from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
 
