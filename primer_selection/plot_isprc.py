@@ -94,6 +94,7 @@ options = parser.parse_args()
 if options.target > options.maxlength:
     sys.exit(f"ERROR: Max length {options.maxlength} < target length {options.target}")
 
+
 def main(pcr_results, min_count, max_length, target_length, output_stem):
     products = {}
     rejected = set()
@@ -144,6 +145,9 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
             for acc in hits:
                 if (acc, primer_name) in products:
                     del products[acc, primer_name]
+    if not products:
+        sys.exit("ERROR: No primer/accession pairs accepted")
+
     # Updates hits list as after dropping primers some accessions may have no hits:
     hits = sorted({acc for acc, primer_name in products})
     primers = sorted({primer_name for acc, primer_name in products})
@@ -151,9 +155,6 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
         f"Now have {len(primers)} primers vs {len(hits)} accessions, "
         f"max amplicon size {max(products.values())}\n"
     )
-
-    if not products:
-        sys.exit("ERROR: No primer/accession pairs accepted")
 
     # Tabular output - todo, apply the same ordering as the heatmap?
     with open(output_stem + ".tsv", "w") as out_handle:
@@ -182,10 +183,12 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
 
     cluster_grid = sns.clustermap(
         data_frame,  # as_array,
-        mask = (as_array == 0),
+        mask=(as_array == 0),
         # I like the default colour map in target mode:
-        center = target_length if target_length else None,
-        cmap = None if target_length else "flare",
+        center=target_length if target_length else None,
+        cmap=None if target_length else "flare",
+        row_cluster=(len(hits) > 1),
+        col_cluster=(len(primers) > 1),
     )
     # Does this work for smaller font?:
     plt.setp(cluster_grid.ax_heatmap.get_xticklabels(), fontsize=8)  # For x axis
