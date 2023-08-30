@@ -142,7 +142,7 @@ for db in names:
             handle = open(lock)
             sys.stderr.write(handle.read())
             handle.close()
-        except Exception:
+        except Exception:  # noqa: B905
             pass
         sys.stderr.write("Aborting sync\n")
         sys.exit(2)
@@ -150,14 +150,14 @@ for db in names:
         handle = open(lock, "w")
         handle.write(time.strftime("%a, %d %b %Y %H:%M:%S +0000\n", time.gmtime()))
         handle.close()
-    except Exception:
+    except Exception:  # noqa: B902
         sys.stderr.write("Could not create BLAST DB lock\n")
         sys.exit(1)
 
     start = time.time()
     try:
         err = sync_blast_db(master, local, db)
-    except Exception as e:
+    except Exception as e:  # noqa: B902
         # Want to catch this and remove the lock file
         sys.stderr.write("Unexpected failure: %s" % e)
         err = True

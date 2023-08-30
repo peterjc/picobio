@@ -269,7 +269,7 @@ for line in sys.stdin:
                     # According to spec, if omit SEQ must also omit QUAL (and
                     # samtools complains)
                     qual = "*"
-            except Exception:
+            except Exception:  # noqa: B902
                 sys.stderr.write(line)
                 raise
             mod += 1
