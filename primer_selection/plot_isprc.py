@@ -121,7 +121,8 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
                     )
                     rejected.add(primer_name)
                 products[acc, primer_name] = amplicon_size
-
+    if not products:
+        sys.exit("ERROR: Loaded no in-silico PCR products")
     sys.stderr.write(
         f"Loaded {len(products)} in-silico PCR results, "
         f"max amplicon size {max(products.values())}\n"
