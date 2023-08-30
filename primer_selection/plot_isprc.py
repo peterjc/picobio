@@ -190,6 +190,7 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
         cmap=None if target_length else "flare",
         row_cluster=(len(hits) > 1),
         col_cluster=(len(primers) > 1),
+        xticklabels=True,  # may overlap
     )
     # Does this work for smaller font?:
     plt.setp(cluster_grid.ax_heatmap.get_xticklabels(), fontsize=8)  # For x axis
