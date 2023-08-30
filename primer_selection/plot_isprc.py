@@ -173,7 +173,8 @@ def main(pcr_results, min_count, max_length, output_stem):
 
     cluster_grid = sns.clustermap(
         data_frame,  # as_array,
-        vmin=0,
+        mask = (as_array == 0),
+        # vmin=0,
         # vmax=max_length,
         # col_colors=[primer_col.get(p, "white") for p in primers],
         # row_colors=[phage_color.get(acc, "white") for acc in hits],
