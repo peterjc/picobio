@@ -30,8 +30,9 @@ input. It computes a matrix with accessions as rows, and primer sets as
 columns, with amplicon length as the value (or zero). This is output as a TSV
 file, and plotted as a heatmap output as a PDF file.
 
-Conflicting amplicon lengths is considered to be an error, and such primers
-are discarded.
+Conflicting amplicon lengths (which requires multiple products from a given
+reference sequence) is considered to be an error, and such primers are
+discarded.
 """
 
 parser = argparse.ArgumentParser(
@@ -53,7 +54,7 @@ parser.add_argument(
     "--target",
     type=int,
     default="0",
-    metavar="LENGTH",
+    metavar="INTEGER",
     help="Target amplicon length (for a default divergent color scheme).",
 )
 parser.add_argument(
@@ -91,6 +92,10 @@ parser.add_argument(
 if len(sys.argv) == 1:
     sys.exit("ERROR: Invalid command line, try -h or --help.")
 options = parser.parse_args()
+if options.target and options.target < 40:
+    sys.exit(f"ERROR: If used target length should be over 40, not {options.target}")
+if options.maxlength and options.maxlength < 40:
+    sys.exit(f"ERROR: If used max-length should be over 40, not {options.maxlength}")
 if options.target > options.maxlength:
     sys.exit(f"ERROR: Max length {options.maxlength} < target length {options.target}")
 
@@ -185,7 +190,7 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
     cluster_grid = sns.clustermap(
         data_frame,  # as_array,
         mask=(as_array == 0),
-        # I like the default colour map in target mode:
+        # I like the default colour map in target mode, otherwise "flare":
         center=target_length if target_length else None,
         cmap=None if target_length else "flare",
         row_cluster=(len(hits) > 1),
