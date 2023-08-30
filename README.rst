@@ -1,6 +1,9 @@
 .. image:: https://img.shields.io/github/license/peterjc/picobio.svg?label=License
    :alt: MIT License
    :target: https://github.com/peterjc/picobio/blob/master/LICENSE.rst
+.. image:: https://results.pre-commit.ci/badge/github/peterjc/picobio/master.svg
+   :target: https://results.pre-commit.ci/latest/github/peterjc/picobio/master
+   :alt: pre-commit.ci status
 .. image:: https://img.shields.io/badge/Code%20style-black-000000.svg
    :alt: Code style: black
    :target: https://github.com/python/black
