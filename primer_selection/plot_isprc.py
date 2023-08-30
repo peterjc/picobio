@@ -73,6 +73,18 @@ parser.add_argument(
     metavar="INTEGER",
     help="Maximum amplicon size to report on a primer pair (default 1000).",
 )
+parser.add_argument(
+    "--labelallprimers",
+    action="store_true",
+    default=False,
+    help="Force captions for all primers (may overlap).",
+)
+parser.add_argument(
+    "--labelallseqs",
+    action="store_true",
+    default=False,
+    help="Force captions for all reference sequences (may overlap).",
+)
 # parser.add_argument(
 #    "-d",
 #    "--database",
@@ -100,7 +112,15 @@ if options.target > options.maxlength:
     sys.exit(f"ERROR: Max length {options.maxlength} < target length {options.target}")
 
 
-def main(pcr_results, min_count, max_length, target_length, output_stem):
+def main(
+    pcr_results,
+    output_stem,
+    min_count=0,
+    max_length=1000,
+    target_length=0,
+    label_all_primers=False,
+    label_all_seqs=False,
+):
     products = {}
     rejected = set()
     for pcr_file in pcr_results:
@@ -206,4 +226,12 @@ def main(pcr_results, min_count, max_length, target_length, output_stem):
     sys.stderr.write(f"Wrote {output_stem}.png\n")
 
 
-main(options.input, options.mincount, options.maxlength, options.target, options.output)
+main(
+    options.input,
+    options.output,
+    min_count=options.mincount,
+    max_length=options.maxlength,
+    target_length=options.target,
+    label_all_primers=options.labelallprimers,
+    label_all_seqs=options.labelallseqs,
+)
