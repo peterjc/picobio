@@ -4,21 +4,13 @@
 # while evaluating and designing primers for coliphage
 # in August 2023 for a RESAS project.
 import argparse
-import os
-import glob
-import hashlib
-import subprocess
 import sys
-import tempfile
-import time
-from collections import Counter
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
-
 from Bio.SeqIO.FastaIO import SimpleFastaParser
+from matplotlib import pyplot as plt
 
 if "-v" in sys.argv or "--version" in sys.argv:
     print("v0.0.1")
