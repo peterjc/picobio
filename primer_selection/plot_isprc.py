@@ -56,6 +56,14 @@ parser.add_argument(
     metavar="INTEGER",
     help="Minimum number of hits required to report on a primer pair (default 5).",
 )
+parser.add_argument(
+    "-x",
+    "--maxlength",
+    type=int,
+    default="1000",
+    metavar="INTEGER",
+    help="Maximum amplicon size to report on a primer pair (default 1000).",
+)
 # parser.add_argument(
 #    "-d",
 #    "--database",
@@ -77,7 +85,7 @@ if len(sys.argv) == 1:
 options = parser.parse_args()
 
 
-def main(pcr_results, min_count, output_stem):
+def main(pcr_results, min_count, max_length, output_stem):
     products = {}
     rejected = set()
     for pcr_file in pcr_results:
@@ -90,6 +98,11 @@ def main(pcr_results, min_count, output_stem):
                 assert amplicon_size.endswith("bp"), title
                 amplicon_size = int(amplicon_size[:-2])
                 acc = acc_loc.split(":", 1)[0]
+                if primer_name not in rejected and amplicon_size > max_length:
+                    sys.stderr.write(
+                        f"Rejecting {primer_name} as can give too long an amplicon.\n"
+                    )
+                    rejected.add(primer_name)
                 if primer_name not in rejected and amplicon_size != products.get(
                     (acc, primer_name), amplicon_size
                 ):
@@ -99,7 +112,10 @@ def main(pcr_results, min_count, output_stem):
                     rejected.add(primer_name)
                 products[acc, primer_name] = amplicon_size
 
-    sys.stderr.write(f"Loaded {len(products)} in-silico PCR results\n")
+    sys.stderr.write(
+        f"Loaded {len(products)} in-silico PCR results, "
+        f"max amplicon size {max(products.values())}\n"
+    )
 
     hits = sorted({acc for acc, primer_name in products})
     sys.stderr.write(f"Was able to amplify {len(hits)} accessions in all\n")
@@ -109,7 +125,7 @@ def main(pcr_results, min_count, output_stem):
 
     if rejected:
         sys.stderr.write(
-            f"Rejecting {len(rejected)} primers due to multiple product sizes\n"
+            f"Rejecting {len(rejected)} primers due to multiple or large product sizes\n"
         )
     for primer_name in primers:
         count = sum(1 for acc in hits if (acc, primer_name) in products)
@@ -122,7 +138,10 @@ def main(pcr_results, min_count, output_stem):
     # Updates hits list as after dropping primers some accessions may have no hits:
     hits = sorted({acc for acc, primer_name in products})
     primers = sorted({primer_name for acc, primer_name in products})
-    sys.stderr.write(f"Now have {len(primers)} primers vs {len(hits)} accessions\n")
+    sys.stderr.write(
+        f"Now have {len(primers)} primers vs {len(hits)} accessions, "
+        f"max amplicon size {max(products.values())}\n"
+    )
 
     if not products:
         sys.exit("ERROR: No primer/accession pairs accepted")
@@ -155,7 +174,7 @@ def main(pcr_results, min_count, output_stem):
     cluster_grid = sns.clustermap(
         data_frame,  # as_array,
         vmin=0,
-        vmax=150,
+        # vmax=max_length,
         # col_colors=[primer_col.get(p, "white") for p in primers],
         # row_colors=[phage_color.get(acc, "white") for acc in hits],
         # row_cluster=True,
@@ -171,4 +190,4 @@ def main(pcr_results, min_count, output_stem):
     sys.stderr.write(f"Wrote {output_stem}.png\n")
 
 
-main(options.input, options.mincount, options.output)
+main(options.input, options.mincount, options.maxlength, options.output)
