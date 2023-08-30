@@ -47,6 +47,8 @@ from __future__ import print_function
 
 import os
 import sys
+from builtins import range  # for Python 2
+from builtins import str  # for Python 2
 from optparse import OptionParser
 
 from Bio import SeqIO
@@ -59,7 +61,7 @@ def sys_exit(msg, error_level=1):
     sys.exit(error_level)
 
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 solo0 = solo1 = solo2 = solo12 = 0
 
@@ -90,14 +92,14 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
 
     if input is None:
         input_handle = sys.stdin
-    elif isinstance(input, basestring):
+    elif isinstance(input, str):
         input_handle = open(input)
     else:
         input_handle = input
 
     if output is None:
         output_handle = sys.stdout
-    elif isinstance(output, basestring):
+    elif isinstance(output, str):
         output_handle = open(output, "w")
     else:
         output_handle = output
@@ -202,9 +204,9 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
             count_coverage(coverage, reads)
         flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
 
-    if isinstance(input, basestring):
+    if isinstance(input, str):
         input_handle.close()
-    if isinstance(output, basestring):
+    if isinstance(output, str):
         output_handle.close()
 
     if coverage_file:
@@ -290,7 +292,7 @@ def count_coverage(coverage, reads):
                 field = 1
             weight = 1.0 / len(reads0)
             for start, end in r0:
-                for i in xrange(start, end):
+                for i in range(start, end):
                     values[field, i % length] += weight
     else:
         # Paired
@@ -321,7 +323,7 @@ def count_coverage(coverage, reads):
                 if reads:
                     weight = 1.0 / len(all_reads)
                     for start, end in reads:
-                        for i in xrange(start, end):
+                        for i in range(start, end):
                             values[field, i % length] += weight
 
 

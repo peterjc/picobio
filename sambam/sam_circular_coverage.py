@@ -24,6 +24,7 @@ TODO: Switch to JSON output?
 import sys
 
 from optparse import OptionParser
+from builtins import range  # for Python 2
 
 import numpy as np
 
@@ -34,7 +35,7 @@ def sys_exit(msg, error_level=1):
     sys.exit(error_level)
 
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 parser = OptionParser(
     usage="usage: %prog [options]\n\n" + usage, version="%prog " + VERSION
@@ -254,7 +255,7 @@ def count_coverage(coverage, field, weight, rname, pos, cigar):
     pos = int(pos) - 1
     values = coverage[rname]
     length = values.shape[1]
-    for i in xrange(pos, pos + cigar_alen(cigar)):
+    for i in range(pos, pos + cigar_alen(cigar)):
         values[field, i % length] += weight
 
 
