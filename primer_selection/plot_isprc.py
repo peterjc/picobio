@@ -215,7 +215,8 @@ def main(
         cmap=None if target_length else "flare",
         row_cluster=(len(hits) > 1),
         col_cluster=(len(primers) > 1),
-        xticklabels=True,  # may overlap
+        xticklabels=True if label_all_primers else "auto",  # may overlap
+        yticklabels=True if label_all_seqs else "auto",  # may overlap
     )
     # Does this work for smaller font?:
     plt.setp(cluster_grid.ax_heatmap.get_xticklabels(), fontsize=8)  # For x axis
