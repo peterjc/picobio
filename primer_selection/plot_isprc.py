@@ -49,6 +49,14 @@ parser.add_argument(
     help="Input FASTA filename(s) from isPcr, default stdin.",
 )
 parser.add_argument(
+    "-t",
+    "--target",
+    type=int,
+    default="0",
+    metavar="LENGTH",
+    help="Target amplicon length (for a default divergent color scheme).",
+)
+parser.add_argument(
     "-m",
     "--mincount",
     type=int,
@@ -83,9 +91,10 @@ parser.add_argument(
 if len(sys.argv) == 1:
     sys.exit("ERROR: Invalid command line, try -h or --help.")
 options = parser.parse_args()
+if options.target > options.maxlength:
+    sys.exit(f"ERROR: Max length {options.maxlength} < target length {options.target}")
 
-
-def main(pcr_results, min_count, max_length, output_stem):
+def main(pcr_results, min_count, max_length, target_length, output_stem):
     products = {}
     rejected = set()
     for pcr_file in pcr_results:
@@ -174,13 +183,9 @@ def main(pcr_results, min_count, max_length, output_stem):
     cluster_grid = sns.clustermap(
         data_frame,  # as_array,
         mask = (as_array == 0),
-        # vmin=0,
-        # vmax=max_length,
-        # col_colors=[primer_col.get(p, "white") for p in primers],
-        # row_colors=[phage_color.get(acc, "white") for acc in hits],
-        # row_cluster=True,
-        # col_cluster=False,
-        cmap="Wistia",
+        # I like the default colour map in target mode:
+        center = target_length if target_length else None,
+        cmap = None if target_length else "flare",
     )
     # Does this work for smaller font?:
     plt.setp(cluster_grid.ax_heatmap.get_xticklabels(), fontsize=8)  # For x axis
@@ -191,4 +196,4 @@ def main(pcr_results, min_count, max_length, output_stem):
     sys.stderr.write(f"Wrote {output_stem}.png\n")
 
 
-main(options.input, options.mincount, options.maxlength, options.output)
+main(options.input, options.mincount, options.maxlength, options.target, options.output)
