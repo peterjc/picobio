@@ -77,6 +77,20 @@ parser.add_argument(
     default=False,
     help="Force captions for all reference sequences (may overlap).",
 )
+parser.add_argument(
+    "--vmin",
+    type=int,
+    default="-1",
+    metavar="INTEGER",
+    help="Minimum amplicon length for colour scheme (default automatic)",
+)
+parser.add_argument(
+    "--vmax",
+    type=int,
+    default="-1",
+    metavar="INTEGER",
+    help="Maximum amplicon length for colour scheme (default automatic)",
+)
 # parser.add_argument(
 #    "-d",
 #    "--database",
@@ -112,6 +126,8 @@ def main(
     target_length=0,
     label_all_primers=False,
     label_all_seqs=False,
+    vmin=None,
+    vmax=None,
 ):
     products = {}
     rejected = set()
@@ -209,6 +225,9 @@ def main(
         col_cluster=(len(primers) > 1),
         xticklabels=True if label_all_primers else "auto",  # may overlap
         yticklabels=True if label_all_seqs else "auto",  # may overlap
+        vmin=vmin,
+        vmax=vmax,
+        robust=True,  # ignored if both vmin and vmax is used
     )
     # Does this work for smaller font?:
     plt.setp(cluster_grid.ax_heatmap.get_xticklabels(), fontsize=8)  # For x axis
@@ -227,4 +246,6 @@ main(
     target_length=options.target,
     label_all_primers=options.labelallprimers,
     label_all_seqs=options.labelallseqs,
+    vmin=options.vmin if options.vmin != -1 else None,
+    vmax=options.vmax if options.vmax != -1 else None,
 )
