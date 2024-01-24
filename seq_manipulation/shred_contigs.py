@@ -32,7 +32,7 @@ parser.add_option(
     "--min-contig-len",
     dest="max_contig",
     type="int",
-    help="Max contig length to re-use as is (default 2000)",
+    help="Max contig length to reuse as is (default 2000)",
     default=2000,
 )
 parser.add_option(

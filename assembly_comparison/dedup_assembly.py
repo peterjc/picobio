@@ -131,7 +131,7 @@ def find_duplicates(blast_file):
             # Ignore hits to smaller sequences
             continue
         elif qlen == slen and query > fields[c_match]:
-            # If same length, using idenfier as the tie break
+            # If same length, using identifier as the tie break
             continue
         assert qlen <= slen
         if float(fields[c_length]) < min_hit:
