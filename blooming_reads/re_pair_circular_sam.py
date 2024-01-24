@@ -535,7 +535,7 @@ def main():
         type="string",
         metavar="FILE",
         help="Option file to record coverage to (JSON).",
-    ),
+    )
     # Reads
     parser.add_option(
         "-i",

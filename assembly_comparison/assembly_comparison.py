@@ -205,7 +205,7 @@ gd_feature_set = gd_track_for_features.new_set()
 # Add a dark grey background
 gd_feature_set.add_feature(
     SeqFeature(FeatureLocation(0, len(record))), sigil="BOX", color="grey", label=False
-),
+)
 
 offset = 0
 ref_offsets = dict()
