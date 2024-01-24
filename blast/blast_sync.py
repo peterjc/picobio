@@ -44,7 +44,8 @@ except ImportError:
     def relpath(path, start=posixpath.curdir):
         """Return a relative version of a path"""
         if not path:
-            raise ValueError("no path specified")
+            msg = "no path specified"
+            raise ValueError(msg)
         start_list = posixpath.abspath(start).split(posixpath.sep)
         path_list = posixpath.abspath(path).split(posixpath.sep)
         # Work out how much of the filepath is shared by start and path.
