@@ -232,7 +232,7 @@ def report_group(
         if clumps:
             for clump in clumps:
                 if cut_lineage.startswith(clump + ";"):
-                    sys.stderr.write(f"DEBUG: {cut_lineage} -> {clump}\n")
+                    # sys.stderr.write(f"DEBUG: {cut_lineage} -> {clump}\n")
                     cut_lineage = clump
         assert f"{root};" not in cut_lineage, f"{lineage} --> {cut_lineage}"
         assert mito_counts[lineage] == 1, lineage
