@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.9.0")
+    print("v0.9.1")
     sys.exit(0)
 
 usage = """\
@@ -179,13 +179,20 @@ with open(tally_file) as handle:
     for line in handle:
         fields = line.rstrip("\n").split("\t")
         lineage = fields[0]
-        if args.hide:
-            for ignore in args.hide:
-                lineage = lineage.replace(f";{ignore};", ";")
-        assert lineage not in mito_counts, lineage
         if all("0" == _ for _ in fields[2:]):
             sys.stderr.write(f"WARNING - No amplicons from {lineage}\n")
             continue  # debug!
+        terms = lineage.split(";")
+        if args.root not in terms:
+            continue
+        # Cut the lineage before requested root
+        terms = terms[terms.index(args.root) + 1 :]
+        if args.hide:
+            for ignore in args.hide:
+                if ignore in terms:
+                    terms.remove(ignore)
+        lineage = ";".join(terms)
+        del terms
         mito_counts[lineage] = int(fields[1])
         # Note counting multiple amplicons per mtDNA here!
         if any(";" in _ for _ in fields[2:]):
@@ -203,7 +210,10 @@ with open(tally_file) as handle:
     print(
         f"Loaded product lengths for {len(mito_counts)} lineages vs {len(primers)} primers"
     )
-    sys.stderr.write(f"WARNING - {multi_products} lineages with multiple products\n")
+    if multi_products:
+        sys.stderr.write(
+            f"WARNING - {multi_products} lineages under {args.root} with multiple products\n"
+        )
     del primers
 
 
@@ -214,10 +224,7 @@ def report_group(
     local_lengths = {}
     for lineage in mito_counts:
         assert mito_counts[lineage] > 0, f"{lineage} mtDNA count {mito_counts[lineage]}"
-        terms = lineage.split(";")
-        if root not in terms:
-            continue
-        terms = terms[terms.index(root) + 1 :][:levels]
+        terms = lineage.split(";")[:levels]
         if " " in terms[-1]:
             # Drop any trailing species (these are sometimes at
             # above genus level when placement is unclear)
