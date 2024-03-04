@@ -289,9 +289,11 @@ def report_group(
             handle.write(
                 f"{cut_lineage}\t{local_mito[cut_lineage]}\t"
                 + "\t".join(
-                    str(median(local_lengths[cut_lineage, primer_name]))
-                    if local_lengths[cut_lineage, primer_name]
-                    else "-"
+                    (
+                        str(median(local_lengths[cut_lineage, primer_name]))
+                        if local_lengths[cut_lineage, primer_name]
+                        else "-"
+                    )
                     for primer_name in primer_defs
                 )
                 + "\n"
