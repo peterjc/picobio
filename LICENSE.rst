@@ -1,6 +1,6 @@
 The MIT License
 
-Copyright 2011-2023, The James Hutton Institute, UK.
+Copyright 2011-2024, The James Hutton Institute, UK.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
