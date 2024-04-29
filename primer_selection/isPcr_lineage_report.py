@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.9.1")
+    print("v0.9.2")
     sys.exit(0)
 
 usage = """\
@@ -29,12 +29,10 @@ Inputs:
 
 Outputs:
 
-* Multiple plain text TSV files covering:
+* Two plain text TSV files covering:
   - Counts (with reference counts as first row)
   - Median length (of shortest amplicon in each reference,
     not including the primers themselves)
-  - Length range (of shortest amplicon in each reference, not
-    including the primers themselves)
 * Excel file with multiple sheets matching the TSV files plus
   counts as a percentage, and the length range (of the
   shortest amplicon in each reference).
