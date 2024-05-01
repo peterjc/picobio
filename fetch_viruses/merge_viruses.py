@@ -27,7 +27,7 @@ tables = {
 
 
 def dedup(input_fasta, output_fasta):
-    """Merge identical FASTA entries using NCBI NR Ctrl+A style"""
+    """Merge identical FASTA entries using NCBI NR Ctrl+A style."""
     # Try it in memory...
     print("Deduplicating %s..." % input_fasta)
     by_seq = dict()

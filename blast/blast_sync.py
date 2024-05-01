@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""Sync BLAST database(s)
+"""Sync BLAST database(s).
 
 Arguments:
-
+---------
 (*) Master path, e.g. /data/blastdb
 (*) Local path, e.g. /tmp/galaxy-blastdb
 (*) Database name(s), e.g. ncbi/nr
@@ -22,7 +22,9 @@ and the database is up to date, then the master copy of the db is
 updated, then job 2 starts and will try to update the local copy
 (which will probably fail and/or mess up job 1). Corner case?
 We avoid this by running BLAST jobs which take a whole node at once.
+
 """
+
 # example values:
 # master = "/mnt/gfs/blast/galaxy"
 # local = "/var/blast/galaxy"
@@ -42,7 +44,7 @@ except ImportError:
     import posixpath
 
     def relpath(path, start=posixpath.curdir):
-        """Return a relative version of a path"""
+        """Return a relative version of a path."""
         if not path:
             msg = "no path specified"
             raise ValueError(msg)
@@ -143,7 +145,7 @@ for db in names:
             handle = open(lock)
             sys.stderr.write(handle.read())
             handle.close()
-        except Exception:  # noqa: B905
+        except Exception:  # noqa: B905,BLE001
             pass
         sys.stderr.write("Aborting sync\n")
         sys.exit(2)
@@ -151,14 +153,14 @@ for db in names:
         handle = open(lock, "w")
         handle.write(time.strftime("%a, %d %b %Y %H:%M:%S +0000\n", time.gmtime()))
         handle.close()
-    except Exception:  # noqa: B902
+    except Exception:  # noqa: B902,BLE001
         sys.stderr.write("Could not create BLAST DB lock\n")
         sys.exit(1)
 
     start = time.time()
     try:
         err = sync_blast_db(master, local, db)
-    except Exception as e:  # noqa: B902
+    except Exception as e:  # noqa: B902,BLE001
         # Want to catch this and remove the lock file
         sys.stderr.write("Unexpected failure: %s" % e)
         err = True
