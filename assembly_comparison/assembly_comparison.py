@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""Python script for assembly comparison.
-"""
+"""Python script for assembly comparison."""
 from __future__ import print_function
 
 import os

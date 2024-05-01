@@ -156,10 +156,13 @@ def fastq_batched_iterator(handle):
         qual2 = handle.readline()
         if len(seq) != len(qual):  # both include newline
             raise ValueError("Different FASTQ seq/qual lengths for %r" % title2)
-        yield [
-            seq.strip().upper(),
-            seq2.strip().upper(),
-        ], title + seq + "+\n" + qual + title2 + seq2 + "+\n" + qual2
+        yield (
+            [
+                seq.strip().upper(),
+                seq2.strip().upper(),
+            ],
+            title + seq + "+\n" + qual + title2 + seq2 + "+\n" + qual2,
+        )
 
 
 def sam_iterator(handle):

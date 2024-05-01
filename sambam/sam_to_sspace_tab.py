@@ -159,8 +159,8 @@ for line in sys.stdin:
     if (
         not (flag & 0x1)
         or flag & 0x4  # Single end read
-        or flag & 0x8  # Unmapped
-        or  # Partner unmapped
+        or flag & 0x8  # Unmapped  # Partner unmapped
+        or
         # Neither R1 nor R2 (i.e. more than 2 parts)
         (flag & 0x40 and flag & 0x80)
         or not (flag & 0x40 or flag & 0x80)
