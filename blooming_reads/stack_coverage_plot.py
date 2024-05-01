@@ -1,4 +1,5 @@
 """Script to produce stacked coverage plot with matplotlib."""
+
 from __future__ import print_function
 
 import sys

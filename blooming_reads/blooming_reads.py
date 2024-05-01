@@ -29,8 +29,8 @@ alternative would be to make a filter from the reference forward
 strands only, and to check the reads and the reverse complement of
 each read against it. I expect that to be slower.
 
-TODO:
-
+Todo:
+----
 * Technically SFF support is easy via Biopython, but simple
   k-mer matching will be hampered by homopolymer errors.
   Also don't have to worry about handling paired reads.
@@ -41,6 +41,7 @@ TODO:
 * FASTA paired support
 
 """
+
 import os
 import sys
 import tempfile
@@ -308,12 +309,13 @@ def disambiguate(seq):
     if good.issuperset(seq):
         yield seq
     else:
-        assert (
-            len(seq) - sum(seq.count(letter) for letter in good) < 10
-        ), "Have %i ambiguous chars in this %i sequence: %s" % (
-            len(seq) - sum(seq.count(letter) for letter in good),
-            len(seq),
-            seq,
+        assert len(seq) - sum(seq.count(letter) for letter in good) < 10, (
+            "Have %i ambiguous chars in this %i sequence: %s"
+            % (
+                len(seq) - sum(seq.count(letter) for letter in good),
+                len(seq),
+                seq,
+            )
         )
         for i, letter in enumerate(seq):
             if letter not in good:

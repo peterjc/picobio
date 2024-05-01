@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Python script for assembly comparison."""
+
 from __future__ import print_function
 
 import os
@@ -285,11 +286,12 @@ for contig in SeqIO.parse(assembly_fasta, "fasta"):
         fasta_short_dropped += 1
 
 
-assert unplaced == len(contigs) - len(
-    contigs_shown
-), "Only processed %i unplaced contigs, expected %i" % (
-    unplaced,
-    len(contigs) - len(contigs_shown),
+assert unplaced == len(contigs) - len(contigs_shown), (
+    "Only processed %i unplaced contigs, expected %i"
+    % (
+        unplaced,
+        len(contigs) - len(contigs_shown),
+    )
 )
 
 print(

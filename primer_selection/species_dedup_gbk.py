@@ -6,12 +6,12 @@ species found (discarding duplicates). The output FASTA files
 are named ">{accession} {lineage}\n{sequence}\n" with the
 taxonomic lineage from the GenBank header.
 """
+
 import argparse
 import sys
 
 from Bio import SeqIO
 from Bio.Seq import UndefinedSequenceError
-
 
 parser = argparse.ArgumentParser(
     prog="species_dedup_gbk.py",

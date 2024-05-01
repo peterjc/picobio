@@ -20,9 +20,9 @@ def download(acc, name, filename):
     assert data.rstrip().endswith("//"), data
     # Test we can parse it:
     record = SeqIO.read(StringIO(data), "gb")
-    assert name == record.name or record.id.startswith(
-        name + "."
-    ), "Got %r and %r expected %r" % (record.id, record.name, name)
+    assert name == record.name or record.id.startswith(name + "."), (
+        "Got %r and %r expected %r" % (record.id, record.name, name)
+    )
     # Save it:
     handle = open(filename, "w")
     handle.write(data)
@@ -55,9 +55,9 @@ def download_batch(acc_list, check=False):
 
 def check(acc, name, filename):
     record = SeqIO.read(open(filename), "gb")
-    assert name == record.name or record.id.startswith(
-        name + "."
-    ), "Got %r and %r expected %r" % (record.id, record.name, name)
+    assert name == record.name or record.id.startswith(name + "."), (
+        "Got %r and %r expected %r" % (record.id, record.name, name)
+    )
 
 
 # dsDNA viruses, no RNA stage, Taxonomy ID: 35237

@@ -3,6 +3,7 @@
 
 Checks read identifiers agree, or end with /1 and /2 respectively.
 """
+
 import gzip
 import sys
 

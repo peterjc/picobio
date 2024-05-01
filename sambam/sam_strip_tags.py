@@ -30,6 +30,7 @@ $ samtools view -h original.bam | ./sam_strip_tags.py -v OQ | samtools view -S -
 Copyright Peter Cock 2012. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
+
 import sys
 
 if "-v" in sys.argv[1:]:

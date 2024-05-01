@@ -27,8 +27,8 @@ Note that no @SQ lines are expected in SAM/BAM files with only unaligned reads.
 
 WARNING: This assumes your FASTQ files use the Sanger quality encoding.
 
-TODO:
-
+Todo:
+----
  - Test cases
  - Galaxy wrapper?
  - Proper command line API
@@ -39,7 +39,9 @@ TODO:
 
 Copyright Peter Cock 2015. All rights reserved. See:
 https://github.com/peterjc/picobio
+
 """
+
 import sys
 
 if "-v" in sys.argv or "--version" in sys.argv:

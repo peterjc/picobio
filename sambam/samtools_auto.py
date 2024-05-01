@@ -32,6 +32,7 @@ your ``$PATH`` as ``samtools``, for example under ``~/bin/``::
 Also install binaries for samtools 0.1.19 and 1.1 and set their
 paths below (variables ``samtools_old`` and ``samtools_new``).
 """
+
 import os
 import sys
 

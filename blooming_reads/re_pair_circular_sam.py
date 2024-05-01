@@ -25,8 +25,8 @@ via the FLAG field (the /1 and /2 are removed from the QNAME).
 Additionally unmapped partners are present (from the FASTQ file
 if not in the origin SAM file).
 
-TODO:
-
+Todo:
+----
 Rename reads, moving /1 and /2 suffix into FLAG.
 
 Adding missing unmapped reads.
@@ -42,7 +42,9 @@ probably mean splitting a read mapping over the origin into two
 fragments (i.e. two lines in SAM). This means that with paired
 end data, you might get two, three or even four lines in SAM
 (rather than the normal two lines, one for each half of the pair).
+
 """
+
 from __future__ import print_function
 
 import os

@@ -11,6 +11,7 @@ History:
          - Check indexes claiming to have zero records
 * v0.0.3 - Actually print the usage text I wrote.
 """
+
 import os
 import sys
 from optparse import OptionParser

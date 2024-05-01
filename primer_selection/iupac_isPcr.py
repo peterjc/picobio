@@ -10,6 +10,7 @@ The input and output are simple three-column TSV files with the name of
 each primer pair, the forward primer sequence, and the reverse primer
 sequence.
 """
+
 import itertools
 import sys
 

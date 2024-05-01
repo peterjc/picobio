@@ -41,14 +41,16 @@ orientation, but you should check this and then run SSPACE:
 
 $ SSPACE_Basic_v2.0.pl -l converted.libraries -s original.fasta ...
 
-TODO:
-
+Todo:
+----
  * Accept library information (size, orientation) via command line?
  * Output to a subdirectory? Would need relative paths...
 
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
+
 """
+
 import sys
 
 

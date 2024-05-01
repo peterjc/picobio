@@ -30,6 +30,7 @@ See also: http://samtools.sourceforge.net/
 
 v0.0.0 - Original script
 """
+
 import os
 import sys
 

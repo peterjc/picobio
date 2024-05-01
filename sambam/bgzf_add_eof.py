@@ -28,6 +28,7 @@ v0.0.0 - Original script
 v0.0.1 - Use append mode to add EOF block
 
 """
+
 import os
 import sys
 

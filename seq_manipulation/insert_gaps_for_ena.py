@@ -14,8 +14,8 @@ The validator reports a warning for any Ns without a gap feature, and an
 error for runs of at least 10 Ns without a gap feature. Therefore seems
 sensible to create gap features for any run of 10 or more N?
 
-References:
-
+References
+----------
 Prokka: https://github.com/tseemann/prokka
 
 GFF3 to ENA ready EMBL: https://github.com/sanger-pathogens/gff3toembl
@@ -24,7 +24,9 @@ ENA Validator: https://www.ebi.ac.uk/ena/software/flat-file-validator
 and https://github.com/enasequence/sequencetools
 
 This script: https://github.com/peterjc/picobio/tree/master/seq_manipulation
+
 """
+
 import sys
 
 if len(sys.argv) != 3:

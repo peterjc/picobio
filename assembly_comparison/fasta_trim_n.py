@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Python script for trimming N bases from ends of sequences."""
+
 import sys
 from optparse import OptionParser
 

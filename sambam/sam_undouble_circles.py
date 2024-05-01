@@ -302,13 +302,14 @@ def undouble_circle_mappings(sam_lines):
             length = ref_len_circles[rname]
             int_pos = int(pos) - 1
             if int_pos != -1 and length <= int_pos:
-                assert (
-                    int_pos < length * 2
-                ), "Have POS %s yet length is %i or %i when doubled!\n%r" % (
-                    pos,
-                    length,
-                    length * 2,
-                    line,
+                assert int_pos < length * 2, (
+                    "Have POS %s yet length is %i or %i when doubled!\n%r"
+                    % (
+                        pos,
+                        length,
+                        length * 2,
+                        line,
+                    )
                 )
                 int_pos -= length
                 pos = str(int_pos + 1)
@@ -317,13 +318,14 @@ def undouble_circle_mappings(sam_lines):
             length = ref_len_circles[rnext]
             int_pnext = int(pnext) - 1
             if int_pnext != -1 and length <= int_pnext:
-                assert (
-                    int_pnext < length * 2
-                ), "Have PNEXT %s yet length is %i or %i when doubled!\n%r" % (
-                    pnext,
-                    length,
-                    length * 2,
-                    line,
+                assert int_pnext < length * 2, (
+                    "Have PNEXT %s yet length is %i or %i when doubled!\n%r"
+                    % (
+                        pnext,
+                        length,
+                        length * 2,
+                        line,
+                    )
                 )
                 int_pnext -= length
                 pnext = str(int_pnext + 1)
@@ -332,14 +334,15 @@ def undouble_circle_mappings(sam_lines):
             length = ref_len_circles[rname]
             int_pnext = int(pnext) - 1
             if int_pnext != -1 and length <= int_pnext:
-                assert (
-                    int_pnext < length * 2
-                ), "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r" % (
-                    pnext,
-                    rname,
-                    length,
-                    length * 2,
-                    line,
+                assert int_pnext < length * 2, (
+                    "Have PNEXT %s (%s) yet length is %i or %i when doubled!\n%r"
+                    % (
+                        pnext,
+                        rname,
+                        length,
+                        length * 2,
+                        line,
+                    )
                 )
                 int_pnext -= length
                 pnext = str(int_pnext + 1)

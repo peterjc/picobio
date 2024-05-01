@@ -3,6 +3,7 @@
 
 e.g. for input into Newbler.
 """
+
 import os
 import sys
 from optparse import OptionParser

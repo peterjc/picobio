@@ -59,6 +59,7 @@ FT                   /transl_table=11
 This example used EMBL format, but GenBank format is also
 supported.
 """
+
 import sys
 
 # TODO - Proper API

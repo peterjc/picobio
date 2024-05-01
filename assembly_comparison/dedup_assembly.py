@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Python script for assembly contig de-duplication using BLASTN."""
+
 import os
 import shutil
 import sys

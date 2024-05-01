@@ -101,11 +101,12 @@ def parse_gff(handle):
                 phase,
                 attributes,
             ) = line.split("\t")
-            assert (
-                seqid in references
-            ), "Reference %r not declared with ##sequence-region line:\n%r" % (
-                seqid,
-                line,
+            assert seqid in references, (
+                "Reference %r not declared with ##sequence-region line:\n%r"
+                % (
+                    seqid,
+                    line,
+                )
             )
             start = int(start) - 1
             end = int(end)
@@ -157,12 +158,13 @@ def parse_gff(handle):
         if line.startswith(">"):
             if name and seqs:
                 seq = "".join(seqs)
-                assert len(seq) == len(
-                    references[name]
-                ), "FASTA entry for %s was %i long, expected %i" % (
-                    name,
-                    len(seq),
-                    len(references[name]),
+                assert len(seq) == len(references[name]), (
+                    "FASTA entry for %s was %i long, expected %i"
+                    % (
+                        name,
+                        len(seq),
+                        len(references[name]),
+                    )
                 )
                 references[name].seq = Seq(seq)
             name = line[1:].split(None, 1)[0]
@@ -173,12 +175,13 @@ def parse_gff(handle):
             raise NotImplementedError(line)
     if name and seqs:
         seq = "".join(seqs)
-        assert len(seq) == len(
-            references[name]
-        ), "FASTA entry for %s was %i long, expected %i" % (
-            name,
-            len(seq),
-            len(references[name]),
+        assert len(seq) == len(references[name]), (
+            "FASTA entry for %s was %i long, expected %i"
+            % (
+                name,
+                len(seq),
+                len(references[name]),
+            )
         )
         references[name].seq = Seq(seq)
     # Return results
