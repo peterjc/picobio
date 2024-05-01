@@ -17,9 +17,9 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Graphics import GenomeDiagram
 from Bio.Graphics.GenomeDiagram import CrossLink
-from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqFeature import FeatureLocation
+from Bio.SeqFeature import SeqFeature
 from Bio.SeqIO.FastaIO import SimpleFastaParser
-
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 

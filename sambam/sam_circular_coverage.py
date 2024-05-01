@@ -22,9 +22,8 @@ TODO: Switch to JSON output?
 """
 
 import sys
-
-from optparse import OptionParser
 from builtins import range  # for Python 2
+from optparse import OptionParser
 
 import numpy as np
 

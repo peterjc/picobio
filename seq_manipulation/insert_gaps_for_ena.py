@@ -36,8 +36,9 @@ MIN_GAP = 10  # TODO: Could be a command line option?
 
 try:
     from Bio import SeqIO
-    from Bio.SeqFeature import SeqFeature, FeatureLocation
     from Bio._py3k import StringIO
+    from Bio.SeqFeature import FeatureLocation
+    from Bio.SeqFeature import SeqFeature
 except ImportError:
     sys.exit("This script requires Biopython 1.69 or later")
 

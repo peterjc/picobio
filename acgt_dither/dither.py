@@ -10,7 +10,6 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 
-
 png_file = "Swanson_et_al_2012_fig1a.png"
 pdf_file = "Swanson_et_al_2012_fig1a.pdf"
 main_caption = "Swanson et al (2012) Figure 1"

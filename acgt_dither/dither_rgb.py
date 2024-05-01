@@ -23,7 +23,6 @@ from reportlab.lib.units import cm
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
-
 # These are heuristic, and currently slightly squash the image vertically,
 # so h_scale should be a little smaller or the v_scale a little bigger.
 h_scale = 0.140 * cm  # per bp
