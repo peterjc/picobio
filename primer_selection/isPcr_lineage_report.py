@@ -332,7 +332,7 @@ def report_group(
             worksheet.write_formula(
                 1 + i,
                 2 + j,
-                f"={root}!{xl_rowcol_to_cell(1+i, 2+j)}/{xl_rowcol_to_cell(1+i,1,True)}",
+                f"={root}!{xl_rowcol_to_cell(1 + i, 2 + j)}/{xl_rowcol_to_cell(1 + i, 1, True)}",
                 percent_fmt,
                 len(local_lengths[cut_lineage, primer_name]) / local_mito[cut_lineage],
             )

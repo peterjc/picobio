@@ -154,7 +154,7 @@ def main():
             else:
                 size = f"{min(sizes)}-{max(sizes)}bp"
             print(
-                f"{name}\t{left}\t{right}\t{len(amplicons[left,right])}\t{size}\t{ref_count}"
+                f"{name}\t{left}\t{right}\t{len(amplicons[left, right])}\t{size}\t{ref_count}"
             )
 
     # Assign letters to each unique sequence for each amplicon: A, B, ...
