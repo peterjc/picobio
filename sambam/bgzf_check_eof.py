@@ -29,6 +29,7 @@ Return codes:
 See also: http://samtools.sourceforge.net/
 
 v0.0.0 - Original script
+v0.0.1 - Dropped internal function sys_exit
 """
 
 import os
@@ -42,16 +43,19 @@ def check_bam(filename):
         "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
     if not os.path.isfile(filename):
-        sys.exit("Missing file %s" % filename, 2)
+        sys.stderr.write("Missing file %s\n" % filename)
+        sys.exit(2)
     size = os.path.getsize(filename)
     if not size:
-        sys.exit("Empty file (zero bytes) %s" % filename, 3)
+        sys.stderr.write("Empty file (zero bytes) %s\n" % filename)
+        sys.exit(3)
     h = open(filename, "rb")
     # Check it looks like a BGZF file
     # (could still be GZIP'd, in which case the extra block is harmless)
     data = h.read(len(header))
     if data != header:
-        sys.exit("File %s is not a BGZF/BAM file" % filename, 4)
+        sys.stderr.write("File %s is not a BGZF/BAM file\n" % filename)
+        sys.exit(4)
     # Check if it has the EOF already
     h.seek(size - 28)
     data = h.read(28)
@@ -59,10 +63,14 @@ def check_bam(filename):
     if data == eof:
         sys.stderr.write("Good, BGZF EOF already present in %s\n" % filename)
     else:
-        sys.exit("Missing EOF marker in BGZF/BAM file %s" % filename, 5)
+        sys.stderr.write("Missing EOF marker in BGZF/BAM file %s\n" % filename)
+        sys.exit(5)
 
 
 if len(sys.argv) == 1:
-    sys.exit("Takes one or more BGZF/BAM filenames as arguments (edits in place)", 1)
+    sys.stderr.write(
+        "Takes one or more BGZF/BAM filenames as arguments (edits in place)"
+    )
+    sys.exit(1)
 for bam_filename in sys.argv[1:]:
     check_bam(bam_filename)
