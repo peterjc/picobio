@@ -28,14 +28,7 @@ all the entries for a category are zero "None" is record instead.
 TODO: Switch to JSON output?
 """
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 parser = OptionParser(
     usage="usage: %prog [options]\n\n" + usage, version="%prog " + VERSION
@@ -138,9 +131,9 @@ def go(input_handle, output_handle, linear_refs, circular_refs):
                         else:
                             assert length == ref_len_circles[rname]
                     elif rname is None or length is None:
-                        sys_exit("Bad @SQ line:\n%s" % line)
+                        sys.exit("Bad @SQ line:\n%s" % line)
                     else:
-                        sys_exit("This reference was not given!:\n%s" % line)
+                        sys.exit("This reference was not given!:\n%s" % line)
             # End of header
             continue
 
@@ -324,7 +317,7 @@ def batch_by_qname(input_handle):
         if line[0] == "@":
             # SAM Header
             if batch_qname or (batch and batch[-1][0] != "@"):
-                sys_exit(
+                sys.exit(
                     "Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line)
                 )
             batch.append(line)

@@ -38,14 +38,7 @@ Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 parser = OptionParser(
     usage="usage: %prog [options]\n\n" + usage, version="%prog " + VERSION
@@ -206,7 +199,7 @@ def batch_by_qname(input_handle):
         if line[0] == "@":
             # SAM Header
             if batch_qname or (batch and batch[-1][0] != "@"):
-                sys_exit(
+                sys.exit(
                     "Bad SAM file, stay header lines?:\n%s%s" % ("".join(batch), line)
                 )
             batch.append(line)
@@ -426,9 +419,9 @@ for batch in batch_by_qname(input_handle):
                     #       % (rname, length, ref_len_circles[rname]))
                     line = "@SQ\tSN:%s\tLN:%i\n" % (rname, ref_len_circles[rname])
                 elif rname is None:
-                    sys_exit("Bad @SQ line:\n%s" % line)
+                    sys.exit("Bad @SQ line:\n%s" % line)
                 else:
-                    sys_exit("This reference was not given!:\n%s" % line)
+                    sys.exit("This reference was not given!:\n%s" % line)
             output_handle.write(line)
         continue
     # Should be a batch of reads...

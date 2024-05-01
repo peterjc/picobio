@@ -24,11 +24,6 @@ from __future__ import print_function
 import sys
 
 
-def sys_exit(msg, err=1):
-    sys.stderr.write(msg.rstrip() + "\n")
-    sys.exit(err)
-
-
 def convert(input_handle, output_handle):
     """Convert HMMER space separated table into tab separated table.
 
@@ -181,7 +176,7 @@ def convert(input_handle, output_handle):
 
 
 if len(sys.argv) != 3:
-    sys_exit("Expect two argument: input HMMER table, output tabular file")
+    sys.exit("Expect two argument: input HMMER table, output tabular file")
 in_file, out_file = sys.argv[1:]
 
 if in_file == "-":

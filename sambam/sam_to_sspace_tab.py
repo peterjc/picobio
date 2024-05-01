@@ -53,14 +53,8 @@ https://github.com/peterjc/picobio
 
 import sys
 
-
-def sys_exit(msg, error=1):
-    sys.stderr.write(msg.rstrip() + "\n")
-    sys.exit(error)
-
-
 if len(sys.argv) != 2:
-    sys_exit("Requires one argument, prefix for output tab files.")
+    sys.exit("Requires one argument, prefix for output tab files.")
 prefix = sys.argv[1]
 
 
@@ -121,7 +115,7 @@ for line in sys.stdin:
                 if t.startswith("ID:"):
                     rg = t[3:]
             if rg is None:
-                sys_exit("Missing ID in this read group line: %r" % line)
+                sys.exit("Missing ID in this read group line: %r" % line)
             rg_handles[rg] = open("%s_%s.tab" % (prefix, rg), "w")
             rg_lengths[rg] = []
             rg_dir[rg] = {"FR": 0, "RF": 0, "FF": 0}
@@ -150,11 +144,11 @@ for line in sys.stdin:
         # Ignore this read? What about single library SAM/BAM files?
         continue
     elif len(rg_tags) > 1:
-        sys_exit("Multiple RG tags in this line: %r" % line)
+        sys.exit("Multiple RG tags in this line: %r" % line)
     else:
         rg = rg_tags[0]
         if not rg.startswith("RG:Z:"):
-            sys_exit("Malformed RG tag %r in this line: %r" % (rg, line))
+            sys.exit("Malformed RG tag %r in this line: %r" % (rg, line))
         rg = rg[5:]
 
     flag = int(flag)
@@ -185,7 +179,7 @@ for line in sys.stdin:
                 % (other_rname, other_pos, rnext, pnext, qname)
             )
             sys.stderr.write(line)
-            sys_exit("Try running samtools fixmates?")
+            sys.exit("Try running samtools fixmates?")
         if bool(flag & 0x10) != bool(other_flag & 0x20) or bool(flag & 0x20) != bool(
             other_flag & 0x10
         ):
@@ -193,7 +187,7 @@ for line in sys.stdin:
                 "FLAG strand mismatch %i versus %i for %s\n" % (other_flag, flag, qname)
             )
             sys.stderr.write(line)
-            sys_exit("Try running samtools fixmates?")
+            sys.exit("Try running samtools fixmates?")
     else:
         # This is the first half of the pair (by file order), cache it
         cached[qname] = flag, rname, pos, cigar
@@ -269,7 +263,7 @@ for line in sys.stdin:
     try:
         handle = rg_handles[rg]
     except KeyError:
-        sys_exit("Unexpected read group identifier %r in this line: %r" % (rg, line))
+        sys.exit("Unexpected read group identifier %r in this line: %r" % (rg, line))
 
     handle.write(
         "%s\t%i\t%i\t%s\t%i\t%i\n" % (rname, start1, end1, rnext, start2, end2)

@@ -1,14 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
-sys_exit(
+sys.exit(
     """Python script for 'back-translating' a protein alignment.
 
 This script was originally available from here:

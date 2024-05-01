@@ -65,12 +65,6 @@ def hack_ncbi_fasta_name(pipe_name):
         return pipe_name
 
 
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg.rstrip())
-    sys.exit(error_level)
-
-
 parser = OptionParser(usage=usage)
 parser.add_option(
     "-l",
@@ -92,16 +86,16 @@ parser.add_option(
 min_hit = int(options.min_hit)
 
 if len(args) < 2:
-    sys_exit("Requires two or more arguments!\n\n" + usage)
+    sys.exit("Requires two or more arguments!\n\n" + usage)
 assemblies_fasta = args[:]
 diagram_pdf = options.pdf_filename
 if not diagram_pdf:
-    sys_exit("Requires output PDF file to be specified!\n\n" + usage)
+    sys.exit("Requires output PDF file to be specified!\n\n" + usage)
 output_directory = os.path.dirname(diagram_pdf)
 
 for assembly_fasta in assemblies_fasta:
     if not os.path.isfile(assembly_fasta):
-        sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+        sys.exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 
 def do_blast(query_fasta, db_fasta, blast_file):
@@ -156,7 +150,7 @@ ref_offsets = {}
 gd_ref_features = None
 for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
-        sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+        sys.exit("Assembly FASTA file not found: %r" % assembly_fasta)
     assembly_genbank = os.path.splitext(assembly_fasta)[0] + ".gbk"
 
     contig_offsets = {}
@@ -279,12 +273,12 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
                 r_offset = ref_offsets[hack_ncbi_fasta_name(hsp.hit_id)]
             except KeyError:
                 if hack_ncbi_fasta_name(hsp.hit_id) != hsp.hit_id:
-                    sys_exit(
+                    sys.exit(
                         "Could not find offset key %r for hit %r in dict (query id %r)"
                         % (hack_ncbi_fasta_name(hsp.hit_id), hsp.hit_id, hsp.query_id)
                     )
                 else:
-                    sys_exit(
+                    sys.exit(
                         "Could not find offset for hit %r in dict (query id %r)"
                         % (hsp.hit_id, hsp.query_id)
                     )

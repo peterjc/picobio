@@ -48,27 +48,20 @@ import tempfile
 import time
 from optparse import OptionParser
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
 try:
     from Bio.Seq import reverse_complement
 except ImportError:
-    sys_exit("Missing 'Bio' module, available from http://biopython.org")
+    sys.exit("Missing 'Bio' module, available from http://biopython.org")
 
 try:
     import pydablooms
 except ImportError:
-    sys_exit(
+    sys.exit(
         "Missing 'dablooms' Python bindings, available from "
         "https://github.com/bitly/dablooms"
     )
 
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 
 # TODO - Re-examine SAM input and paired vs single mode
 
@@ -191,7 +184,7 @@ def sam_iterator(handle):
         if flag in good_flags:
             yield seq.upper(), line
         else:
-            sys_exit(
+            sys.exit(
                 "Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
                 "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair)."
             )
@@ -243,17 +236,17 @@ def sam_batched_iterator(handle):
                 rest2,
             ) = line2.split("\t", 10)
             if qname != qname2:
-                sys_exit("Missing second half of %s" % qname)
+                sys.exit("Missing second half of %s" % qname)
             if flag2 != "141":
-                sys_exit(
+                sys.exit(
                     "Expected FLAG 141 (0x8d) for second part of %s, got %r"
                     % (qname, flag2)
                 )
             yield [seq.upper(), seq2.upper()], line + line2
         elif flag == "141":
-            sys_exit("Missing first half of %s" % qname)
+            sys.exit("Missing first half of %s" % qname)
         else:
-            sys_exit(
+            sys.exit(
                 "Unexpected FLAG '%r' in SAM file, should be 0 (unmapped single read),\n"
                 "77 (0x4d, first of unmapped pair) or 141 (0x8d, second of unmapped pair)."
             )
@@ -463,7 +456,7 @@ def go(
         elif format == "sam":
             read_iterator = sam_batched_iterator
         else:
-            sys_exit("Paired read format %r not recognised" % format)
+            sys.exit("Paired read format %r not recognised" % format)
     else:
         if format == "fasta":
             read_iterator = fasta_iterator
@@ -472,7 +465,7 @@ def go(
         elif format == "sam":
             read_iterator = sam_iterator
         else:
-            sys_exit("Read format %r not recognised" % format)
+            sys.exit("Read format %r not recognised" % format)
 
     # Create new bloom file,
     handle, bloom_filename = tempfile.mkstemp(prefix="bloom-", suffix=".bin")

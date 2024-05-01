@@ -19,17 +19,11 @@ makeblastdb_binary = "makeblastdb"
 blastn_binary = "blastn"
 
 
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg.rstrip())
-    sys.exit(error_level)
-
-
 def run(cmd):
     print(cmd)
     return_code = os.system(cmd)
     if return_code:
-        sys_exit("Return %i from: %s" % (return_code, cmd), return_code)
+        sys.exit("Return %i from: %s" % (return_code, cmd), return_code)
 
 
 parser = OptionParser(usage=usage)
@@ -68,7 +62,7 @@ parser.add_option(
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
-    sys_exit("Requires two arguments!\n\n" + usage)
+    sys.exit("Requires two arguments!\n\n" + usage)
 assembly_fasta, output_fasta = args
 min_len = int(options.min_len)
 min_hit = int(options.min_hit)
@@ -76,7 +70,7 @@ min_cover = float(options.min_cover)
 perc_identity = float(options.perc_identity)
 
 if not os.path.isfile(assembly_fasta):
-    sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+    sys.exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 cols = "qseqid sseqid qlen slen length qstart qend"
 c_query = 0

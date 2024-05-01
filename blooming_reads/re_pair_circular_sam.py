@@ -56,14 +56,7 @@ from optparse import OptionParser
 from Bio import SeqIO
 from Bio.SeqIO.QualityIO import _get_sanger_quality_str as qual_str
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 solo0 = solo1 = solo2 = solo12 = 0
 
@@ -133,9 +126,9 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
                 else:
                     assert length == ref_len_circles[rname]
             elif rname is None:
-                sys_exit("Bad @SQ line:\n%s" % line)
+                sys.exit("Bad @SQ line:\n%s" % line)
             else:
-                sys_exit("This reference was not given!:\n%s" % line)
+                sys.exit("This reference was not given!:\n%s" % line)
         output_handle.write(line)
         line = input_handle.readline()
 
@@ -163,14 +156,14 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
         if rname in ref_len_circles and pos != "0":
             length = ref_len_circles[rname]
             if length <= int(pos) - 1:
-                sys_exit(
+                sys.exit(
                     "Have POS %s yet length of %s is %i (circular)\n"
                     % (pos, rname, length)
                 )
         elif rname in ref_len_linear and pos != "0":
             length = ref_len_linear[rname]
             if length <= int(pos) - 1:
-                sys_exit(
+                sys.exit(
                     "Have POS %s yet length of %s is %i (linear)\n"
                     % (pos, rname, length)
                 )

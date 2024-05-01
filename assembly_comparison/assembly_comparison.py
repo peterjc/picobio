@@ -65,12 +65,6 @@ def hack_ncbi_fasta_name(pipe_name):
         return pipe_name
 
 
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg.rstrip())
-    sys.exit(error_level)
-
-
 parser = OptionParser(usage=usage)
 parser.add_option(
     "-f",
@@ -122,7 +116,7 @@ parser.add_option(
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
-    sys_exit("Requires two arguments!\n\n" + usage)
+    sys.exit("Requires two arguments!\n\n" + usage)
 assembly_fasta, reference_fasta = args
 output_fasta = options.fasta_filename
 blast_file = options.blast_filename
@@ -151,10 +145,10 @@ if not diagram_pdf:
     diagram_pdf = output_stem + ".blast.pdf"
 
 if not os.path.isfile(assembly_fasta):
-    sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+    sys.exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 if not os.path.isfile(reference_fasta):
-    sys_exit("Reference FASTA file not found: %r" % reference_fasta)
+    sys.exit("Reference FASTA file not found: %r" % reference_fasta)
 
 
 def do_blast(query_fasta, db_fasta, blast_file):
@@ -165,7 +159,7 @@ def do_blast(query_fasta, db_fasta, blast_file):
         and os.path.isfile(db_fasta + ".nin")
         and os.path.isfile(db_fasta + ".nsq")
     ):
-        sys_exit("Missing BLAST database for %s" % db_fasta)
+        sys.exit("Missing BLAST database for %s" % db_fasta)
     cmd = NcbiblastnCommandline(
         query=query_fasta, db=db_fasta, out=blast_file, outfmt=6, evalue=1e-5
     )
@@ -597,7 +591,7 @@ if output_fasta:
     print("Dropped %i short records" % fasta_short_dropped)
     fasta_handle.close()
     if fasta_saved_count + fasta_short_dropped != len(contigs):
-        sys_exit(
+        sys.exit(
             "Should have written %i records!" % (len(contigs) - fasta_short_dropped)
         )
 

@@ -19,21 +19,15 @@ from optparse import OptionParser
 VERSION = "0.0.3"
 
 
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg)
-    sys.exit(error_level)
-
-
 try:
     from Bio import SeqIO
 except ImportError:
-    sys_exit("Missing Biopython")
+    sys.exit("Missing Biopython")
 
 try:
     from Bio.SeqIO import index_db
 except ImportError:
-    sys_exit("Biopython too old to provide Bio.SeqIO.index_db(...)?")
+    sys.exit("Biopython too old to provide Bio.SeqIO.index_db(...)?")
 
 
 def at_least_one_record(filenames, format):
@@ -80,14 +74,14 @@ def main():
     (options, filenames) = parser.parse_args()
 
     if not filenames:
-        sys_exit("No sequence filenames provided")
+        sys.exit("No sequence filenames provided")
     if not options.format:
-        sys_exit("No sequence format specified")
+        sys.exit("No sequence format specified")
     format = options.format.lower()
 
     for filename in filenames:
         if not os.path.isfile(filename):
-            sys_exit("Missing %s" % filename)
+            sys.exit("Missing %s" % filename)
 
     if options.index_filename:
         # One shared index for all sequence files
@@ -99,7 +93,7 @@ def main():
             print("%s - indexing %i files..." % len(filenames))
         d = index_db(idx_filename, filenames, format)
         if len(d) == 0 and at_least_one_record(filenames, format):
-            sys_exit("Index %s wrongly reports zero records" % idx_filename)
+            sys.exit("Index %s wrongly reports zero records" % idx_filename)
         print(
             "%s - OK, %i records in %i files" % (idx_filename, len(d), len(filenames))
         )
@@ -114,7 +108,7 @@ def main():
                 print("%s - indexing..." % filename)
             d = index_db(idx_filename, filename, format)
             if len(d) == 0 and at_least_one_record([filename], format):
-                sys_exit("Index %s wrongly reports zero records" % idx_filename)
+                sys.exit("Index %s wrongly reports zero records" % idx_filename)
             print("%s - OK, %i records" % (idx_filename, len(d)))
 
 

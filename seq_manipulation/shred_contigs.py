@@ -20,13 +20,6 @@ you might wish to use something like this on an Illumina assembly:
 $ python shred_contigs.py other_assemby.fasta -o shredded.fasta -m 1999 -l 1999 -s 500
 """
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg.rstrip())
-    sys.exit(error_level)
-
-
 parser = OptionParser(usage=usage)
 parser.add_option(
     "-m",
@@ -62,7 +55,7 @@ parser.add_option(
 )
 (options, args) = parser.parse_args()
 if not args:
-    sys_exit("Requires at least one input FASTA filename\n\n" + usage)
+    sys.exit("Requires at least one input FASTA filename\n\n" + usage)
 
 max_contig = int(options.max_contig)
 shred_length = int(options.shred_length)
@@ -70,9 +63,9 @@ shred_step = int(options.shred_step)
 output_fasta = options.output_filename
 
 if shred_step < 1:
-    sys_exit("Shred step should be positive")
+    sys.exit("Shred step should be positive")
 if shred_length < shred_step:
-    sys_exit("Shred step should be less than shred length")
+    sys.exit("Shred step should be less than shred length")
 
 print("Accepting contigs up to length %i as they are (option -m)" % max_contig)
 print(
@@ -82,7 +75,7 @@ print(
 
 for assembly_fasta in args:
     if not os.path.isfile(assembly_fasta):
-        sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
+        sys.exit("Assembly FASTA file not found: %r" % assembly_fasta)
 
 
 def shred(input_filename):

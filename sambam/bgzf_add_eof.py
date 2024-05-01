@@ -26,16 +26,11 @@ See also: http://samtools.sourceforge.net/
 
 v0.0.0 - Original script
 v0.0.1 - Use append mode to add EOF block
-
+v0.0.2 - removed internal function sys_exit
 """
 
 import os
 import sys
-
-
-def sys_exit(msg, return_code=1):
-    sys.stderr.write(msg.rstrip() + "\n")
-    sys.exit(return_code)
 
 
 def fix_bam(filename):
@@ -45,14 +40,14 @@ def fix_bam(filename):
         "\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
     if not os.path.isfile(filename):
-        sys_exit("Missing file %s" % filename)
+        sys.exit("Missing file %s" % filename)
     size = os.path.getsize(filename)
     h = open(filename, "rb")  # read only for now
     # Check it looks like a BGZF file
     # (could still be GZIP'd, in which case the extra block is harmless)
     data = h.read(len(header))
     if data != header:
-        sys_exit("File %s is not a BAM file" % filename)
+        sys.exit("File %s is not a BAM file" % filename)
     # Check if it has the EOF already
     h.seek(size - 28)
     data = h.read(28)
@@ -67,6 +62,6 @@ def fix_bam(filename):
 
 
 if len(sys.argv) == 1:
-    sys_exit("Takes one or more BGZF/BAM filenames as arguments (edits in place)")
+    sys.exit("Takes one or more BGZF/BAM filenames as arguments (edits in place)")
 for bam_filename in sys.argv[1:]:
     fix_bam(bam_filename)

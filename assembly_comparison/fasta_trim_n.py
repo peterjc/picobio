@@ -9,17 +9,10 @@ usage = """Basic usage: ./fasta_trim_n.py < input.fasta > output.fasta
 For more details, run with -h for the help.
 """
 
-
-def sys_exit(msg, error_level=1):
-    """Print error message to stdout and quit with given error level."""
-    sys.stderr.write("%s\n" % msg.rstrip())
-    sys.exit(error_level)
-
-
 try:
     from Bio import SeqIO
 except ImportError:
-    sys_exit("This script requires Biopython")
+    sys.exit("This script requires Biopython")
 
 parser = OptionParser(usage=usage)
 parser.add_option(
