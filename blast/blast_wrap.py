@@ -37,6 +37,10 @@ but via the BLAST environment variable etc.
 
 from __future__ import print_function
 
+import os
+import sys
+import time
+
 # Old naming,
 # master = "/mnt/shared/cluster/blast/galaxy"
 # local = "/var/local/blast/galaxy"
@@ -45,10 +49,6 @@ master = "/mnt/shared/cluster/blast/galaxy"
 local = "/mnt/scratch/local/blast/galaxy"
 
 # e.g. db = "ncbi/nr"
-
-import os
-import sys
-import time
 
 # print("Given: %r" % sys.argv)
 

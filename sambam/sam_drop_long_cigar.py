@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import sys
+
 usage = """Python script to remove SAM reads with long CIGAR strings.
 
 The BAM format (currently) uses an unsigned 16bit integer for the
@@ -24,8 +27,6 @@ $ samtools view -h original.bam | ./sam_drop_long_cigar.py | samtools view -S -b
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
-import sys
 
 if len(sys.argv) != 1:
     sys.stderr.write("ERROR: Bad arguments.\n\n")

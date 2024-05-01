@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import sys
+
 usage = """Python script to restore SEQ entries recorded as just * in SAM/BAM.
 
 This script is designed to be used on the BWA-MEM output where it seems
@@ -27,8 +30,6 @@ the first mapped read will include the full SEQ and QUAL fields.
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
-import sys
 
 
 def decode_cigar(cigar):

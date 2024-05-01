@@ -9,6 +9,8 @@
 # v002 - Use print as function
 from __future__ import print_function
 
+import os
+
 # This gives us the list of databases and their type (nt vs aa):
 blastrc = "/var/www/html/blast/blast.rc"
 # This gives us a sensible order and their descriptions:
@@ -20,8 +22,6 @@ blastpath = "/data/blastdb"
 # Output files
 blast_nt = "blastdb.loc"
 blast_aa = "blastdb_p.loc"
-
-import os
 
 
 def load_blast_db_list(filename):

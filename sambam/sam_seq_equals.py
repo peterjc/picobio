@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import sys
+
 usage = """Python script to demonstrate reference based compression in SAM/BAM.
 
 This script is designed to be used as part of a Unix pipeline. It
@@ -31,8 +34,6 @@ Copyright Peter Cock 2012. All rights reserved. See:
 https://github.com/peterjc/picobio
 http://blastedbio.blogspot.co.uk/2012/02/reference-based-sambam-compression.html
 """
-
-import sys
 
 if len(sys.argv) == 2:
     reference_filename = sys.argv[1]

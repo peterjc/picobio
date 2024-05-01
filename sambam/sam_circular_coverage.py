@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+
+import sys
+from builtins import range  # for Python 2
+from optparse import OptionParser
+
+import numpy as np
+
 usage = """Calculate SAM read coverage allowing for circular genomes.
 
 Assumes your SAM file where reads mapping over the origin of a
@@ -20,12 +27,6 @@ all the entries for a category are zero "None" is record instead.
 
 TODO: Switch to JSON output?
 """
-
-import sys
-from builtins import range  # for Python 2
-from optparse import OptionParser
-
-import numpy as np
 
 
 def sys_exit(msg, error_level=1):

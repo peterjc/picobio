@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+import sys
+from optparse import OptionParser
+
 usage = """Post-process SAM mappings onto doubled circular references.
 
 Most read mappers do not support circular reference sequences. One
@@ -33,9 +37,6 @@ spanning the origin into two sub-parts. Currently they spill over the
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
-import sys
-from optparse import OptionParser
 
 
 def sys_exit(msg, error_level=1):

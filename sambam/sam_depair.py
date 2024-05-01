@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import sys
+
 usage = """Python script to remove paired information in SAM reads.
 
 The intended usage is where you wish to treat "orphaned" paired
@@ -28,8 +31,6 @@ $ samtools view -h original.bam | ./sam_depair.py | samtools view -S -b - > as_s
 Copyright Peter Cock 2014. All rights reserved. See:
 https://github.com/peterjc/picobio
 """
-
-import sys
 
 if len(sys.argv) != 1:
     sys.stderr.write("ERROR: Bad arguments.\n\n")

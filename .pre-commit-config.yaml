@@ -35,7 +35,7 @@ repos:
             '--fix',
             '--exit-non-zero-on-fix',
             '--extend-select=BLE,C4,D,I,ISC',
-            '--extend-ignore=D100,D103,D203,D213,E402',
+            '--extend-ignore=D100,D103,D203,D213',
             '--config=lint.isort.force-single-line=true',
             '--config=lint.isort.order-by-type=false',
             '--config=lint.pyupgrade.keep-runtime-typing=true'
