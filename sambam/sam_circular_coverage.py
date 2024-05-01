@@ -93,14 +93,14 @@ solo0 = solo1 = solo2 = solo12 = 0
 
 
 def go(input_handle, output_handle, linear_refs, circular_refs):
-    sam_len_references = dict()
+    sam_len_references = {}
 
     # Should be a batch of reads...
     global solo0, solo1, solo2, solo12
     solo0 = solo1 = solo2 = solo12 = 0
 
     global coverage
-    coverage = dict()
+    coverage = {}
 
     for lengths in [ref_len_linear, ref_len_circles]:
         for ref, length in lengths.iteritems():
@@ -294,12 +294,12 @@ def get_fasta_ids_and_lengths(fasta_filename):
 
 
 # Load the reference sequence lengths
-ref_len_linear = dict()
+ref_len_linear = {}
 if options.linear_references:
     for f in options.linear_references:
         ref_len_linear.update(get_fasta_ids_and_lengths(f))
     sys.stderr.write("Lengths of %i linear references loaded\n" % len(ref_len_linear))
-ref_len_circles = dict()
+ref_len_circles = {}
 if options.circular_references:
     for f in options.circular_references:
         ref_len_circles.update(get_fasta_ids_and_lengths(f))

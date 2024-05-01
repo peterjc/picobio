@@ -80,13 +80,13 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
             raw = SeqIO.index_db(idx, raw_reads, "fastq")
         sys.stderr.write("Have %i raw reads (used for unmapped partners)\n" % len(raw))
     else:
-        raw = dict()
+        raw = {}
 
-    ref_len_linear = dict()
+    ref_len_linear = {}
     if linear_refs:
         for f in linear_refs:
             ref_len_linear.update(get_fasta_ids_and_lengths(f))
-    ref_len_circles = dict()
+    ref_len_circles = {}
     if circular_refs:
         for f in circular_refs:
             ref_len_circles.update(get_fasta_ids_and_lengths(f))
@@ -143,7 +143,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
     solo0 = solo1 = solo2 = solo12 = 0
 
     global coverage
-    coverage = dict()
+    coverage = {}
     if coverage_file:
         import numpy
 
@@ -196,7 +196,7 @@ def go(input, output, raw_reads, linear_refs, circular_refs, coverage_file):
             if coverage_file:
                 count_coverage(coverage, reads)
             flush_cache(output_handle, reads, raw, ref_len_linear, ref_len_circles)
-            reads = set([(qname, frag, rname, pos, flag, rest)])
+            reads = {(qname, frag, rname, pos, flag, rest)}
             cur_read_name = qname
         # Next line...
         line = input_handle.readline()
@@ -337,8 +337,8 @@ def fixup_pairs(reads1, reads2, ref_len_linear, ref_len_circles):
     assert reads1 and reads2
     fixed1 = []
     fixed2 = []
-    refs1 = set(rname for qname, flag, rname, pos, rest in reads1)
-    refs2 = set(rname for qname, flag, rname, pos, rest in reads2)
+    refs1 = {rname for qname, flag, rname, pos, rest in reads1}
+    refs2 = {rname for qname, flag, rname, pos, rest in reads2}
     for ref in sorted(refs1.union(refs2)):
         if ref == "*":
             circular = False

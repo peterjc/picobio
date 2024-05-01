@@ -34,7 +34,7 @@ https://github.com/peterjc/picobio
 import sys
 
 if "-v" in sys.argv[1:]:
-    black_list = set(x.strip() for x in sys.argv[1:] if x != "-v")
+    black_list = {x.strip() for x in sys.argv[1:] if x != "-v"}
     sys.stderr.write("Removing these tags: %s\n" % ", ".join(black_list))
     for line in sys.stdin:
         if line[0] != "@":
@@ -75,7 +75,7 @@ if "-v" in sys.argv[1:]:
             )
         sys.stdout.write(line)
 else:
-    white_list = set(x.strip() for x in sys.argv[1:])
+    white_list = {x.strip() for x in sys.argv[1:]}
     sys.stderr.write("Keeping only these tags: %s\n" % ", ".join(white_list))
     for line in sys.stdin:
         if line[0] != "@":

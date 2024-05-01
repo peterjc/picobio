@@ -37,22 +37,24 @@ def cull_runs(set_of_points, min_run):
     return answer
 
 
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 5) == set()
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 4) == set([10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 3) == set(
-    [1, 2, 3, 10, 11, 12, 13]
-)
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13]), 2) == set(
-    [1, 2, 3, 5, 6, 10, 11, 12, 13]
-)
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 5) == set()
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 4) == set([10, 11, 12, 13])
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 3) == set(
-    [1, 2, 3, 10, 11, 12, 13]
-)
-assert cull_runs(set([1, 2, 3, 5, 6, 10, 11, 12, 13, 20]), 2) == set(
-    [1, 2, 3, 5, 6, 10, 11, 12, 13]
-)
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13}, 5) == set()
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13}, 4) == {10, 11, 12, 13}
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13}, 3) == {1, 2, 3, 10, 11, 12, 13}
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13}, 2) == {1, 2, 3, 5, 6, 10, 11, 12, 13}
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13, 20}, 5) == set()
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13, 20}, 4) == {10, 11, 12, 13}
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13, 20}, 3) == {1, 2, 3, 10, 11, 12, 13}
+assert cull_runs({1, 2, 3, 5, 6, 10, 11, 12, 13, 20}, 2) == {
+    1,
+    2,
+    3,
+    5,
+    6,
+    10,
+    11,
+    12,
+    13,
+}
 
 # key = contig id
 # value = length of contig
@@ -60,7 +62,7 @@ contig_lengths = OrderedDict()
 
 # key = contig id
 # value = length of preceding contigs
-contig_starts = dict()
+contig_starts = {}
 
 offset = 0
 for record in SeqIO.parse(contig_fasta, "fasta"):
@@ -71,9 +73,9 @@ for record in SeqIO.parse(contig_fasta, "fasta"):
 
 # key = subject id
 # value = set of base coordinates (cumulative along all contigs)
-contig_mapping = dict()
+contig_mapping = {}
 
-contig_species = dict()
+contig_species = {}
 for line in open(contig_blast):
     parts = line.rstrip("\n").split("\t")
     assert len(parts) > 12

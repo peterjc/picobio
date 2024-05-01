@@ -142,7 +142,7 @@ fasta_saved_count = 0
 fasta_short_dropped = 0
 
 offset = 0
-ref_offsets = dict()
+ref_offsets = {}
 for record in reference_parser:
     ref_offsets[hack_ncbi_fasta_name(record.id)] = offset
     offset += len(record)

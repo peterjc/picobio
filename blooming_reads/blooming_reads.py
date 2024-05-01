@@ -171,7 +171,7 @@ def sam_iterator(handle):
 
     Checks reads are unmapped. Any header is discarded.
     """
-    good_flags = set(["0", "77", "141"])
+    good_flags = {"0", "77", "141"}
     for line in handle:
         if line[0] == "@":
             continue

@@ -40,7 +40,7 @@ else:
     sys.exit(1)
 
 count = 0
-mapping = dict()
+mapping = {}
 # TODO - Automatically remove mapping entries once all parts of the read
 # have been found? They would typically be near each other in the file...
 # otherwise memory will be a problem with big paired end datasets.

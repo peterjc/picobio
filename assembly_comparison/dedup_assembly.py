@@ -117,8 +117,8 @@ def prepare_blast(sorted_fasta, blast_file):
 
 
 def find_duplicates(blast_file):
-    regions = dict()
-    lengths = dict()
+    regions = {}
+    lengths = {}
     for line in open(blast_file):
         fields = line.rstrip("\n").split("\t")
         query = fields[c_query]
@@ -144,7 +144,7 @@ def find_duplicates(blast_file):
         try:
             regions[query].add((qstart, qend))
         except KeyError:
-            regions[query] = set([(qstart, qend)])
+            regions[query] = {(qstart, qend)}
         lengths[query] = qlen
     for query in regions:
         regs = sorted(regions[query])

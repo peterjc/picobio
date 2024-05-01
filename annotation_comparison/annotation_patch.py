@@ -111,7 +111,7 @@ def patch_gff(handle, diffs):
 
 
 def load_diffs(handle):
-    answer = dict()
+    answer = {}
     for line in handle:
         if line.startswith("#"):
             continue

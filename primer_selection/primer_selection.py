@@ -162,7 +162,7 @@ def main():
     amplicon_alias = {}
     for (left, right), seq_counts in amplicons.items():
         for i, (count, seq) in enumerate(
-            reversed(sorted((count, seq) for seq, count in seq_counts.items()))
+            sorted(((count, seq) for seq, count in seq_counts.items()), reverse=True)
         ):
             amplicon_alias[left, right, seq] = ascii_uppercase[i]
 

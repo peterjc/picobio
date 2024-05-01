@@ -16,7 +16,7 @@ output_genbank_file = "reference_with_aliases.gbk"
 
 # Might be more than one contig
 reference_records = list(SeqIO.parse(reference_genbank_file, "genbank"))
-cds_dict = dict()
+cds_dict = {}
 for r in reference_records:
     for f in r.features:
         if f.type == "CDS":

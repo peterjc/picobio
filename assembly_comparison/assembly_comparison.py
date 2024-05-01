@@ -208,7 +208,7 @@ gd_feature_set.add_feature(
 )
 
 offset = 0
-ref_offsets = dict()
+ref_offsets = {}
 for record in reference_parser:
     if offset > 0:
         # Add Jaggy

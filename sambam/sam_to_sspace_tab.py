@@ -106,11 +106,11 @@ def cigar_mapped_len(cigar):
 reads = 0
 pairs = 0
 interesting = 0
-rg_handles = dict()
-rg_lengths = dict()
-rg_dir = dict()
+rg_handles = {}
+rg_lengths = {}
+rg_dir = {}
 
-cached = dict()  # Key by read name
+cached = {}  # Key by read name
 for line in sys.stdin:
     if line[0] == "@":
         # Header line

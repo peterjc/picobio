@@ -152,15 +152,15 @@ def add_jaggies(contig_seq, offset, gd_contig_features):
 max_len = 0
 gd_diagram = GenomeDiagram.Diagram("Comparison")
 reference_fasta = None
-ref_offsets = dict()
+ref_offsets = {}
 gd_ref_features = None
 for i, assembly_fasta in enumerate(assemblies_fasta):
     if not os.path.isfile(assembly_fasta):
         sys_exit("Assembly FASTA file not found: %r" % assembly_fasta)
     assembly_genbank = os.path.splitext(assembly_fasta)[0] + ".gbk"
 
-    contig_offsets = dict()
-    contig_lengths = dict()
+    contig_offsets = {}
+    contig_lengths = {}
     track_len = -SPACER
     with open(assembly_fasta) as h:
         for title, seq in SimpleFastaParser(h):
@@ -182,7 +182,7 @@ for i, assembly_fasta in enumerate(assemblies_fasta):
     )
     gd_contig_features = gd_track.new_set()
 
-    blast_data = dict()
+    blast_data = {}
     if reference_fasta:
         output_stem = "%s_vs_%s" % (
             os.path.splitext(os.path.basename(assembly_fasta))[0],
