@@ -33,13 +33,9 @@ def load_blast_db_list(filename):
             continue
         elif line.startswith("NumCpuToUse"):
             continue
-        elif (
-            line.startswith("blastn ")
-            or line.startswith("tblastn")
-            or line.startswith("tblastx ")
-        ):
+        elif line.startswith(("blastn ", "tblastn", "tblastx ")):
             nt.update(line.rstrip().split()[1:])
-        elif line.startswith("blastp ") or line.startswith("blastx"):
+        elif line.startswith(("blastp ", "blastx")):
             aa.update(line.rstrip().split()[1:])
         else:
             raise ValueError(line)
