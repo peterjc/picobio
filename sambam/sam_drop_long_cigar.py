@@ -50,7 +50,7 @@ if len(sys.argv) != 1:
 
 
 def cigar_length(cigar):
-    """Returns number of cigar operators (integer)."""
+    """Return number of cigar operators (integer)."""
     answer = 0
     for letter in cigar:
         if letter.isdigit():

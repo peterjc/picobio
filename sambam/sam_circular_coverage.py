@@ -309,7 +309,7 @@ if options.circular_references:
 
 
 def batch_by_qname(input_handle):
-    """Yields lists of SAM lines, batching by read name.
+    """Yield lists of SAM lines, batching by read name.
 
     If there is a SAM header, that is returned first.
 

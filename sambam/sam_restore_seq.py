@@ -32,7 +32,7 @@ import sys
 
 
 def decode_cigar(cigar):
-    """Returns a list of 2-tuples, integer count and operator char."""
+    """Return a list of 2-tuples, integer count and operator char."""
     count = ""
     answer = []
     for letter in cigar:

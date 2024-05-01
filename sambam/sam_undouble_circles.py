@@ -102,7 +102,7 @@ if args:
 
 
 def decode_cigar(cigar):
-    """Returns a list of 2-tuples, integer count and operator char."""
+    """Return a list of 2-tuples, integer count and operator char."""
     count = ""
     answer = []
     for letter in cigar:
@@ -191,7 +191,7 @@ if options.circular_references:
 
 
 def batch_by_qname(input_handle):
-    """Yields lists of SAM lines, batching by read name.
+    """Yield lists of SAM lines, batching by read name.
 
     If there is a SAM header, that is returned first.
 
@@ -292,7 +292,7 @@ def restore_seq(sam_lines):
 
 
 def undouble_circle_mappings(sam_lines):
-    """Iterates over SAM lines updating POS for those mapped to circles."""
+    """Iterate over SAM lines updating POS for those mapped to circles."""
     global ref_len_circles
     for line in sam_lines:
         qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, rest = line.split(

@@ -65,7 +65,7 @@ prefix = sys.argv[1]
 
 
 def decode_cigar(cigar):
-    """Returns a list of 2-tuples, integer count and operator char."""
+    """Return a list of 2-tuples, integer count and operator char."""
     count = ""
     answer = []
     for letter in cigar:
@@ -93,7 +93,7 @@ assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [
 
 
 def cigar_mapped_len(cigar):
-    """The aligned length is given by the sum of the CIGAR M/=/X/D/N operations."""
+    """Aligned length given by the sum of the CIGAR M/=/X/D/N operations."""
     if not cigar or cigar == "*":
         return 1  # Dummy value
     length = 0

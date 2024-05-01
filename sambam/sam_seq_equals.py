@@ -75,7 +75,7 @@ except ImportError:
 
 
 def decode_cigar(cigar):
-    """Returns a list of 2-tuples, integer count and operator char."""
+    """Return a list of 2-tuples, integer count and operator char."""
     count = ""
     answer = []
     for letter in cigar:
@@ -103,7 +103,7 @@ assert decode_cigar("14S15M1P1D3P54M1D34M5S") == [
 
 
 def add_or_remove_equals(ref_seq, read_seq, pos, cigar, add=True, drop=False):
-    """Returns read_seq with equals signs for matched bases.
+    """Return read_seq with equals signs for matched bases.
 
     Assumes both ref_seq and read_seq are using the same case.
     """
