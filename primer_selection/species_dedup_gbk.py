@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-r"""De-duplicate GenBank file to species level with FASTA output.
+"""De-duplicate GenBank file to species level with FASTA output.
 
-Parses stdin, writes to stdout. Takes the first entry of each
-species found (discarding duplicates). The output FASTA files
+Parses stdin or given filenames (optionally sorted), writes to
+stdout (or given filename stem). Takes the first entry of each
+species found (discarding duplicates). The output FASTA entries
 are named ">{accession} {lineage}\n{sequence}\n" with the
 taxonomic lineage from the GenBank header.
 """
@@ -24,6 +25,13 @@ parser.add_argument(
     metavar="GBK",
     default=[sys.stdin],
     help="One or more GenBank files (default stdin)",
+)
+parser.add_argument(
+    "-s",
+    "--sort",
+    action="store_true",
+    help="Sort input filenames alphabetically (for reproducibility, "
+    "applied to paths as given without any normalisation).",
 )
 parser.add_argument(
     "-o",
@@ -57,6 +65,9 @@ ignored = 0
 unique = 0
 counts = {}
 chunk = 0
+if options.sort and options.filenames:
+    sys.stderr.write(f"Sorted {len(options.filenames)} given filenames\n")
+    options.filenames.sort(key=lambda f: f.name)
 for in_handle in options.filenames:
     sys.stderr.write(f"Parsing {in_handle.name}\n")
     for record in SeqIO.parse(in_handle, "genbank"):
