@@ -237,7 +237,6 @@ def report_group(
     plot=None,
     min_refs=1,
 ):
-    lineage_truncation = {}
     local_mito = {}
     local_lengths = {}
     for lineage in mito_counts:
@@ -252,7 +251,6 @@ def report_group(
             sys.stderr.write(
                 f"WARNING - For {root} ignoring {lineage} {mito_counts[lineage]}\n"
             )
-            lineage_truncation[lineage] = None
             continue
         cut_lineage = ";".join(terms)
         if clumps:
@@ -264,9 +262,20 @@ def report_group(
         assert mito_counts[lineage] == 1, lineage
         try:
             local_mito[cut_lineage] += mito_counts[lineage]
+            for primer_name in primer_defs:
+                v = primer_counts[lineage, primer_name]
+                assert isinstance(v, int), (lineage, primer_name, v)
+                if v:
+                    local_lengths[cut_lineage, primer_name].append(v)
         except KeyError:
             local_mito[cut_lineage] = mito_counts[lineage]
-        lineage_truncation[lineage] = cut_lineage
+            for primer_name in primer_defs:
+                v = primer_counts[lineage, primer_name]
+                assert isinstance(v, int), (lineage, primer_name, v)
+                if v:
+                    local_lengths[cut_lineage, primer_name] = [v]
+                else:
+                    local_lengths[cut_lineage, primer_name] = []  # empty list
 
     if min_refs > 1:
         sys.stderr.write(
@@ -274,58 +283,13 @@ def report_group(
         )
         # Cull lineages without enough mtDNA to display
         total = sum(local_mito.values())
-        # while min(local_mito.values()) < min_refs:
-        while (
-            min(count for cut_lineage, count in local_mito.items() if cut_lineage)
-            < min_refs
-        ):
+        while min(local_mito.values()) < min_refs:
             for cut_lineage in list(local_mito):
                 if (culled := local_mito[cut_lineage]) < min_refs:
                     del local_mito[cut_lineage]
-                    more_cut = ";".join(cut_lineage.split(";")[:-1])
-                    if more_cut:
-                        assert cut_lineage.startswith(
-                            more_cut + ";"
-                        ), f"{cut_lineage} -> {more_cut}"
-                        sys.stderr.write(
-                            f"DEBUG '{cut_lineage}' count {culled} now under {more_cut}\n"
-                        )
-                    else:
-                        sys.stderr.write(
-                            f"DEBUG '{cut_lineage}' count {culled} now directly under {root}\n"
-                        )
-                    local_mito[more_cut] = local_mito.get(more_cut, 0) + culled
-                    lineage_truncation[cut_lineage] = more_cut
-        assert total == sum(local_mito.values()), "Oops - culling changed the total"
-        # sort the dict:
-        local_mito = dict(sorted(local_mito.items()))
-        if "" in local_mito and local_mito[""] < min_refs:
-            sys.stderr.write(f"WARNING: Only {local_mito['']} directly under {root}\n")
-            # del local_mito[""]
+                    sys.stderr.write(f"DEBUG '{cut_lineage}' count {culled} culled\n")
+        assert sum(local_mito.values()) <= total, "Oops - culling raised the total"
     sys.stderr.write(f"Reporting on {len(local_mito)} lineages under {root}\n")
-
-    local_lengths = {}
-    for lineage in mito_counts:
-        cut_lineage = lineage_truncation[lineage]  # initial truncation
-        if cut_lineage is None:
-            continue
-        if cut_lineage in lineage_truncation:
-            # sys.stderr.write(f"DEBUG: {lineage} -> {cut_lineage} -> {lineage_truncation[cut_lineage]}\n")
-            cut_lineage = lineage_truncation[
-                cut_lineage
-            ]  # second truncation via min_refs
-        assert cut_lineage in local_mito, cut_lineage
-
-        for primer_name in primer_defs:
-            v = primer_counts[lineage, primer_name]
-            assert isinstance(v, int), (lineage, primer_name, v)
-            if (cut_lineage, primer_name) in local_lengths:
-                if v:
-                    local_lengths[cut_lineage, primer_name].append(v)
-            elif v:
-                local_lengths[cut_lineage, primer_name] = [v]
-            else:
-                local_lengths[cut_lineage, primer_name] = []
 
     # assert set(local_mito) == set(local_lengths)
     # print(f"{len(local_lengths)} entries for {root} level {levels}")
