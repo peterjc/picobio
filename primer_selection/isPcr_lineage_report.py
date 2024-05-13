@@ -131,6 +131,11 @@ parser.add_argument(
         "as just 'Fungi;Cryptomycota'."
     ),
 )
+parser.add_argument(
+    "--plot",
+    action="store_true",
+    help="Plot it too. Requires pandas and seaborn Python libraries.",
+)
 args = parser.parse_args()
 
 BORDER_STYLE = 2
@@ -216,7 +221,13 @@ with open(tally_file) as handle:
 
 
 def report_group(
-    count_tsv_filename, median_tsv_filename, workbook, root, levels, clumps=None
+    count_tsv_filename,
+    median_tsv_filename,
+    workbook,
+    root,
+    levels,
+    clumps=None,
+    plot=None,
 ):
     local_mito = {}
     local_lengths = {}
@@ -294,6 +305,34 @@ def report_group(
                 )
                 + "\n"
             )
+
+    if plot:
+        import pandas as pd
+        import seaborn as sns
+
+        # Using dataframe as simple way to keep the row/col captions
+        # matched up after clustering
+        data_frame = pd.DataFrame(
+            [
+                [
+                    len(local_lengths[cut_lineage, primer_name])
+                    / local_mito[cut_lineage]
+                    for primer_name in primer_defs
+                ]
+                for cut_lineage in local_mito
+            ],
+            index=local_mito,
+            columns=primer_defs,
+        )
+        cluster_plot = sns.clustermap(
+            data_frame,
+            col_cluster=True,
+            row_cluster=False,
+            xticklabels=True,
+            yticklabels=True,
+        )
+        del data_frame
+        cluster_plot.savefig(plot)
 
     worksheet = workbook.add_worksheet(root)
     worksheet.set_column(0, 0, 43)  # column width
@@ -449,5 +488,6 @@ report_group(
     args.root,
     args.levels,
     args.clump,
+    plot=f"{args.output}_fraction.pdf" if args.plot else None,
 )
 workbook.close()
