@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.0")
+    print("v0.10.1")
     sys.exit(0)
 
 usage = """\
@@ -136,6 +136,13 @@ parser.add_argument(
     action="store_true",
     help="Plot it too. Requires pandas and seaborn Python libraries.",
 )
+parser.add_argument(
+    "--min-refs",
+    metavar="COUNT",
+    type=int,
+    default=1,
+    help="Minimum number of entries to display a taxonomic lineage, default 1.",
+)
 args = parser.parse_args()
 
 BORDER_STYLE = 2
@@ -152,7 +159,7 @@ excel_file = args.output + ".xlsx"
 def load_primers(primer_files):
     primers = {}
     for primer_file in primer_files:
-        sys.stderr.write(f"DEBUG: Loading primer TSV file {primer_file}\n")
+        # sys.stderr.write(f"DEBUG: Loading primer TSV file {primer_file}\n")
         for line in open(primer_file):
             if line.startswith("#"):
                 continue
@@ -228,9 +235,11 @@ def report_group(
     levels,
     clumps=None,
     plot=None,
+    min_refs=1,
 ):
     local_mito = {}
     local_lengths = {}
+    truncations = {}
     for lineage in mito_counts:
         assert mito_counts[lineage] > 0, f"{lineage} mtDNA count {mito_counts[lineage]}"
         terms = lineage.split(";")[:levels]
@@ -239,11 +248,11 @@ def report_group(
             # above genus level when placement is unclear)
             # e.g. Enicocephalidae;Stenopirates;Stenopirates sp. HL-2011
             terms = terms[:-1]
-        if not terms:
-            sys.stderr.write(
-                f"WARNING - For {root} ignoring {lineage} {mito_counts[lineage]}\n"
-            )
-            continue
+        # if not terms:
+        #    sys.stderr.write(
+        #        f"WARNING - For {root} ignoring {lineage} {mito_counts[lineage]}\n"
+        #    )
+        #    continue
         cut_lineage = ";".join(terms)
         if clumps:
             for clump in clumps:
@@ -254,22 +263,63 @@ def report_group(
         assert mito_counts[lineage] == 1, lineage
         try:
             local_mito[cut_lineage] += mito_counts[lineage]
-            for primer_name in primer_defs:
-                v = primer_counts[lineage, primer_name]
-                assert isinstance(v, int), (lineage, primer_name, v)
-                if v:
-                    local_lengths[cut_lineage, primer_name].append(v)
         except KeyError:
             local_mito[cut_lineage] = mito_counts[lineage]
-            for primer_name in primer_defs:
-                v = primer_counts[lineage, primer_name]
-                assert isinstance(v, int), (lineage, primer_name, v)
-                if v:
-                    local_lengths[cut_lineage, primer_name] = [v]
-                else:
-                    local_lengths[cut_lineage, primer_name] = []  # empty list
+        truncations[lineage] = cut_lineage
 
-    sys.stderr.write(f"Reporting on {len(local_mito)} lineages under {root}\n")
+    if min_refs > 1:
+        sys.stderr.write(
+            f"Potentially reporting on {sum(local_mito.values())} mtDNA under {len(local_mito)} lineages under {root}\n"
+        )
+        # Cull lineages without enough mtDNA to display
+        total = sum(local_mito.values())
+        # while min(local_mito.values()) < min_refs:
+        while min(v for k, v in local_mito.items() if k != "") < min_refs:
+            # Sorting to do A;B;C before A;B
+            for cut_lineage in sorted(local_mito, reverse=True):
+                if cut_lineage and local_mito[cut_lineage] < min_refs:
+                    culled = local_mito[cut_lineage]
+                    del local_mito[cut_lineage]
+                    more_cut = ";".join(cut_lineage.split(";")[:-1])
+                    truncations[cut_lineage] = more_cut
+                    try:
+                        local_mito[more_cut] += culled
+                    except KeyError:
+                        local_mito[more_cut] = culled
+                    assert cut_lineage not in local_mito
+                    assert (
+                        sum(local_mito.values()) == total
+                    ), "Oops - culling changed the total"
+                    # sys.stderr.write(
+                    #    f"DEBUG '{cut_lineage}' count {culled} --> {more_cut} which is now {local_mito[more_cut]}\n"
+                    # )
+        assert sum(local_mito.values()) == total, "Oops - culling changed the total"
+    sys.stderr.write(
+        f"Reporting on {sum(local_mito.values())} mtDNA under {len(local_mito)} lineages under {root}\n"
+    )
+    # sort the dict:
+    local_mito = dict(sorted(local_mito.items()))
+
+    # TODO - Use defaultdict?
+    for cut_lineage in local_mito:
+        for primer_name in primer_defs:
+            local_lengths[cut_lineage, primer_name] = []
+
+    for lineage in mito_counts:
+        cut_lineage = truncations[lineage]  # drop species, maybe also clumping
+        while cut_lineage in truncations:
+            cut_lineage = truncations[cut_lineage]  # culled using min_refs
+        assert cut_lineage in local_mito, f"{lineage} -> {cut_lineage}"
+        for primer_name in primer_defs:
+            v = primer_counts[lineage, primer_name]  # int, can be zero
+            assert isinstance(v, int), v
+            if v:
+                local_lengths[cut_lineage, primer_name].append(v)
+    for cut_lineage in local_mito:
+        for primer_name in primer_defs:
+            assert (
+                len(local_lengths[cut_lineage, primer_name]) <= local_mito[cut_lineage]
+            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other ' + root}"
 
     # assert set(local_mito) == set(local_lengths)
     # print(f"{len(local_lengths)} entries for {root} level {levels}")
@@ -281,7 +331,7 @@ def report_group(
         )
         for cut_lineage in local_mito:
             handle.write(
-                f"{cut_lineage}\t{local_mito[cut_lineage]}\t"
+                f"{cut_lineage if cut_lineage else 'Other ' + root}\t{local_mito[cut_lineage]}\t"
                 + "\t".join(
                     str(len(local_lengths[cut_lineage, primer_name]))
                     for primer_name in primer_defs
@@ -296,7 +346,7 @@ def report_group(
         )
         for cut_lineage in local_mito:
             handle.write(
-                f"{cut_lineage}\t{local_mito[cut_lineage]}\t"
+                f"{cut_lineage if cut_lineage else 'Other ' + root}\t{local_mito[cut_lineage]}\t"
                 + "\t".join(
                     str(median(local_lengths[cut_lineage, primer_name]))
                     if local_lengths[cut_lineage, primer_name]
@@ -321,7 +371,7 @@ def report_group(
                 ]
                 for cut_lineage in local_mito
             ],
-            index=local_mito,
+            index=[(k if k else "Other " + root) for k in local_mito],
             columns=primer_defs,
         )
         cluster_plot = sns.clustermap(
@@ -343,7 +393,9 @@ def report_group(
     for j, name in enumerate(primer_defs):
         worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
     for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(1 + i, 0, cut_lineage.replace(";", "; "))
+        worksheet.write_string(
+            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
+        )
         worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
         for j, primer_name in enumerate(primer_defs):
             # When an mtDNA amplified more than once, only kept
@@ -353,7 +405,7 @@ def report_group(
             )
             assert (
                 len(local_lengths[cut_lineage, primer_name]) <= local_mito[cut_lineage]
-            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA"
+            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
     worksheet = workbook.add_worksheet(f"{root} - Percent")
     worksheet.set_column(0, 0, 43)  # column width
     worksheet.set_column(1, 1, 6.5)
@@ -363,7 +415,9 @@ def report_group(
     for j, name in enumerate(primer_defs):
         worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
     for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(1 + i, 0, cut_lineage.replace(";", "; "))
+        worksheet.write_string(
+            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
+        )
         worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
         for j, primer_name in enumerate(primer_defs):
             # When an mtDNA amplified more than once, only kept
@@ -388,7 +442,9 @@ def report_group(
     for j, name in enumerate(primer_defs):
         worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
     for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(1 + i, 0, cut_lineage.replace(";", "; "))
+        worksheet.write_string(
+            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
+        )
         worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
         for j, primer_name in enumerate(primer_defs):
             if local_lengths[cut_lineage, primer_name]:
@@ -407,7 +463,9 @@ def report_group(
     for j, name in enumerate(primer_defs):
         worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
     for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(1 + i, 0, cut_lineage.replace(";", "; "))
+        worksheet.write_string(
+            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
+        )
         worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
         for j, primer_name in enumerate(primer_defs):
             values = set(local_lengths[cut_lineage, primer_name])
@@ -489,5 +547,6 @@ report_group(
     args.levels,
     args.clump,
     plot=f"{args.output}_fraction.pdf" if args.plot else None,
+    min_refs=args.min_refs,
 )
 workbook.close()
