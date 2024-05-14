@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.2")
+    print("v0.10.3")
     sys.exit(0)
 
 usage = """\
@@ -366,8 +366,13 @@ def report_group(
         import pandas as pd
         import seaborn as sns
 
+        # color_map = sns.color_palette("Blues", as_cmap=True)
+        # color_map = sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True)
+        color_map = sns.cubehelix_palette(start=2, as_cmap=True)
+
         # Using dataframe as simple way to keep the row/col captions
-        # matched up after clustering
+        # matched up after clustering. Using mask for zero values
+        # (thus background colour) for visual jump to small non-zero
         data_frame = pd.DataFrame(
             [
                 [
@@ -384,10 +389,14 @@ def report_group(
         )
         cluster_plot = sns.clustermap(
             data_frame,
+            mask=(data_frame == 0),
             col_cluster=True,
             row_cluster=False,
             xticklabels=True,
             yticklabels=True,
+            cmap=color_map,
+            vmin=0.0,
+            vmax=1.0,
         )
         del data_frame
         cluster_plot.savefig(plot)
