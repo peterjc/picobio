@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""De-duplicate GenBank file to species level with FASTA output.
+r"""De-duplicate GenBank file to species level with FASTA output.
 
 Parses stdin or given filenames (optionally sorted), writes to
 stdout (or given filename stem). Takes the first entry of each
