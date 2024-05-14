@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.3")
+    print("v0.10.4")
     sys.exit(0)
 
 usage = """\
@@ -383,7 +383,7 @@ def report_group(
                 for cut_lineage in local_mito
             ],
             index=[
-                f"{local_mito[k]}x {k if k else 'Other ' + root}" for k in local_mito
+                f"{k if k else 'Other ' + root} ×{local_mito[k]}" for k in local_mito
             ],
             columns=primer_defs,
         )
