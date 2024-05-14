@@ -239,6 +239,7 @@ def report_group(
 ):
     local_mito = {}
     local_lengths = {}
+    truncations = {}
     for lineage in mito_counts:
         assert mito_counts[lineage] > 0, f"{lineage} mtDNA count {mito_counts[lineage]}"
         terms = lineage.split(";")[:levels]
@@ -262,34 +263,55 @@ def report_group(
         assert mito_counts[lineage] == 1, lineage
         try:
             local_mito[cut_lineage] += mito_counts[lineage]
-            for primer_name in primer_defs:
-                v = primer_counts[lineage, primer_name]
-                assert isinstance(v, int), (lineage, primer_name, v)
-                if v:
-                    local_lengths[cut_lineage, primer_name].append(v)
         except KeyError:
             local_mito[cut_lineage] = mito_counts[lineage]
-            for primer_name in primer_defs:
-                v = primer_counts[lineage, primer_name]
-                assert isinstance(v, int), (lineage, primer_name, v)
-                if v:
-                    local_lengths[cut_lineage, primer_name] = [v]
-                else:
-                    local_lengths[cut_lineage, primer_name] = []  # empty list
+        truncations[lineage] = cut_lineage
 
     if min_refs > 1:
         sys.stderr.write(
-            f"Potentially reporting on {len(local_mito)} lineages under {root}\n"
+            f"Potentially reporting on {sum(local_mito.values())} mtDNA under {len(local_mito)} lineages under {root}\n"
         )
         # Cull lineages without enough mtDNA to display
         total = sum(local_mito.values())
-        while min(local_mito.values()) < min_refs:
+        # while min(local_mito.values()) < min_refs:
+        while min(v for k, v in local_mito.items() if k != "") < min_refs:
             for cut_lineage in list(local_mito):
-                if (culled := local_mito[cut_lineage]) < min_refs:
+                if cut_lineage and local_mito[cut_lineage] < min_refs:
+                    culled = local_mito[cut_lineage]
                     del local_mito[cut_lineage]
-                    sys.stderr.write(f"DEBUG '{cut_lineage}' count {culled} culled\n")
-        assert sum(local_mito.values()) <= total, "Oops - culling raised the total"
-    sys.stderr.write(f"Reporting on {len(local_mito)} lineages under {root}\n")
+                    more_cut = ";".join(cut_lineage.split(";")[:-1])
+                    sys.stderr.write(
+                        f"DEBUG '{cut_lineage}' count {culled} --> {more_cut}\n"
+                    )
+                    truncations[cut_lineage] = more_cut
+                    try:
+                        local_mito[more_cut] += culled
+                    except KeyError:
+                        local_mito[more_cut] = culled
+                    assert cut_lineage not in local_mito
+                    assert (
+                        sum(local_mito.values()) == total
+                    ), "Oops - culling changed the total"
+        assert sum(local_mito.values()) == total, "Oops - culling changed the total"
+    sys.stderr.write(
+        f"Reporting on {sum(local_mito.values())} mtDNA under {len(local_mito)} lineages under {root}\n"
+    )
+
+    # TODO - Use defaultdict?
+    for cut_lineage in local_mito:
+        for primer_name in primer_defs:
+            local_lengths[cut_lineage, primer_name] = []
+
+    for lineage in mito_counts:
+        cut_lineage = truncations[lineage]  # drop species, maybe also clumping
+        while cut_lineage in truncations:
+            cut_lineage = truncations[cut_lineage]  # culled using min_refs
+        assert cut_lineage in local_mito, f"{lineage} -> {cut_lineage}"
+        for primer_name in primer_defs:
+            v = primer_counts[lineage, primer_name]  # int, can be zero
+            assert isinstance(v, int), v
+            if v:
+                local_lengths[cut_lineage, primer_name].append(v)
 
     # assert set(local_mito) == set(local_lengths)
     # print(f"{len(local_lengths)} entries for {root} level {levels}")
@@ -341,7 +363,7 @@ def report_group(
                 ]
                 for cut_lineage in local_mito
             ],
-            index=local_mito,
+            index=[(k if k else "(Other)") for k in local_mito],
             columns=primer_defs,
         )
         cluster_plot = sns.clustermap(
@@ -373,7 +395,7 @@ def report_group(
             )
             assert (
                 len(local_lengths[cut_lineage, primer_name]) <= local_mito[cut_lineage]
-            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA"
+            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
     worksheet = workbook.add_worksheet(f"{root} - Percent")
     worksheet.set_column(0, 0, 43)  # column width
     worksheet.set_column(1, 1, 6.5)
