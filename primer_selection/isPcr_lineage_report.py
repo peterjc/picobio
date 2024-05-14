@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.1")
+    print("v0.10.2")
     sys.exit(0)
 
 usage = """\
@@ -294,6 +294,9 @@ def report_group(
                     #    f"DEBUG '{cut_lineage}' count {culled} --> {more_cut} which is now {local_mito[more_cut]}\n"
                     # )
         assert sum(local_mito.values()) == total, "Oops - culling changed the total"
+        if "" in local_mito and local_mito[""] < min_refs:
+            # Cull this despite the total dropping
+            del local_mito[""]
     sys.stderr.write(
         f"Reporting on {sum(local_mito.values())} mtDNA under {len(local_mito)} lineages under {root}\n"
     )
@@ -309,6 +312,9 @@ def report_group(
         cut_lineage = truncations[lineage]  # drop species, maybe also clumping
         while cut_lineage in truncations:
             cut_lineage = truncations[cut_lineage]  # culled using min_refs
+        if not cut_lineage and cut_lineage not in local_mito:
+            # Dropped "" (others under root) as too rare
+            continue
         assert cut_lineage in local_mito, f"{lineage} -> {cut_lineage}"
         for primer_name in primer_defs:
             v = primer_counts[lineage, primer_name]  # int, can be zero
