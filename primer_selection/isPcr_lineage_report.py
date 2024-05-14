@@ -371,7 +371,9 @@ def report_group(
                 ]
                 for cut_lineage in local_mito
             ],
-            index=[(k if k else "Other " + root) for k in local_mito],
+            index=[
+                f"{local_mito[k]}x {k if k else 'Other ' + root}" for k in local_mito
+            ],
             columns=primer_defs,
         )
         cluster_plot = sns.clustermap(
