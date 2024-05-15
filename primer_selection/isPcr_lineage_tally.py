@@ -9,7 +9,7 @@ import sys
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.9.0")
+    print("v0.9.1")
     sys.exit(0)
 
 usage = """\
@@ -118,7 +118,7 @@ def load_primers(primer_files):
             elif primers[name] != (fwd, rev):
                 sys.exit(
                     f"ERROR - inconsistent definition for {name}, "
-                    f"f={primers[name][1]} r={primers[name][2]}"
+                    f"f={primers[name][0]} r={primers[name][1]} "
                     f"versus f={fwd} r={rev}"
                 )
     return primers
