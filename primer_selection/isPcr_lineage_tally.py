@@ -114,13 +114,14 @@ def load_primers(primer_files):
                 continue
             name, fwd, rev = line.rstrip().split("\t")[:3]
             if name not in primers:
-                primers[name] = (fwd, rev)
-            elif primers[name] != (fwd, rev):
-                sys.exit(
-                    f"ERROR - inconsistent definition for {name}, "
-                    f"f={primers[name][0]} r={primers[name][1]} "
-                    f"versus f={fwd} r={rev}"
-                )
+                primers[name] = {(fwd, rev)}
+            elif (fwd, rev) not in primers[name]:
+                primers[name].add((fwd, rev))
+            else:
+                sys.stderr.write(f"WARNING - duplicate line for {name}\n")
+    for name in primers:
+        if (count := len(primers[name])) > 1:
+            sys.stderr.write(f"WARNING - cocktail of {count} pairs for {name}\n")
     return primers
 
 
@@ -170,13 +171,21 @@ for bed_file in bed_files:
                 continue
             # We dropped column 5 (score), not checking 6 (now 5) strand etc
             acc, start, end, name, strand = line.rstrip().split("\t", 4)
+            # Need the lengths of the primers
             try:
-                fwd, rev = primer_defs[name]
+                cocktail = primer_defs[name]
             except KeyError:
-                # Warning?
+                sys.exit(f"WARNING - Ignoring unknown primer {name} in {bed_file}\n")
                 continue
+            f_lengths = {len(f) for f, r in cocktail}
+            r_lengths = {len(r) for f, r in cocktail}
+            assert (
+                len(f_lengths) == 1 and len(r_lengths) == 1
+            ), f"Assorted lengths in {name} cocktail"
             # Do NOT add +1, the start/end are python style, len=end-start
-            product_len = int(end) - int(start) - len(fwd) - len(rev)
+            product_len = (
+                int(end) - int(start) - list(f_lengths)[0] - list(r_lengths)[0]
+            )
             # TODO - drop this and then would work even with original column 5 score?:
             assert strand in "+-", line
             lineage = id_to_lineage[acc]

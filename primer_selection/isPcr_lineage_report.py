@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.4")
+    print("v0.10.5")
     sys.exit(0)
 
 usage = """\
@@ -165,13 +165,14 @@ def load_primers(primer_files):
                 continue
             name, fwd, rev = line.rstrip().split("\t")[:3]
             if name not in primers:
-                primers[name] = (fwd, rev)
-            elif primers[name] != (fwd, rev):
-                sys.exit(
-                    f"ERROR - inconsistent definition for {name}, "
-                    f"f={primers[name][1]} r={primers[name][2]}"
-                    f"versus f={fwd} r={rev}"
-                )
+                primers[name] = {(fwd, rev)}
+            elif (fwd, rev) not in primers[name]:
+                primers[name].add((fwd, rev))
+            else:
+                sys.stderr.write(f"WARNING - duplicate line for {name}\n")
+    for name in primers:
+        if (count := len(primers[name])) > 1:
+            sys.stderr.write(f"WARNING - cocktail of {count} pairs for {name}\n")
     return primers
 
 
