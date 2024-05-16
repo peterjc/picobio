@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.5")
+    print("v0.10.6")
     sys.exit(0)
 
 usage = """\
@@ -89,6 +89,15 @@ parser.add_argument(
     ),
 )
 parser.add_argument(
+    "--targets",
+    nargs="+",
+    metavar="TSV",
+    help=(
+        "Primer targets as 2-column plain text TSV file(s) "
+        "listing target (tab) primer pair name."
+    ),
+)
+parser.add_argument(
     "-o",
     "--output",
     metavar="STEM",
@@ -152,6 +161,7 @@ BORDER_COLOR = "#000000"  # black
 synonyms = {"Holometabola": "Endopterygota"}
 
 primer_files = args.primers
+target_files = args.targets
 tally_file = args.tally
 excel_file = args.output + ".xlsx"
 
@@ -161,7 +171,7 @@ def load_primers(primer_files):
     for primer_file in primer_files:
         # sys.stderr.write(f"DEBUG: Loading primer TSV file {primer_file}\n")
         for line in open(primer_file):
-            if line.startswith("#"):
+            if line.startswith("#") or not line.strip():
                 continue
             name, fwd, rev = line.rstrip().split("\t")[:3]
             if name not in primers:
@@ -178,6 +188,34 @@ def load_primers(primer_files):
 
 primer_defs = load_primers(primer_files)
 sys.stderr.write(f"Loaded {len(primer_defs)} primers\n")
+
+
+def load_primer_targets(target_files, primer_defs):
+    targets = {}
+    if not target_files:
+        return {}
+    for tsv_filename in target_files:
+        for line in open(tsv_filename):
+            if line.startswith("#") or not line.strip():
+                continue
+            a, b = line.rstrip().split("\t")
+            if a not in primer_defs and b not in primer_defs:
+                sys.exit(
+                    f"ERROR - Entry in {tsv_filename} is not a known primer: {line}\n"
+                )
+            elif a != b and a in primer_defs and b in primer_defs:
+                sys.exit(f"ERROR - Ambiguous naming in {tsv_filename}: {line}\n")
+            elif a in primer_defs:
+                targets[a] = b
+            else:
+                assert b in primer_defs
+                targets[b] = a
+    return targets
+
+
+primer_targets = load_primer_targets(target_files, primer_defs)
+if primer_targets:
+    sys.stderr.write(f"Loaded targets for {len(primer_targets)} primers\n")
 
 with open(tally_file) as handle:
     header = handle.readline().rstrip("\n").split("\t")
@@ -369,7 +407,22 @@ def report_group(
 
         # color_map = sns.color_palette("Blues", as_cmap=True)
         # color_map = sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True)
-        color_map = sns.cubehelix_palette(start=2, as_cmap=True)
+        # color_map = sns.cubehelix_palette(start=2, as_cmap=True)  #dark green
+        color_map = sns.cubehelix_palette(
+            start=2.8, rot=0.1, light=0.9, as_cmap=True
+        )  # blue/purple
+
+        targets = sorted(set(primer_targets.values()))
+        if targets:
+            t_colors = sns.color_palette("pastel", len(targets))
+            target_colors = [
+                t_colors[targets.index(primer_targets[primer_name])]
+                if primer_name in primer_targets
+                else "white"
+                for primer_name in primer_defs
+            ]
+        else:
+            target_colors = None
 
         # Using dataframe as simple way to keep the row/col captions
         # matched up after clustering. Using mask for zero values
@@ -396,6 +449,7 @@ def report_group(
             xticklabels=True,
             yticklabels=True,
             cmap=color_map,
+            col_colors=target_colors,
             vmin=0.0,
             vmax=1.0,
         )
