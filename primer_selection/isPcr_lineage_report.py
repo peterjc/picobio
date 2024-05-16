@@ -415,7 +415,7 @@ def report_group(
 
         targets = sorted(set(primer_targets.values()))
         if targets:
-            t_colors = sns.color_palette("pastel", len(targets))
+            t_colors = sns.color_palette("Set1", len(targets))
             target_colors = [
                 t_colors[targets.index(primer_targets[primer_name])]
                 if primer_name in primer_targets
