@@ -10,7 +10,7 @@ import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.6")
+    print("v0.10.7")
     sys.exit(0)
 
 usage = """\
@@ -430,7 +430,8 @@ def report_group(
         data_frame = pd.DataFrame(
             [
                 [
-                    len(local_lengths[cut_lineage, primer_name])
+                    100
+                    * len(local_lengths[cut_lineage, primer_name])
                     / local_mito[cut_lineage]
                     for primer_name in primer_defs
                 ]
@@ -446,14 +447,28 @@ def report_group(
             mask=(data_frame == 0),
             col_cluster=True,
             row_cluster=False,
+            dendrogram_ratio=(0, 0.15),
             xticklabels=True,
             yticklabels=True,
             cmap=color_map,
             col_colors=target_colors,
-            vmin=0.0,
-            vmax=1.0,
+            vmin=0,
+            vmax=100,
+            cbar_kws={"label": "Amplified", "format": "%.0f%%"},
         )
         del data_frame
+
+        # Bounding boxes are (x-min, y-min, x-max, y-max)
+        col_dendro_box = cluster_plot.ax_col_dendrogram.get_position()
+        cluster_plot.ax_cbar.set_position(
+            (
+                col_dendro_box.xmax + 0.01,
+                col_dendro_box.ymin + 0.01,
+                0.04,
+                col_dendro_box.ymax - col_dendro_box.ymin - 0.02,
+            )
+        )
+
         cluster_plot.savefig(plot)
 
     worksheet = workbook.add_worksheet(root)
