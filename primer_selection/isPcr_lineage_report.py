@@ -404,6 +404,7 @@ def report_group(
     if plot:
         import pandas as pd
         import seaborn as sns
+        from matplotlib.patches import Patch
 
         # color_map = sns.color_palette("Blues", as_cmap=True)
         # color_map = sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True)
@@ -421,8 +422,13 @@ def report_group(
                 else "white"
                 for primer_name in primer_defs
             ]
+            target_patches = [
+                Patch(color=color, label=label)
+                for color, label in zip(t_colors, targets)
+            ]
         else:
             target_colors = None
+            target_patches = None
 
         # Using dataframe as simple way to keep the row/col captions
         # matched up after clustering. Using mask for zero values
@@ -454,20 +460,33 @@ def report_group(
             col_colors=target_colors,
             vmin=0,
             vmax=100,
-            cbar_kws={"label": "Amplified", "format": "%.0f%%"},
+            cbar_kws={
+                "label": "Amplified",
+                "format": "%.0f%%",
+                "orientation": "horizontal",
+            },
         )
         del data_frame
 
         # Bounding boxes are (x-min, y-min, x-max, y-max)
-        col_dendro_box = cluster_plot.ax_col_dendrogram.get_position()
+        heatmap_box = cluster_plot.ax_heatmap.get_position()
+        # Set position is (x, y, width, height)
         cluster_plot.ax_cbar.set_position(
             (
-                col_dendro_box.xmax + 0.01,
-                col_dendro_box.ymin + 0.01,
-                0.04,
-                col_dendro_box.ymax - col_dendro_box.ymin - 0.02,
+                heatmap_box.xmax + 0.04,
+                heatmap_box.ymin - 0.06,
+                0.15,
+                0.03,
             )
         )
+
+        target_legend = cluster_plot.ax_heatmap.legend(
+            loc="lower left",
+            bbox_to_anchor=(1.03, 1.03),
+            handles=target_patches,
+            frameon=False,
+        )
+        target_legend.set_title(title="Primer target", prop={"size": 10})
 
         cluster_plot.savefig(plot)
 
