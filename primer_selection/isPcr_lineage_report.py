@@ -6,11 +6,8 @@ import argparse
 import sys
 from statistics import median
 
-import xlsxwriter
-from xlsxwriter.utility import xl_rowcol_to_cell
-
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.7")
+    print("v0.10.8")
     sys.exit(0)
 
 usage = """\
@@ -33,9 +30,10 @@ Outputs:
   - Counts (with reference counts as first row)
   - Median length (of shortest amplicon in each reference,
     not including the primers themselves)
-* Excel file with multiple sheets matching the TSV files plus
-  counts as a percentage, and the length range (of the
-  shortest amplicon in each reference).
+* Optional Excel file with multiple sheets matching the TSV
+  files plus counts as a percentage, and the length range (of
+  the shortest amplicon in each reference).
+* Optional heatmap as PDF file.
 
 Example usage::
 
@@ -139,6 +137,11 @@ parser.add_argument(
         "'Fungi;Fungi incertae sedis;Cryptomycota' would be reported "
         "as just 'Fungi;Cryptomycota'."
     ),
+)
+parser.add_argument(
+    "--excel",
+    action="store_true",
+    help="Excel output too. Requires xlsxwriter Python library.",
 )
 parser.add_argument(
     "--plot",
@@ -490,160 +493,177 @@ def report_group(
 
         cluster_plot.savefig(plot)
 
-    worksheet = workbook.add_worksheet(root)
-    worksheet.set_column(0, 0, 43)  # column width
-    worksheet.set_column(1, 1, 6.5)
-    worksheet.set_column(2, 2 + len(primer_defs), 8)
-    worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
-    worksheet.write_string(0, 1, "mtDNA", header_fmt)
-    for j, name in enumerate(primer_defs):
-        worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
-    for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(
-            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
-        )
-        worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
-        for j, primer_name in enumerate(primer_defs):
-            # When an mtDNA amplified more than once, only kept
-            # the shortest, so can just take len here:
-            worksheet.write_number(
-                1 + i, 2 + j, len(local_lengths[cut_lineage, primer_name])
-            )
-            assert (
-                len(local_lengths[cut_lineage, primer_name]) <= local_mito[cut_lineage]
-            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
-    worksheet = workbook.add_worksheet(f"{root} - Percent")
-    worksheet.set_column(0, 0, 43)  # column width
-    worksheet.set_column(1, 1, 6.5)
-    worksheet.set_column(2, 2 + len(primer_defs), 8)
-    worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
-    worksheet.write_string(0, 1, "mtDNA", header_fmt)
-    for j, name in enumerate(primer_defs):
-        worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
-    for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(
-            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
-        )
-        worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
-        for j, primer_name in enumerate(primer_defs):
-            # When an mtDNA amplified more than once, only kept
-            # the shorted, so can just take len here:
-            worksheet.write_formula(
+    if workbook:
+        worksheet = workbook.add_worksheet(root)
+        worksheet.set_column(0, 0, 43)  # column width
+        worksheet.set_column(1, 1, 6.5)
+        worksheet.set_column(2, 2 + len(primer_defs), 8)
+        worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
+        worksheet.write_string(0, 1, "mtDNA", header_fmt)
+        for j, name in enumerate(primer_defs):
+            worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
+        for i, cut_lineage in enumerate(local_mito):
+            worksheet.write_string(
                 1 + i,
-                2 + j,
-                f"={root}!{xl_rowcol_to_cell(1 + i, 2 + j)}/{xl_rowcol_to_cell(1 + i, 1, True)}",
-                percent_fmt,
-                len(local_lengths[cut_lineage, primer_name]) / local_mito[cut_lineage],
+                0,
+                cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root,
             )
-    worksheet.conditional_format(
-        1, 2, 1 + len(local_lengths), 2 + len(primer_defs), percent_color_fmt
+            worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
+            for j, primer_name in enumerate(primer_defs):
+                # When an mtDNA amplified more than once, only kept
+                # the shortest, so can just take len here:
+                worksheet.write_number(
+                    1 + i, 2 + j, len(local_lengths[cut_lineage, primer_name])
+                )
+                assert (
+                    len(local_lengths[cut_lineage, primer_name])
+                    <= local_mito[cut_lineage]
+                ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
+        worksheet = workbook.add_worksheet(f"{root} - Percent")
+        worksheet.set_column(0, 0, 43)  # column width
+        worksheet.set_column(1, 1, 6.5)
+        worksheet.set_column(2, 2 + len(primer_defs), 8)
+        worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
+        worksheet.write_string(0, 1, "mtDNA", header_fmt)
+        for j, name in enumerate(primer_defs):
+            worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
+        for i, cut_lineage in enumerate(local_mito):
+            worksheet.write_string(
+                1 + i,
+                0,
+                cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root,
+            )
+            worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
+            for j, primer_name in enumerate(primer_defs):
+                # When an mtDNA amplified more than once, only kept
+                # the shorted, so can just take len here:
+                worksheet.write_formula(
+                    1 + i,
+                    2 + j,
+                    f"={root}!{xl_rowcol_to_cell(1 + i, 2 + j)}/{xl_rowcol_to_cell(1 + i, 1, True)}",
+                    percent_fmt,
+                    len(local_lengths[cut_lineage, primer_name])
+                    / local_mito[cut_lineage],
+                )
+        worksheet.conditional_format(
+            1, 2, 1 + len(local_lengths), 2 + len(primer_defs), percent_color_fmt
+        )
+
+        worksheet = workbook.add_worksheet(root + " - length median")
+        worksheet.set_column(0, 0, 43)  # column width
+        worksheet.set_column(1, 1, 6.5)
+        worksheet.set_column(2, 2 + len(primer_defs), 8)
+        worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
+        worksheet.write_string(0, 1, "mtDNA", header_fmt)
+        for j, name in enumerate(primer_defs):
+            worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
+        for i, cut_lineage in enumerate(local_mito):
+            worksheet.write_string(
+                1 + i,
+                0,
+                cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root,
+            )
+            worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
+            for j, primer_name in enumerate(primer_defs):
+                if local_lengths[cut_lineage, primer_name]:
+                    worksheet.write_number(
+                        1 + i, 2 + j, median(local_lengths[cut_lineage, primer_name])
+                    )
+                else:
+                    worksheet.write_string(1 + i, 2 + j, "-")
+
+        worksheet = workbook.add_worksheet(root + " - length range")
+        worksheet.set_column(0, 0, 43)  # column width
+        worksheet.set_column(1, 1, 6.5)
+        worksheet.set_column(2, 2 + len(primer_defs), 8)
+        worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
+        worksheet.write_string(0, 1, "mtDNA", header_fmt)
+        for j, name in enumerate(primer_defs):
+            worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
+        for i, cut_lineage in enumerate(local_mito):
+            worksheet.write_string(
+                1 + i,
+                0,
+                cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root,
+            )
+            worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
+            for j, primer_name in enumerate(primer_defs):
+                values = set(local_lengths[cut_lineage, primer_name])
+                if len(values) == 1:
+                    worksheet.write_string(1 + i, 2 + j, f"{min(values)} only")
+                elif values:
+                    worksheet.write_string(1 + i, 2 + j, f"{min(values)}-{max(values)}")
+                else:
+                    worksheet.write_string(1 + i, 2 + j, "-")
+
+
+if args.excel:
+    import xlsxwriter
+    from xlsxwriter.utility import xl_rowcol_to_cell
+
+    workbook = xlsxwriter.Workbook(excel_file)
+    workbook.formats[0].set_font_size(12)  # change default
+    workbook.formats[0].set_font_name("Arial")
+    workbook.formats[0].set_border(BORDER_STYLE)
+    workbook.formats[0].set_border_color(BORDER_COLOR)
+
+    # Header row is bold white text on RGB 120,0,79 with 0.5pt black lines
+    # First column is also bold.
+    # Font indent is left 0.15cm
+    header_fmt = workbook.add_format(
+        {
+            "font_name": "Arial",
+            "font_size": 12,
+            "border": BORDER_STYLE,
+            "border_color": BORDER_COLOR,
+            "bg_color": "#78004F",
+            "font_color": "white",
+            "bold": True,
+        }
+    )
+    word_wrap_fmt = workbook.add_format(
+        {
+            "font_name": "Arial",
+            "font_size": 12,
+            "border": BORDER_STYLE,
+            "border_color": BORDER_COLOR,
+            "bg_color": "#78004F",
+            "font_color": "white",
+            "bold": True,
+            "text_wrap": True,
+        }
     )
 
-    worksheet = workbook.add_worksheet(root + " - length median")
-    worksheet.set_column(0, 0, 43)  # column width
-    worksheet.set_column(1, 1, 6.5)
-    worksheet.set_column(2, 2 + len(primer_defs), 8)
-    worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
-    worksheet.write_string(0, 1, "mtDNA", header_fmt)
-    for j, name in enumerate(primer_defs):
-        worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
-    for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(
-            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
-        )
-        worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
-        for j, primer_name in enumerate(primer_defs):
-            if local_lengths[cut_lineage, primer_name]:
-                worksheet.write_number(
-                    1 + i, 2 + j, median(local_lengths[cut_lineage, primer_name])
-                )
-            else:
-                worksheet.write_string(1 + i, 2 + j, "-")
-
-    worksheet = workbook.add_worksheet(root + " - length range")
-    worksheet.set_column(0, 0, 43)  # column width
-    worksheet.set_column(1, 1, 6.5)
-    worksheet.set_column(2, 2 + len(primer_defs), 8)
-    worksheet.write_string(0, 0, f"Primer vs Group for {root}", header_fmt)
-    worksheet.write_string(0, 1, "mtDNA", header_fmt)
-    for j, name in enumerate(primer_defs):
-        worksheet.write_string(0, 2 + j, name, word_wrap_fmt)
-    for i, cut_lineage in enumerate(local_mito):
-        worksheet.write_string(
-            1 + i, 0, cut_lineage.replace(";", "; ") if cut_lineage else "Other " + root
-        )
-        worksheet.write_number(1 + i, 1, local_mito[cut_lineage])
-        for j, primer_name in enumerate(primer_defs):
-            values = set(local_lengths[cut_lineage, primer_name])
-            if len(values) == 1:
-                worksheet.write_string(1 + i, 2 + j, f"{min(values)} only")
-            elif values:
-                worksheet.write_string(1 + i, 2 + j, f"{min(values)}-{max(values)}")
-            else:
-                worksheet.write_string(1 + i, 2 + j, "-")
-
-
-workbook = xlsxwriter.Workbook(excel_file)
-workbook.formats[0].set_font_size(12)  # change default
-workbook.formats[0].set_font_name("Arial")
-workbook.formats[0].set_border(BORDER_STYLE)
-workbook.formats[0].set_border_color(BORDER_COLOR)
-
-# Header row is bold white text on RGB 120,0,79 with 0.5pt black lines
-# First column is also bold.
-# Font indent is left 0.15cm
-header_fmt = workbook.add_format(
-    {
-        "font_name": "Arial",
-        "font_size": 12,
-        "border": BORDER_STYLE,
-        "border_color": BORDER_COLOR,
-        "bg_color": "#78004F",
-        "font_color": "white",
-        "bold": True,
+    percent_fmt = workbook.add_format(
+        {
+            "num_format": "0.0%",
+            "font_name": "Arial",
+            "font_size": 12,
+            "border": BORDER_STYLE,
+            "border_color": BORDER_COLOR,
+        }
+    )
+    percent_color_fmt = {
+        "type": "3_color_scale",
+        "min_color": "white",  # default red
+        "min_type": "num",
+        "min_value": 0,
+        "mid_type": "num",
+        "mid_value": 0.5,
+        "max_type": "num",
+        "max_value": 1,
     }
-)
-word_wrap_fmt = workbook.add_format(
-    {
-        "font_name": "Arial",
-        "font_size": 12,
-        "border": BORDER_STYLE,
-        "border_color": BORDER_COLOR,
-        "bg_color": "#78004F",
-        "font_color": "white",
-        "bold": True,
-        "text_wrap": True,
+    percent_color_fmt = {
+        "type": "2_color_scale",
+        "min_color": "white",
+        "min_type": "num",
+        "min_value": 0,
+        "max_color": "#909090",
+        "max_type": "num",
+        "max_value": 1,
     }
-)
-
-percent_fmt = workbook.add_format(
-    {
-        "num_format": "0.0%",
-        "font_name": "Arial",
-        "font_size": 12,
-        "border": BORDER_STYLE,
-        "border_color": BORDER_COLOR,
-    }
-)
-percent_color_fmt = {
-    "type": "3_color_scale",
-    "min_color": "white",  # default red
-    "min_type": "num",
-    "min_value": 0,
-    "mid_type": "num",
-    "mid_value": 0.5,
-    "max_type": "num",
-    "max_value": 1,
-}
-percent_color_fmt = {
-    "type": "2_color_scale",
-    "min_color": "white",
-    "min_type": "num",
-    "min_value": 0,
-    "max_color": "#909090",
-    "max_type": "num",
-    "max_value": 1,
-}
+else:
+    workbook = None
 
 report_group(
     f"{args.output}_counts.tsv",
@@ -655,4 +675,5 @@ report_group(
     plot=f"{args.output}_fraction.pdf" if args.plot else None,
     min_refs=args.min_refs,
 )
-workbook.close()
+if workbook:
+    workbook.close()
