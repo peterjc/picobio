@@ -9,15 +9,18 @@ import sys
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.9.1")
+    print("v0.9.2")
     sys.exit(0)
 
 usage = """\
 Parses a set of FASTA files and isPcr BED output files, to
-produce a single TSV with one column per primer pair, and one
-row for each taxonomic lineage inferred from the FASTA headers.
-This is then used with sister script ``isPcr_lineage_report.py``
-to produce tables.
+report on the expected product legnths expected to amplify
+per primer and per lineage. Produces a single TSV with one
+column per primer pair, and one row for each taxonomic lineage
+inferred from the FASTA headers. Each value is a semi-colon
+separated list of any amplicon lengths for each in-silico PCR
+combination. This is then used with sister script
+``isPcr_lineage_report.py`` to produce tables and plots.
 
 Inputs:
 
