@@ -275,7 +275,7 @@ with open(tally_file) as handle:
     )
     if multi_products:
         sys.stderr.write(
-            f"WARNING - {multi_products} lineages under {args.root} with multiple products\n"
+            f"WARNING - {multi_products} sequences under {args.root} with multiple products\n"
         )
     del primers
 
