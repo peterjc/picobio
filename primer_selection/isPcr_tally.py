@@ -2,6 +2,8 @@
 #
 # Based on report_len_###.py developed for an in-silico PCR
 # primer evaluation project Sep 2023 to Jan 2024.
+# Renamed from isPcr_lineage_tally.py to isPcr_tally.py
+# when moved from v0.9.2 to v1.0.0 and preserved FASTA IDs.
 import argparse
 import os
 import sys
@@ -9,15 +11,15 @@ import sys
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.9.2")
+    print("v1.0.0")
     sys.exit(0)
 
 usage = """\
 Parses a set of FASTA files and isPcr BED output files, to
 report on the expected product legnths expected to amplify
-per primer and per lineage. Produces a single TSV with one
-column per primer pair, and one row for each taxonomic lineage
-inferred from the FASTA headers. Each value is a semi-colon
+per primer and per lineage. Produces one row for each sequence
+ID in the FASTA files, with columns for the sequence ID and
+description, and each primer pair. Each value is a semi-colon
 separated list of any amplicon lengths for each in-silico PCR
 combination. This is then used with sister script
 ``isPcr_lineage_report.py`` to produce tables and plots.
@@ -26,9 +28,9 @@ Inputs:
 
 * Primer definitions in 3-column TSV format used by isPcr
 * Set of reference FASTA files where the description line is
-  a semi-colon separated taxonomic lineage, as produced by
-  script ``species_dedup_gbk.py`` from the source lines in NCBI
-  GenBank format files.
+  ideally for downstream analysis a semi-colon separated taxonomic
+  lineage, as produced by script ``species_dedup_gbk.py`` from the
+  source lines in NCBI GenBank format files.
 * Bed files (TSV) from Jim Kent's isPcr tool run on those FASTA
   files (must have matching record identifiers), and primers
   (possibly with even more primers). This may drop column 5
@@ -45,7 +47,7 @@ Example usage::
     $ sort primers.tsv | uniq | ./iupac_isPcr.py > expanded.tsv
     $ isPcr refs.fasta expanded.tsv stdout -out=bed \\
       | cut -f 1-4,6 | sort | uniq > amplicons.tsv
-    $ ./isPcr_lineage_tally.py -f refs.fasta \\
+    $ ./isPcr_tally.py -f refs.fasta \\
       -p primers.tsv -a amplicons.tsv -o tally.tsv
 
 Here ``primers.tsv`` is a three-column input TSV file of primer
@@ -57,8 +59,8 @@ Finally ``tally.tsv`` is the output tally TSV filename.
 """
 
 parser = argparse.ArgumentParser(
-    prog="isPcr_lineage_tally.py",
-    description="Produce tally of Jim Kent's isPcr results vs lineage.",
+    prog="isPcr_tally.py",
+    description="Produce tally of Jim Kent's isPcr results, sequence vs primer.",
     epilog=usage,
     formatter_class=argparse.RawDescriptionHelpFormatter,
 )
@@ -90,7 +92,7 @@ parser.add_argument(
     required=True,
     help=(
         "Deduplicated bed output file(s) from isPcr. Only the "
-        "first 4 columns are used"
+        "first 4 columns are used."
     ),
 )
 parser.add_argument(
@@ -113,7 +115,7 @@ def load_primers(primer_files):
     for primer_file in primer_files:
         # sys.stderr.write(f"DEBUG: Loading primer TSV file {primer_file}\n")
         for line in open(primer_file):
-            if line.startswith("#"):
+            if line.startswith("#") or not line.strip():
                 continue
             name, fwd, rev = line.rstrip().split("\t")[:3]
             if name not in primers:
@@ -132,38 +134,24 @@ primer_defs = load_primers(primer_files)
 sys.stderr.write(f"Loaded {len(primer_defs)} primers\n")
 
 
-def load_lineages(fasta_files):
-    lineage_counts = {}
-    id_to_lineage = {}
+def load_fasta(fasta_files):
+    acc_description = {}
     for fasta_file in fasta_files:
         # sys.stderr.write(f"DEBUG: Loading reference FASTA file {fasta_file}\n")
         with open(fasta_file) as handle:
             for title, seq in SimpleFastaParser(handle):
-                del seq
-                idn, lineage = title.split(None, 1)
-                if idn in id_to_lineage:
-                    sys.exit(f"ERROR - Duplicate {idn} in FASTA files")
-                # assert lineage.startswith("Eukaryota;"), lineage
-                assert ";" in lineage, lineage
-                try:
-                    lineage_counts[lineage] += 1
-                except KeyError:
-                    lineage_counts[lineage] = 1
-                id_to_lineage[idn] = lineage
-    return lineage_counts, id_to_lineage
+                acc, description = title.split(None, 1)
+                if acc in acc_description:
+                    sys.exit(f"ERROR - Duplicate {acc} in FASTA files")
+                acc_description[acc] = description
+    return acc_description
 
 
 if os.path.isfile(tally_file):
     sys.stderr.write(f"WARNING - Overwriting {tally_file}\n")
 
-counts, id_to_lineage = load_lineages(fasta_files)
-if len(counts) != len(id_to_lineage):
-    sys.stderr.write(
-        f"WARNING - Loaded {len(counts)} lineages and {len(id_to_lineage)} "
-        "reference ids (expected one to one)\n"
-    )
-else:
-    sys.stderr.write(f"Loaded lineage for {len(id_to_lineage)} reference ids\n")
+acc_description = load_fasta(fasta_files)
+sys.stderr.write(f"Loaded lineage for {len(acc_description)} reference ids\n")
 
 amplicon_lengths = {}
 for bed_file in bed_files:
@@ -174,11 +162,15 @@ for bed_file in bed_files:
                 continue
             # We dropped column 5 (score), not checking 6 (now 5) strand etc
             acc, start, end, name, strand = line.rstrip().split("\t", 4)
+            if acc not in acc_description:
+                sys.exit(f"ERROR - Unexpected sequence {acc} in {bed_file}")
             # Need the lengths of the primers
             try:
                 cocktail = primer_defs[name]
             except KeyError:
-                sys.exit(f"WARNING - Ignoring unknown primer {name} in {bed_file}\n")
+                sys.stderr.write(
+                    f"WARNING - Ignoring unknown primer {name} in {bed_file}\n"
+                )
                 continue
             f_lengths = {len(f) for f, r in cocktail}
             r_lengths = {len(r) for f, r in cocktail}
@@ -191,27 +183,23 @@ for bed_file in bed_files:
             )
             # TODO - drop this and then would work even with original column 5 score?:
             assert strand in "+-", line
-            lineage = id_to_lineage[acc]
             try:
-                amplicon_lengths[lineage, name].append(product_len)
+                amplicon_lengths[acc, name].append(product_len)
             except KeyError:
-                amplicon_lengths[lineage, name] = [product_len]
+                amplicon_lengths[acc, name] = [product_len]
 
 if not amplicon_lengths:
     sys.exit("ERROR - No amplicons loaded. Are the amplicon and primer files matched?")
 
 with open(tally_file, "w") as handle:
-    handle.write("#Lineage vs product-len\tReference\t" + "\t".join(primer_defs) + "\n")
-    for lineage, count in sorted(counts.items()):
-        assert count > 0, lineage
-        # if all((lineage, name) not in amplicon_lengths for name in primer_defs):
-        #     sys.stderr.write(f"DEBUG: No hits from {lineage}\n")
-        fields = [lineage, str(count)] + [
-            ";".join(str(_) for _ in sorted(amplicon_lengths.get((lineage, name), [])))
+    handle.write("#Sequence\tDescription\t" + "\t".join(primer_defs) + "\n")
+    for acc, lineage in acc_description.items():
+        fields = [acc, lineage] + [
+            ";".join(str(_) for _ in sorted(amplicon_lengths.get((acc, name), [])))
             for name in primer_defs
         ]
         handle.write("\t".join(fields) + "\n")
 del amplicon_lengths
 sys.stderr.write(
-    f"Wrote {tally_file} with {len(counts)} lineages vs {len(primer_defs)} primer pairs\n"
+    f"Wrote {tally_file} with {len(acc_description)} sequences vs {len(primer_defs)} primer pairs\n"
 )
