@@ -7,7 +7,7 @@ import sys
 from statistics import median
 
 if "-v" in sys.argv or "--version" in sys.argv:
-    print("v0.10.8")
+    print("v1.0.0")
     sys.exit(0)
 
 usage = """\
@@ -22,7 +22,8 @@ if there is more than one).
 Inputs:
 
 * Primer definitions in 3-column TSV format used by isPcr
-* Tally file from ``isPcr_lineage_tally.py`` script
+* Tally file from ``isPcr_tally.py`` script where the sequence
+  descriptions in column 2 are taxonomic lineages
 
 Outputs:
 
@@ -40,7 +41,7 @@ Example usage::
     $ sort primers.tsv | uniq | ./iupac_isPcr.py > expanded.tsv
     $ isPcr refs.fasta expanded.tsv stdout -out=bed \\
       | cut -f 1-4,6 | sort | uniq > amplicons.tsv
-    $ ./isPcr_lineage_tally.py -f refs.fasta \\
+    $ ./isPcr_tally.py -f refs.fasta \\
       -p primers.tsv -a amplicons.tsv -o tally.tsv
     $ ./isPcr_lineage_report.py -t tally.tsv \\
       -p primers.tsv -o report -r Mammalia -l 2
@@ -155,6 +156,13 @@ parser.add_argument(
     default=1,
     help="Minimum number of entries to display a taxonomic lineage, default 1.",
 )
+parser.add_argument(
+    "--uniques",
+    action="store_true",
+    help="Extract the expected amplicon (after primer trimming) and "
+    "report on the number of unique markers within each lineage entry. "
+    "WARNING: Requires indexing and loading the FASTA files",
+)
 args = parser.parse_args()
 
 BORDER_STYLE = 2
@@ -222,15 +230,15 @@ if primer_targets:
 
 with open(tally_file) as handle:
     header = handle.readline().rstrip("\n").split("\t")
-    assert header[0] == "#Lineage vs product-len", header
-    assert header[1] == "Reference", header
+    assert header[0] == "#Sequence", header
+    assert header[1] == "Description", header
     primers = {name: header.index(name) for name in primer_defs}
     mito_counts = {}  # key on lineage
     primer_counts = {}  # key on lineage, primer name
     multi_products = 0
     for line in handle:
         fields = line.rstrip("\n").split("\t")
-        lineage = fields[0]
+        lineage = fields[1]  # description
         if all("0" == _ for _ in fields[2:]):
             sys.stderr.write(f"WARNING - No amplicons from {lineage}\n")
             continue  # debug!
@@ -245,7 +253,10 @@ with open(tally_file) as handle:
                     terms.remove(ignore)
         lineage = ";".join(terms)
         del terms
-        mito_counts[lineage] = int(fields[1])
+        try:
+            mito_counts[lineage] += 1
+        except KeyError:
+            mito_counts[lineage] = 1
         # Note counting multiple amplicons per mtDNA here!
         if any(";" in _ for _ in fields[2:]):
             multi_products += 1
