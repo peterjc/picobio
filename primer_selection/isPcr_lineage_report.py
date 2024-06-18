@@ -100,7 +100,7 @@ parser.add_argument(
     "--output",
     metavar="STEM",
     required=True,
-    help="Filename stem for reports (STEM.xlsx and STEM_*.tsv).",
+    help="Filename stem for reports (STEM.xlsx, STEM.pdf, and STEM_*.tsv).",
 )
 parser.add_argument(
     "-r",
