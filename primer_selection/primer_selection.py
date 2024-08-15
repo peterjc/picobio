@@ -3,7 +3,7 @@
 
 Takes as input a primer file (TSV format) and one or more FASTA files.
 Reports primers of interest and unique products which might be expected.
-Goal was to pick primers for distringuishing strains or sub-types.
+Goal was to pick primers for distinguishing strains or sub-types.
 """
 
 import argparse
