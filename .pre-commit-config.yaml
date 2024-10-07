@@ -1,7 +1,7 @@
 # pre-commit run --all-files
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
     -   id: check-added-large-files
     -   id: check-case-conflict
@@ -27,7 +27,7 @@ repos:
         language: pygrep
         files: \.(py|sh|rst|yml|yaml)$
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.6.9
     hooks:
     # Run the Ruff linter (flake8 alternative):
     -   id: ruff
@@ -46,7 +46,7 @@ repos:
             '--config=format.docstring-code-format=true'
         ]
 -   repo: https://github.com/rstcheck/rstcheck
-    rev: v6.2.0
+    rev: v6.2.4
     hooks:
     -   id: rstcheck
         args: [
@@ -56,13 +56,13 @@ repos:
             --ignore-substitutions=version
         ]
 -   repo: https://github.com/PyCQA/doc8
-    rev: 'v1.1.1'
+    rev: 'v1.1.2'
     hooks:
     -   id: doc8
         additional_dependencies: [pygments]
         args: [--quiet,--ignore=D001]
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
     -   id: codespell
         files: \.(py|sh|rst|yml|yaml)$
