@@ -35,8 +35,6 @@ TODO: Work out the database path if not given explicitly (e.g. just nr)
 but via the BLAST environment variable etc.
 """
 
-from __future__ import print_function
-
 import os
 import sys
 import time
@@ -57,9 +55,7 @@ local = "/mnt/scratch/local/blast/galaxy"
 
 
 def wrap(text):
-    if " " in text and not text[0] == '"' and not text[-1] == '"':
-        return '"%s"' % text
-    elif "|" in text:
+    if " " in text and not text[0] == '"' and not text[-1] == '"' or "|" in text:
         return '"%s"' % text
     else:
         return text

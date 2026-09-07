@@ -29,7 +29,6 @@ We avoid this by running BLAST jobs which take a whole node at once.
 # master = "/mnt/gfs/blast/galaxy"
 # local = "/var/blast/galaxy"
 # db = "ncbi/nr"
-from __future__ import print_function
 
 import os
 import sys
@@ -145,7 +144,7 @@ for db in names:
             handle = open(lock)
             sys.stderr.write(handle.read())
             handle.close()
-        except Exception:  # noqa: B905,BLE001
+        except Exception:  # noqa: BLE001
             pass
         sys.stderr.write("Aborting sync\n")
         sys.exit(2)

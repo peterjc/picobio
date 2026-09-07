@@ -9,8 +9,6 @@ The motivation and example images are described on this blog post:
 http://blastedbio.blogspot.co.uk/2013/08/pixelated-potato-posters-in-python.html
 """
 
-from __future__ import print_function
-
 import os
 
 import numpy as np
