@@ -148,13 +148,12 @@ def break_up_embl_file(handle):
 
 
 count = 0
-with open(input_embl) as in_handle:
-    with open(output_embl, "w") as out_handle:
-        for embl_string in break_up_embl_file(in_handle):
-            assert embl_string.startswith("ID "), embl_string
-            assert embl_string.endswith("//\n"), embl_string
-            count += 1
-            out_handle.write(get_header(embl_string))
-            r = SeqIO.read(StringIO(embl_string), "embl")
-            out_handle.write(get_body(insert_gaps(r).format("embl")))
+with open(input_embl) as in_handle, open(output_embl, "w") as out_handle:
+    for embl_string in break_up_embl_file(in_handle):
+        assert embl_string.startswith("ID "), embl_string
+        assert embl_string.endswith("//\n"), embl_string
+        count += 1
+        out_handle.write(get_header(embl_string))
+        r = SeqIO.read(StringIO(embl_string), "embl")
+        out_handle.write(get_body(insert_gaps(r).format("embl")))
 print("Done, %i records" % count)

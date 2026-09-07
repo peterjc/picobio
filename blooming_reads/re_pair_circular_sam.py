@@ -45,8 +45,6 @@ end data, you might get two, three or even four lines in SAM
 
 """
 
-from __future__ import print_function
-
 import os
 import sys
 from builtins import range  # for Python 2

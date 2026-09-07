@@ -348,7 +348,7 @@ def build_filter(
                 #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
                 # Note we do the disambiguate call on the fragments rather than
                 # the whole reference to avoid too many levels of recursion.
-                for i in range(0, len(upper_seq) - kmer):
+                for i in range(len(upper_seq) - kmer):
                     for fragment in disambiguate(upper_seq[i : i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
@@ -356,7 +356,7 @@ def build_filter(
                         # TODO - Can do this in one go from len(upper_seq)
                         count += 1
                 if deletions:
-                    for i in range(0, len(upper_seq) - kmer + 1):
+                    for i in range(len(upper_seq) - kmer + 1):
                         for fragment in make_deletions(upper_seq[i : i + kmer + 1]):
                             del_hashes.add(fragment)
             handle.close()
@@ -370,7 +370,7 @@ def build_filter(
                 #    % (raw_read.split("\n",1)[0], set(upper_seq).difference("ACGT"))
                 # Want to consider wrapping round the origin, add k-mer length:
                 upper_seq += upper_seq[:kmer]
-                for i in range(0, len(upper_seq) - kmer):
+                for i in range(len(upper_seq) - kmer):
                     for fragment in disambiguate(upper_seq[i : i + kmer]):
                         assert set(fragment).issubset("ACGT"), fragment
                         simple.add(fragment)
@@ -378,7 +378,7 @@ def build_filter(
                         # TODO - Can do this in one go from len(upper_seq)
                         count += 1
                 if deletions:
-                    for i in range(0, len(upper_seq) - kmer + 1):
+                    for i in range(len(upper_seq) - kmer + 1):
                         for fragment in make_deletions(upper_seq[i : i + kmer + 1]):
                             del_hashes.add(fragment)
             handle.close()
@@ -500,7 +500,7 @@ def go(
             wanted = False
             filter_t0 = time.time()
             for upper_seq in upper_seqs:
-                for i in range(0, len(upper_seq) - kmer):
+                for i in range(len(upper_seq) - kmer):
                     fragment = upper_seq[i : i + kmer]
                     if fragment in bloom and fragment in simple:
                         wanted = True
@@ -529,7 +529,7 @@ def go(
             in_count += 1
             wanted = False
             filter_t0 = time.time()
-            for i in range(0, len(upper_seq) - kmer):
+            for i in range(len(upper_seq) - kmer):
                 fragment = upper_seq[i : i + kmer]
                 # Can modify code to allow this syntax, see:
                 # https://github.com/bitly/dablooms/pull/50

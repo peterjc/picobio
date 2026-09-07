@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """Python script for assembly comparison."""
 
-from __future__ import print_function
-
 import os
 import sys
 import warnings
@@ -109,7 +107,6 @@ def do_blast(query_fasta, db_fasta, blast_file):
     )
     print(cmd)
     stdout, stderr = cmd()
-    return
 
 
 def filter_blast(blast_result, query_length):
