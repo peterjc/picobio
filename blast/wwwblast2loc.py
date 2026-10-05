@@ -7,7 +7,6 @@
 #
 # v001 - First version
 # v002 - Use print as function
-from __future__ import print_function
 
 import os
 
@@ -29,9 +28,7 @@ def load_blast_db_list(filename):
     aa = set()
     handle = open(filename)
     for line in handle:
-        if line.startswith("#") or not line.strip():
-            continue
-        elif line.startswith("NumCpuToUse"):
+        if line.startswith("#") or not line.strip() or line.startswith("NumCpuToUse"):
             continue
         elif line.startswith(("blastn ", "tblastn", "tblastx ")):
             nt.update(line.rstrip().split()[1:])
@@ -90,8 +87,9 @@ for filename, dbs in [(blast_nt, nt_list), (blast_aa, aa_list)]:
     handle.write("#Automatically generated from\n")
     handle.write("#file %s\n" % blastrc)
     handle.write("#and %s\n" % blastwww)
-    for db, descr in dbs:
-        handle.write("\t".join([db, descr, os.path.join(blastpath, db)]) + "\n")
+    handle.writelines(
+        "\t".join([db, descr, os.path.join(blastpath, db)]) + "\n" for db, descr in dbs
+    )
     handle.close()
 print("Done, %i nt and %i aa BLAST databases" % (len(aa_list), len(nt_list)))
 if aa:

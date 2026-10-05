@@ -48,9 +48,9 @@ def load_isprc(isprc_filename, ref_name, primer_hits):
                 left,
                 right,
             ) in primer_hits, f"Stale cache? Why {name}, {left}, {right}"
-            assert (
-                length == f"{len(seq)}bp"
-            ), f"Expected length {len(seq)} from sequence, yet {length}"
+            assert length == f"{len(seq)}bp", (
+                f"Expected length {len(seq)} from sequence, yet {length}"
+            )
             seq = seq.upper()
             # chrom, rest = region.rsplit(":", 1)
             # if "+" in rest:
@@ -90,8 +90,7 @@ def main():
         sys.exit(f"ERROR: No primers identified in {args.primers}")
     primer_file = os.path.join(tmp, "primers.tsv")
     with open(primer_file, "w") as handle:
-        for name, left, right in primers:
-            handle.write(f"{name}\t{left}\t{right}\n")
+        handle.writelines(f"{name}\t{left}\t{right}\n" for name, left, right in primers)
 
     ref_names = {}
     if args.names:
