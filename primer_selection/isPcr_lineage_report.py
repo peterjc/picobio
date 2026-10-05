@@ -340,9 +340,9 @@ def report_group(
                     except KeyError:
                         local_mito[more_cut] = culled
                     assert cut_lineage not in local_mito
-                    assert (
-                        sum(local_mito.values()) == total
-                    ), "Oops - culling changed the total"
+                    assert sum(local_mito.values()) == total, (
+                        "Oops - culling changed the total"
+                    )
                     # sys.stderr.write(
                     #    f"DEBUG '{cut_lineage}' count {culled} --> {more_cut} which is now {local_mito[more_cut]}\n"
                     # )
@@ -378,7 +378,9 @@ def report_group(
         for primer_name in primer_defs:
             assert (
                 len(local_lengths[cut_lineage, primer_name]) <= local_mito[cut_lineage]
-            ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other ' + root}"
+            ), (
+                f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other ' + root}"
+            )
 
     # assert set(local_mito) == set(local_lengths)
     # print(f"{len(local_lengths)} entries for {root} level {levels}")
@@ -529,7 +531,9 @@ def report_group(
                 assert (
                     len(local_lengths[cut_lineage, primer_name])
                     <= local_mito[cut_lineage]
-                ), f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
+                ), (
+                    f"{cut_lineage} {primer_name}: {len(local_lengths[cut_lineage, primer_name])} products from {local_mito[cut_lineage]} mtDNA for {cut_lineage if cut_lineage else 'Other'}"
+                )
         worksheet = workbook.add_worksheet(f"{root} - Percent")
         worksheet.set_column(0, 0, 43)  # column width
         worksheet.set_column(1, 1, 6.5)

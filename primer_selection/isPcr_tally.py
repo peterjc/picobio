@@ -91,8 +91,7 @@ parser.add_argument(
     metavar="TSV",
     required=True,
     help=(
-        "Deduplicated bed output file(s) from isPcr. Only the "
-        "first 4 columns are used."
+        "Deduplicated bed output file(s) from isPcr. Only the first 4 columns are used."
     ),
 )
 parser.add_argument(
@@ -174,9 +173,9 @@ for bed_file in bed_files:
                 continue
             f_lengths = {len(f) for f, r in cocktail}
             r_lengths = {len(r) for f, r in cocktail}
-            assert (
-                len(f_lengths) == 1 and len(r_lengths) == 1
-            ), f"Assorted lengths in {name} cocktail"
+            assert len(f_lengths) == 1 and len(r_lengths) == 1, (
+                f"Assorted lengths in {name} cocktail"
+            )
             # Do NOT add +1, the start/end are python style, len=end-start
             product_len = (
                 int(end) - int(start) - list(f_lengths)[0] - list(r_lengths)[0]

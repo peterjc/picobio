@@ -22,7 +22,6 @@ from multiprocessing import Process
 from pathlib import Path
 
 from rich.progress import Progress  # or use tqdm, or ...
-
 from snakemake.api import DAGSettings
 from snakemake.api import ResourceSettings
 from snakemake.api import SnakemakeApi
