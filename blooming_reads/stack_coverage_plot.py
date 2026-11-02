@@ -1,7 +1,5 @@
 """Script to produce stacked coverage plot with matplotlib."""
 
-from __future__ import print_function
-
 import sys
 
 import numpy as np
@@ -62,7 +60,7 @@ def stack(data, filename, colors=None):
         ax1.set_ylim([0, max_value])
         ax1.set_title(name.split(None, 1)[0], fontsize="xx-small")
         ax1.fill_between(x, 0, y_stack[0, :], facecolor=colors[0], alpha=0.7)
-        for i in range(0, values.shape[0] - 1):
+        for i in range(values.shape[0] - 1):
             ax1.fill_between(
                 x, y_stack[i, :], y_stack[i + 1, :], facecolor=colors[i + 1], alpha=0.7
             )
