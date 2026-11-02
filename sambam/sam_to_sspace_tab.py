@@ -196,7 +196,6 @@ for line in sys.stdin:
     if flag & 0x40:
         # This is R1, other is R2
         assert other_flag & 0x80
-        pass
     elif flag & 0x80:
         # This is R2, other is R1
         assert other_flag & 0x40

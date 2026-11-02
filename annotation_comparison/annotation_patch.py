@@ -119,17 +119,23 @@ def load_diffs(handle):
         ref, ftype, loc, key, old, new = parts
         if old == "None":
             old = None
-        elif old.startswith("'") and old.endswith("'"):
-            old = old[1:-1]
-        elif old.startswith('"') and old.endswith('"'):
+        elif (
+            old.startswith("'")
+            and old.endswith("'")
+            or old.startswith('"')
+            and old.endswith('"')
+        ):
             old = old[1:-1]
         else:
             raise NotImplementedError(old)
         if new == "None":
             new = None
-        elif new.startswith("'") and new.endswith("'"):
-            new = new[1:-1]
-        elif new.startswith('"') and new.endswith('"'):
+        elif (
+            new.startswith("'")
+            and new.endswith("'")
+            or new.startswith('"')
+            and new.endswith('"')
+        ):
             new = new[1:-1]
         else:
             raise NotImplementedError(new)
@@ -147,9 +153,7 @@ def apply_diffs(handle, diffs):
 
     if line.startswith("##gff-version"):
         return patch_gff(handle, diffs)
-    elif line.startswith("LOCUS "):
-        raise NotImplementedError
-    elif line.startswith("ID "):
+    elif line.startswith("LOCUS ") or line.startswith("ID "):
         raise NotImplementedError
     else:
         sys.exit("Could not guess file type from first line:\n%s" % line)
